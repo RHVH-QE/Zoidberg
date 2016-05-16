@@ -1,0 +1,3 @@
+[submodule "auto_installation/static/ngn-auto-installation-kickstarts"]
+	path = auto_installation/static/ngn-auto-installation-kickstarts
+	url = git@github.com:dracher/ngn-auto-installation-kickstarts.git
