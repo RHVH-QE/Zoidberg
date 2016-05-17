@@ -1,5 +1,8 @@
 import os
+import logging
 import redis
+
+log = logging.getLogger('bender')
 
 
 class ReserveUserWrongException(Exception):
@@ -29,3 +32,10 @@ def init_kickstart_file(fn, args):
         tpl = tpl.format(**args)
         with open(fn+'.ks', 'w') as fp:
             fp.write(tpl)
+
+
+def setup_funcs(redis_conn):
+    log.info("flush all keys from current database")
+    redis_conn.flushdb()
+    log.info("set key 'running' value to '0'")
+    redis_conn.set('running', 0, nx=True)
