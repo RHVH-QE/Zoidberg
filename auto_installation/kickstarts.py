@@ -16,9 +16,10 @@ LOGER = logging.getLogger('bender')
 class KickStartFiles(object):
     """This class will combine *.json and *.tmp into *.ks
     >>> KickStartFiles(dict(liveimg='http://10.66.x.x/rhevh.img',\
-                       srv_ip='10.66.9.216',\
-                       srv_port='5000')).generate_job_queue()
+                            srv_ip='10.66.9.216',\
+                            srv_port='5000')).generate_job_queue()
     """
+
     def __init__(self, kargs):
         assert isinstance(kargs, dict)
         self.kargs = kargs
@@ -32,7 +33,8 @@ class KickStartFiles(object):
         for fn in os.listdir(KS_FILES_DIR):
             if fnmatch.fnmatch(fn, pat):
                 fn_json = fn.replace('.tpl', '.json')
-                assert os.path.exists(os.path.join(KS_FILES_DIR, fn_json)) is True
+                assert os.path.exists(os.path.join(KS_FILES_DIR,
+                                                   fn_json)) is True
                 if not only_ks:
                     yield fn, fn_json
                 else:
@@ -46,14 +48,17 @@ class KickStartFiles(object):
             old.update(self.kargs)
 
             with open(os.path.join(KS_FILES_DIR, k), 'r') as f1:
-                with open(os.path.join(KS_FILES_DIR, k.replace('.tpl', '.ks')), 'w') as f2:
+                with open(
+                        os.path.join(KS_FILES_DIR,
+                                     k.replace('.tpl', '.ks')), 'w') as f2:
                     f2.write(f1.read().format(**old))
 
     def generate_job_queue(self):
         """make job queue from ks files"""
         ks = self._get_ks_files_by_priority(only_ks=True)
         for k, j in ks:
-            machines_list = json.loads(open(os.path.join(KS_FILES_DIR, j)).read())['MACHINES']
+            machines_list = json.loads(open(os.path.join(
+                KS_FILES_DIR, j)).read())['MACHINES']
             yield k, machines_list
 
 

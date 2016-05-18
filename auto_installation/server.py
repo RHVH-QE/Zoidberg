@@ -9,7 +9,7 @@ from flask import Flask, request, redirect
 from flask.ext import resteasy
 
 from beaker import BeakerProvision, MonitorPubSub
-from utils import init_redis, setup_funcs
+from utils import init_redis, setup_funcs, generate_loger
 from constants import CURRENT_IP_PORT, BUILDS_SERVER_URL
 from jobs import JobRunner
 
@@ -46,9 +46,11 @@ def start_job():
             data = request.get_json()
             img_url = data.get('img', None)
             if img_url:
-                _img_url = img_url.replace('/var/www/builds', BUILDS_SERVER_URL)
-                LOG.debug("liveimg url is %s", _img_url)
-                JobRunner(_img_url, RD_CONN).start()
+                _img_url = img_url.replace('/var/www/builds',
+                                           BUILDS_SERVER_URL)
+                generate_loger(_img_url, './logger.yml')
+                LOG.info("start testing rhevh build :: %s", _img_url)
+                # JobRunner(_img_url, RD_CONN).start()
                 return redirect('/post_result')
         else:
             return redirect('/post_result')
@@ -63,7 +65,8 @@ def add_job(bkr_name):
     ret = BeakerProvision(srv_ip=IP, srv_port=PORT).provision(bkr_name)
 
     if ret == 0:
-        LOG.info("provisioning on host %s finished with return code 0", bkr_name)
+        LOG.info("provisioning on host %s finished with return code 0",
+                 bkr_name)
         p = RD_CONN.pubsub(ignore_subscribe_messages=True)
         LOG.info("subscribe channel %s", bkr_name)
         p.subscribe(bkr_name)
@@ -71,7 +74,8 @@ def add_job(bkr_name):
         MonitorPubSub(bkr_name, p).start()
         return "add job success"
     else:
-        LOG.error("provisioning on host %s failed with return code %s", bkr_name, ret)
+        LOG.error("provisioning on host %s failed with return code %s",
+                  bkr_name, ret)
         return "add job fail"
 
 
@@ -81,4 +85,3 @@ def done_job(bkr_name):
     LOG.info("publish message 'done to channel %s'", bkr_name)
     RD_CONN.publish(bkr_name, 'done')
     return "done job"
-

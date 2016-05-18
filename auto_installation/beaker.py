@@ -14,6 +14,7 @@ log = logging.getLogger('bender')
 class MonitorPubSub(Thread):
     """pass
     """
+
     def __init__(self, ch_name, p):
         super(MonitorPubSub, self).__init__()
         self.ch_name = ch_name
@@ -34,10 +35,10 @@ class MonitorPubSub(Thread):
                 log.info("wait here for 5 min")
                 time.sleep(300)
                 break
-            elif count > 1200:  # wait for 20 minutes
+            elif count > 240:  # wait for 20 minutes
                 log.error("provision job is time-out")
                 break
-            time.sleep(1)
+            time.sleep(5)
 
 
 class BeakerProvision(object):
@@ -49,34 +50,29 @@ class BeakerProvision(object):
         provision='''bkr system-provision \
         --kernel-options \
         "inst.stage2=http://download.eng.pek2.redhat.com/released/RHEL-7/7.2/Server/x86_64/os \
-        inst.ks=http://{srv_ip}:{srv_port}/static/ngn-auto-installation-kickstarts/{ks_file} ks=" \
+        inst.ks=http://{srv_ip}:{srv_port}/static/ngn-auto-installation-kickstarts/{ks_file} \
+        ks=" \
         --distro-tree {distro_tree_id} {bkr_name}''',
 
         # this cmd will make sure the given host boot from local disk
         clear_netboot='''bkr system-power \
         --action none \
         --clear-netboot {bkr_name}''',
-
         power_on='''bkr system-power \
         --action on {bkr_name}
         ''',
-
         power_off='''bkr system-power \
         --action off {bkr_name}
         ''',
-
         reserve='''bkr system-reserve \
         {bkr_name}
         ''',
-
         release='''bkr system-release \
         {bkr_name}
         ''',
-
         status='''bkr system-status \
         {bkr_name} --format json
-        '''
-    )
+        ''')
 
     def __init__(self, srv_ip='', srv_port='', ks_file=''):
         self.srv_ip = srv_ip
@@ -102,15 +98,19 @@ class BeakerProvision(object):
 
     def provision(self, bkr_name, distro_tree_id='71758'):
         """pass"""
-        return self._exec_cmd('provision', bkr_name, dict(bkr_name=bkr_name,
-                                                          distro_tree_id=distro_tree_id,
-                                                          ks_file=self.ks_file,
-                                                          srv_ip=self.srv_ip,
-                                                          srv_port=self.srv_port))
+        return self._exec_cmd('provision',
+                              bkr_name,
+                              dict(bkr_name=bkr_name,
+                                   distro_tree_id=distro_tree_id,
+                                   ks_file=self.ks_file,
+                                   srv_ip=self.srv_ip,
+                                   srv_port=self.srv_port))
 
     def clear_netboot(self, bkr_name):
         """pass"""
-        return self._exec_cmd('clear_netboot', bkr_name, dict(bkr_name=bkr_name))
+        return self._exec_cmd('clear_netboot',
+                              bkr_name,
+                              dict(bkr_name=bkr_name))
 
     def reserve(self, bkr_name):
         """pass"""
@@ -122,15 +122,19 @@ class BeakerProvision(object):
 
     def status(self, bkr_name):
         """pass"""
-        ret = self._exec_cmd('status', bkr_name, dict(bkr_name=bkr_name), output=True)
+        ret = self._exec_cmd('status',
+                             bkr_name,
+                             dict(bkr_name=bkr_name),
+                             output=True)
         data = json.loads(ret)
         if data['current_reservation']:
             if data['current_reservation']['user_name'] == 'yaniwang':
                 return True
             else:
-                raise ReserveUserWrongException(dict(bkr_name=bkr_name,
-                                                     user_name_r='yaniwang',
-                                                     # pylint: disable=C0301
-                                                     user_name_w=data['current_reservation']['user_name']))
+                raise ReserveUserWrongException(
+                    dict(bkr_name=bkr_name,
+                         user_name_r='yaniwang',
+                         # pylint: disable=C0301
+                         user_name_w=data['current_reservation']['user_name']))
         else:
             return False
