@@ -30,13 +30,15 @@ class MonitorPubSub(Thread):
             if msg:
                 log.info("get message from channel %s: %s", self.ch_name, msg)
                 BeakerProvision().clear_netboot(self.ch_name)
-                self.p.unsubscribe(self.ch_name)
-                self.p.close()
-                log.info("wait here for 5 min")
-                time.sleep(300)
+                # self.p.unsubscribe(self.ch_name)
+                # self.p.close()
+                # log.info("wait here for 5 min")
+                # time.sleep(300)
+                redis_conn.publish(self.ch_name, 'success')
                 break
             elif count > 240:  # wait for 20 minutes
                 log.error("provision job is time-out")
+                redis_conn.publish(self.ch_name, 'fail')
                 break
             time.sleep(5)
 
