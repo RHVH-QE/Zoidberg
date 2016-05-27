@@ -3,7 +3,7 @@
 # pylint: disable=W0403, C0103
 import os
 import logging.config
-
+import base64
 import yaml
 from flask import Flask, request, redirect
 from flask.ext import resteasy
@@ -72,6 +72,21 @@ def done_job(bkr_name):
     """todo"""
     # LOG.info("publish message 'done to channel %s'", bkr_name)
     RD_CONN.publish(bkr_name, 'done')
-    RD_CONN.publish("{0}-cockpit".format(bkr_name), "{0},{1},{2}".format(
-        request.remote_addr, 'root', 'redhat'))
+    RD_CONN.publish("{0}-cockpit".format(bkr_name),
+                    "{0},{1},{2}".format(request.remote_addr, 'root',
+                                         'redhat'))
     return "done job"
+
+
+@app.route('/upload/<log_name>/<offset>')
+def upload_anaconda_log(log_name, offset):
+    _data = request.get_json()
+    data = base64.decodestring(_data['data'])
+    print data
+    log_file = os.path.join(results_logs.current_log_path, log_name)
+    if offset != '-1':
+        with open(log_file, 'w') as fp:
+            fp.seek(int(offset))
+            fp.write(data)
+            fp.flush()
+    return "upload done"

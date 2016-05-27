@@ -28,7 +28,7 @@ class ResultsAndLogs(object):
         self.logger_conf = os.path.join(PROJECT_ROOT, 'logger.yml')
         self.logger_name = "results"
         self.logger_dict = self.conf_to_dict()
-        self._current_log_path = None
+        self._current_log_path = "/tmp/logs"
 
     @property
     def current_log_path(self):
@@ -83,9 +83,9 @@ def init_kickstart_file(fn, args):
 
 
 def setup_funcs(redis_conn):
-    log.info("flush all keys from current database")
+    print("flush all keys from current database")
     redis_conn.flushdb()
-    log.info("set key 'running' value to '0'")
+    print("set key 'running' value to '0'")
     redis_conn.set('running', 0, nx=True)
 
 

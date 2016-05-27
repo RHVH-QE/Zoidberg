@@ -25,7 +25,8 @@ class MonitorPubSub(Thread):
         count = 0
         while True:
             count += 1
-            log.debug(count)
+            if count % 10 == 0:
+                log.debug(count)
             msg = self.p.get_message(ignore_subscribe_messages=True)
             if msg:
                 log.info("get message from channel %s: %s", self.ch_name, msg)
@@ -36,7 +37,7 @@ class MonitorPubSub(Thread):
                 # time.sleep(300)
                 redis_conn.publish(self.ch_name, 'success')
                 break
-            elif count > 240:  # wait for 20 minutes
+            elif count > 260:  # wait for 20 minutes
                 log.error("provision job is time-out")
                 redis_conn.publish(self.ch_name, 'fail')
                 break

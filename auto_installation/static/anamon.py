@@ -29,6 +29,8 @@ import time
 import re
 import base64
 import shlex
+import httplib
+import json
 
 # on older installers (EL 2) we might not have xmlrpclib
 # and can't do logging, however this is more widely
@@ -51,6 +53,8 @@ class WatchedFile:
         self.fn = fn
         self.alias = alias
         self.reset()
+
+        self._headers = {"Content-Type": "application/json", }
 
     def reset(self):
         self.where = 0
@@ -82,7 +86,19 @@ class WatchedFile:
         else:
             return 0
 
-    def uploadWrapper(self, blocksize=262144):
+    def _upload_log_data(self, name, alias, sz, offset, data):
+        json_data = json.dumps(dict(data=data))
+        conn = httplib.HTTPConnection(server_ip, server_port)
+
+        conn.request("GET", "/upload/{0}/{1}".format(alias, offset), json_data,
+                     self._headers)
+        response = conn.getresponse()
+
+        conn.close()
+        # TODO handle response
+        return True
+
+    def uploadWrapper(self, blocksize=2621445):
         """upload a file in chunks using the uploadFile call"""
         retries = 3
         fo = file(self.fn, "r")
@@ -102,9 +118,8 @@ class WatchedFile:
             del contents
             tries = 0
             while tries <= retries:
-                debug("upload_log_data('%s', '%s', %s, %s, ...)\n" %
-                      (name, self.alias, sz, offset))
-                if session.upload_log_data(name, self.alias, sz, offset, data):
+                debug("upload_log_data('%s')\n" % (offset, ))
+                if self._upload_log_data(name, self.alias, sz, offset, data):
                     break
                 else:
                     tries = tries + 1
@@ -242,8 +257,8 @@ def anamon_loop():
 
 # Establish some defaults
 name = ""
-server = ""
-port = "80"
+server_ip = "10.66.9.216"
+server_port = "5000"
 daemon = 1
 debug = lambda x, **y: None
 watchfiles = []
@@ -274,7 +289,7 @@ while n < len(sys.argv):
     n = n + 1
 
 # Create an xmlrpc session handle
-session = xmlrpclib.Server("http://%s:%s/cobbler_api" % (server, port))
+# session = xmlrpclib.Server("http://%s:%s/cobbler_api" % (server, port))
 
 # Fork and loop
 if daemon:

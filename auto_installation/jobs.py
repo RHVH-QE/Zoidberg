@@ -24,6 +24,34 @@ class JobRunner(Thread):
                                          srv_ip=CURRENT_IP_PORT[0],
                                          srv_port=CURRENT_IP_PORT[1]))
         self.job_queue = self.get_job_queue()
+        self._debug = False
+
+    def _wait_for_installation(self, p):
+        while True:
+            time.sleep(5)
+            logger.info("waiting for installation done")
+            msg = p.get_message(ignore_subscribe_messages=True)
+
+            if msg:
+                if msg['data'] == 'success':
+                    logger.info('autoinstallation job is success')
+                    return True
+
+                elif msg['data'] == 'fail':
+                    logger.info('autoinstallation job is fail')
+                    return False
+
+    def _wait_for_cockpit(self, bkr_name):
+        pubsub_cockpit = self.rd_conn.pubsub()
+        pubsub_cockpit.subscribe("{0}-cockpit".format(bkr_name))
+        while True:
+            time.sleep(2)
+            msg = pubsub_cockpit.get_message(ignore_subscribe_messages=True)
+            logger.info(msg)
+            if msg:
+                if msg['data'] == 'done':
+                    logger.info("cockpit test is done")
+                    return True
 
     def run(self):
         """pass"""
@@ -34,17 +62,22 @@ class JobRunner(Thread):
             bp = BeakerProvision(srv_ip=CURRENT_IP_PORT[0],
                                  srv_port=CURRENT_IP_PORT[1],
                                  ks_file=ks)
-            # bp.reserve(ml[0])
-            # ret = bp.provision(ml[0])
 
-            ret = 0
+            if self._debug:
+                logger.debug("now is debug mode, will not do provisioning")
+                ret = 0
+            else:
+                bp.reserve(ml[0])
+                ret = bp.provision(ml[0])
 
             logger.info(self.results_logs.current_log_path)
+
             if ret == 0:
                 logger.info(
                     "provisioning on host %s finished with kickstart file %s return code 0",
                     ml[0], ks)
                 p = self.rd_conn.pubsub(ignore_subscribe_messages=True)
+
                 logger.info("subscribe channel %s", ml[0])
                 p.subscribe(ml[0])
                 logger.info("start daemon thread to listen on channel %s",
@@ -53,33 +86,13 @@ class JobRunner(Thread):
                 t.start()
                 t.join()
 
-                logger.info("waiting for the job results")
-                while True:
-                    time.sleep(2)
-                    logger.info("i am here")
-                    msg = p.get_message(ignore_subscribe_messages=True)
-
-                    if msg:
-                        if msg['data'] == 'success':
-                            logger.info('autoinstallation job is success')
-
-                        elif msg['data'] == 'fail':
-                            logger.info('autoinstallation job is fail')
-                        break
+                if not self._wait_for_installation(p):
+                    logger.info(
+                        "auto installation failed, contine to next job")
+                    continue
 
                 logger.info("waiting for the cockpit results")
-                pubsub_cockpit = self.rd_conn.pubsub()
-                pubsub_cockpit.subscribe("{0}-cockpit".format(ml[0]))
-                while True:
-                    time.sleep(2)
-                    msg = pubsub_cockpit.get_message(
-                        ignore_subscribe_messages=True)
-                    logger.info(msg)
-                    if msg:
-                        logger.info("there am i ")
-                        if msg['data'] == 'done':
-                            logger.info("cockpit test is done")
-                            break
+                self._wait_for_cockpit(ml[0])
 
             else:
                 logger.error(
