@@ -110,3 +110,4 @@ if __name__ == '__main__':
         'http://10.66.10.22:8090/rhevh/rhevh7-ng-36/rhev-hypervisor7-ng-3.6-20160516.0/rhev-hypervisor7-ng-3.6-20160516.0.x86_64.liveimg.squashfs')
     for i in jr.get_job_queue():
         print i
+

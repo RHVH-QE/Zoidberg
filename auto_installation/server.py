@@ -6,7 +6,6 @@ import logging.config
 import base64
 import yaml
 from flask import Flask, request, redirect
-from flask.ext import resteasy
 
 from beaker import BeakerProvision, MonitorPubSub
 from utils import init_redis, setup_funcs, ResultsAndLogs
@@ -25,7 +24,6 @@ BEAKER = BeakerProvision(srv_ip=IP, srv_port=PORT)
 results_logs = ResultsAndLogs()
 
 app = Flask(__name__)
-api = resteasy.Api(app)
 
 
 @app.route('/post_result/<code>')
@@ -72,9 +70,8 @@ def done_job(bkr_name):
     """todo"""
     # LOG.info("publish message 'done to channel %s'", bkr_name)
     RD_CONN.publish(bkr_name, 'done')
-    RD_CONN.publish("{0}-cockpit".format(bkr_name),
-                    "{0},{1},{2}".format(request.remote_addr, 'root',
-                                         'redhat'))
+    RD_CONN.publish("{0}-cockpit".format(bkr_name), "{0},{1},{2}".format(
+        request.remote_addr, 'root', 'redhat'))
     return "done job"
 
 
