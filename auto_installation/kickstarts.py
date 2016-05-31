@@ -4,7 +4,6 @@
 
 import os
 import json
-import doctest
 import logging
 import fnmatch
 
@@ -105,15 +104,16 @@ class KickStartFiles(object):
     def _convert_to_auto_ks(self):
         for ks in self._get_all_ks_files():
             kp = KickstartParser(makeVersion())
-            ks_ = os.path.join(KS_FILES_DIR, ks)
 
+            ks_ = os.path.join(KS_FILES_DIR, ks)
             ks_out = os.path.join(KS_FILES_AUTO_DIR, ks)
 
             kp.readKickstart(ks_)
             kp.handler.liveimg.url = self._liveimg
 
             with open(ks_out, 'w') as fp:
-                fp.write(self._ksparser.handler.__str__())
+                fp.write(kp.handler.__str__())
+            kp = None
 
 
 if __name__ == '__main__':
