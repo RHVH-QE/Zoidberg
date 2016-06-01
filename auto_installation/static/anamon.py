@@ -260,8 +260,8 @@ def anamon_loop():
 
 # Establish some defaults
 name = ""
-server_ip = "10.66.9.216"
-server_port = "5000"
+server_ip = ""
+server_port = ""
 daemon = 1
 debug = lambda x, **y: None
 watchfiles = []

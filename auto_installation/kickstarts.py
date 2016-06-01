@@ -8,61 +8,14 @@ import logging
 import fnmatch
 
 from pykickstart.version import makeVersion
-from pykickstart.parser import KickstartParser
+from pykickstart.parser import KickstartParser, Script
+from pykickstart.constants import KS_SCRIPT_PRE, KS_SCRIPT_POST
 
 from constants import KS_FILES_DIR, KS_FILES_AUTO_DIR, \
-    SMOKE_TEST_LIST, P1_TEST_LIST, ALL_TEST
+    SMOKE_TEST_LIST, P1_TEST_LIST, ALL_TEST, \
+    POST_SCRIPT_01, HOST_POOL, PRE_SCRIPT_01
 
 loger = logging.getLogger('bender')
-
-
-class KickStartFilesOld(object):
-    """This class will combine *.json and *.tmp into *.ks
-    >>> KickStartFiles(dict(liveimg='http://10.66.x.x/rhevh.img',\
-                            srv_ip='10.66.9.216',\
-                            srv_port='5000')).generate_job_queue()
-    """
-
-    def __init__(self, kargs):
-        assert isinstance(kargs, dict)
-        self.kargs = kargs
-
-    @staticmethod
-    def _get_ks_files_by_priority(priority='P1', only_ks=False):
-        """pass
-        """
-        pat = "%s*.tpl" % priority
-
-        for fn in os.listdir(KS_FILES_DIR):
-            if fnmatch.fnmatch(fn, pat):
-                fn_json = fn.replace('.tpl', '.json')
-                assert os.path.exists(os.path.join(KS_FILES_DIR,
-                                                   fn_json)) is True
-                if not only_ks:
-                    yield fn, fn_json
-                else:
-                    yield fn.replace('.tpl', '.ks'), fn_json
-
-    def format_ks_files(self):
-        """fill tpl with actual content"""
-
-        for k, j in self._get_ks_files_by_priority():
-            old = json.loads(open(os.path.join(KS_FILES_DIR, j)).read())
-            old.update(self.kargs)
-
-            with open(os.path.join(KS_FILES_DIR, k), 'r') as f1:
-                with open(
-                        os.path.join(KS_FILES_DIR, k.replace('.tpl', '.ks')),
-                        'w') as f2:
-                    f2.write(f1.read().format(**old))
-
-    def generate_job_queue(self):
-        """make job queue from ks files"""
-        ks = self._get_ks_files_by_priority(only_ks=True)
-        for k, j in ks:
-            machines_list = json.loads(open(os.path.join(
-                KS_FILES_DIR, j)).read())['MACHINES']
-            yield k, machines_list
 
 
 class KickStartFiles(object):
@@ -92,6 +45,10 @@ class KickStartFiles(object):
     def liveimg(self, val):
         self._liveimg = val
 
+    def _get_host(self, ks_name='', host_type='default'):
+        # TODO
+        return HOST_POOL.get(host_type)[0]
+
     def _get_all_ks_files(self):
         ret = []
         for pat in self.KS_FILTER.get(self._ks_filter, ('*')):
@@ -101,23 +58,68 @@ class KickStartFiles(object):
         ret.sort()
         return ret
 
+    def _generate_ks_script(self,
+                            content,
+                            error_on_fail=True,
+                            interp=None,
+                            logfile=None,
+                            script_type=KS_SCRIPT_POST,
+                            in_chroot=False,
+                            lineno=None):
+        sp = Script(content)
+
+        sp.errorOnFail = error_on_fail
+
+        if interp:
+            sp.interp = interp
+
+        if logfile:
+            sp.logfile = logfile
+
+        sp.type = script_type
+        sp.inChroot = in_chroot
+
+        if lineno:
+            sp.lineno = lineno
+        return sp
+
     def _convert_to_auto_ks(self):
-        for ks in self._get_all_ks_files():
+        loger.info("remove all old files under {}".format(KS_FILES_AUTO_DIR))
+        os.system("rm -f {}/*".format(KS_FILES_AUTO_DIR))
+
+        ks_list = self._get_all_ks_files()
+
+        for ks in ks_list:
             kp = KickstartParser(makeVersion())
+
+            bkr_name = self._get_host(ks_name=ks)
 
             ks_ = os.path.join(KS_FILES_DIR, ks)
             ks_out = os.path.join(KS_FILES_AUTO_DIR, ks)
 
             kp.readKickstart(ks_)
+
             kp.handler.liveimg.url = self._liveimg
+            kp.handler.scripts.append(self._generate_ks_script(
+                PRE_SCRIPT_01,
+                script_type=KS_SCRIPT_PRE,
+                error_on_fail=False, ))
+            kp.handler.scripts.append(self._generate_ks_script(
+                POST_SCRIPT_01 % bkr_name,
+                error_on_fail=False, ))
 
             with open(ks_out, 'w') as fp:
                 fp.write(kp.handler.__str__())
             kp = None
 
+        return ks_list
+
+    def get_job_queue(self):
+        print("current kickstart filter is %s", self.ks_filter)
+        ks_list = self._convert_to_auto_ks()
+
+        return [(ks, self._get_host(ks)) for ks in ks_list]
+
 
 if __name__ == '__main__':
-
-    ks = KickStartFiles()
-    ks.liveimg = 'http://10.66.10.22:8090/rhevh/rhevh7-ng-36/rhev-hypervisor7-ng-4.0-20160527.0/rhev-hypervisor7-ng-4.0-20160527.0.x86_64.liveimg.squashfs'
-    ks._convert_to_auto_ks()
+    pass

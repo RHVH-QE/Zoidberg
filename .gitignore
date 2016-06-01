@@ -4,3 +4,6 @@
 *.pyo
 .vscode
 logs
+auto_installation/static/auto/*
+
+
