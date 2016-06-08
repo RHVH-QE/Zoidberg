@@ -47,7 +47,7 @@ class KickStartFiles(object):
 
     def _get_host(self, ks_name='', host_type='default'):
         # TODO
-        return HOST_POOL.get(host_type)[0]
+        return HOST_POOL.get(host_type)
 
     def _get_all_ks_files(self):
         ret = []

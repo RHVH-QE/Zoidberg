@@ -71,6 +71,6 @@ else
 fi
 
 fetch /tmp/anamon http://{srv_ip}:{srv_port}/static/anamon.py
-python /tmp/anamon --server {srv_ip} --port {srv_port}
+python /tmp/anamon --server {srv_ip} --port {srv_port} --stage pre
 
 """.format(srv_ip=CURRENT_IP_PORT[0], srv_port=CURRENT_IP_PORT[1])

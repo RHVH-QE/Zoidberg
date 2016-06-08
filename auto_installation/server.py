@@ -75,12 +75,15 @@ def done_job(bkr_name):
     return "done job"
 
 
-@app.route('/upload/<log_name>/<offset>')
-def upload_anaconda_log(log_name, offset):
+@app.route('/upload/<stage>/<log_name>/<offset>')
+def upload_anaconda_log(stage, log_name, offset):
     _data = request.get_json()
     data = base64.decodestring(_data['data'])
-    print data
-    log_file = os.path.join(results_logs.current_log_path, log_name)
+    log_file = os.path.join(results_logs.current_log_path, stage, log_name)
+    log_path = os.path.dirname(log_file)
+    if not os.path.exists(log_path):
+        os.system("mkdir -p {}".format(log_path))
+
     if offset != '-1':
         with open(log_file, 'w') as fp:
             fp.seek(int(offset))

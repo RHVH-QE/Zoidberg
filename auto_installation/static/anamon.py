@@ -90,8 +90,8 @@ class WatchedFile:
         json_data = json.dumps(dict(data=data))
         conn = httplib.HTTPConnection(server_ip, server_port)
 
-        conn.request("GET", "/upload/{0}/{1}".format(alias, offset), json_data,
-                     self._headers)
+        conn.request("GET", "/upload/{0}/{1}/{2}".format(stage, alias, offset),
+                     json_data, self._headers)
         response = conn.getresponse()
 
         conn.close()
@@ -266,6 +266,7 @@ daemon = 1
 debug = lambda x, **y: None
 watchfiles = []
 exit = False
+stage = ""
 
 # Process command-line args
 n = 0
@@ -281,10 +282,13 @@ while n < len(sys.argv):
         exit = True
     elif arg == '--server':
         n = n + 1
-        server = sys.argv[n]
+        server_ip = sys.argv[n]
+    elif arg == '--stage':
+        n = n + 1
+        stage = sys.argv[n]
     elif arg == '--port':
         n = n + 1
-        port = sys.argv[n]
+        server_port = sys.argv[n]
     elif arg == '--debug':
         debug = lambda x, **y: sys.stderr.write(x % y)
     elif arg == '--fg':

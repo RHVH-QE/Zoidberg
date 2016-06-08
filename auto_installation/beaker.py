@@ -53,7 +53,7 @@ class BeakerProvision(object):
         provision='''bkr system-provision \
         --kernel-options \
         "inst.stage2=http://download.eng.pek2.redhat.com/released/RHEL-7/7.2/Server/x86_64/os \
-        inst.ks=http://{srv_ip}:{srv_port}/static/ngn-auto-installation-kickstarts/{ks_file} \
+        inst.ks=http://{srv_ip}:{srv_port}/static/auto/{ks_file} \
         ks=" \
         --distro-tree {distro_tree_id} {bkr_name}''',
 

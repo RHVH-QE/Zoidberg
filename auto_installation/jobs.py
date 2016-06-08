@@ -20,10 +20,9 @@ class JobRunner(Thread):
         self.build_url = build_url
         self.rd_conn = rd_conn
         self.results_logs = results_logs
-        self.ksins = KickStartFiles(dict(liveimg=build_url,
-                                         srv_ip=CURRENT_IP_PORT[0],
-                                         srv_port=CURRENT_IP_PORT[1]))
-        self.job_queue = self.get_job_queue()
+        self.ksins = KickStartFiles()
+        self.ksins.liveimg = build_url
+        self.job_queue = self.ksins.get_job_queue()
         self._debug = False
 
     def _wait_for_installation(self, p):
@@ -45,7 +44,7 @@ class JobRunner(Thread):
         pubsub_cockpit = self.rd_conn.pubsub()
         pubsub_cockpit.subscribe("{0}-cockpit".format(bkr_name))
         while True:
-            time.sleep(2)
+            time.sleep(5)
             msg = pubsub_cockpit.get_message(ignore_subscribe_messages=True)
             logger.info(msg)
             if msg:
@@ -99,10 +98,6 @@ class JobRunner(Thread):
                     "provisioning on host %s failed with return code %s",
                     ml[0], ret)
 
-    def get_job_queue(self):
-        """pass"""
-        self.ksins.format_ks_files()
-        return self.ksins.generate_job_queue()
 
 
 if __name__ == '__main__':
