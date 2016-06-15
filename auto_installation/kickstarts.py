@@ -13,17 +13,20 @@ from pykickstart.constants import KS_SCRIPT_PRE, KS_SCRIPT_POST
 
 from constants import KS_FILES_DIR, KS_FILES_AUTO_DIR, \
     SMOKE_TEST_LIST, P1_TEST_LIST, ALL_TEST, \
-    POST_SCRIPT_01, HOST_POOL, PRE_SCRIPT_01
+    POST_SCRIPT_01, HOST_POOL, PRE_SCRIPT_01, MUST_HAVE_TEST_LIST
 
 loger = logging.getLogger('bender')
 
 
 class KickStartFiles(object):
     """"""
-    KS_FILTER = dict(smoke=SMOKE_TEST_LIST, p1=P1_TEST_LIST, all=ALL_TEST)
+    KS_FILTER = dict(smoke=SMOKE_TEST_LIST,
+                     p1=P1_TEST_LIST,
+                     all=ALL_TEST,
+                     must=MUST_HAVE_TEST_LIST)
 
     def __init__(self):
-        self._ks_filter = 'smoke'
+        self._ks_filter = 'must'
         self._liveimg = None
 
     @property
@@ -34,7 +37,7 @@ class KickStartFiles(object):
     def ks_filter(self, val):
         if val not in self.KS_FILTER:
             raise RuntimeError(
-                "value of `ks_filter=` must be one of [smoke, p1, all]")
+                "value of `ks_filter=` must be one of [smoke, p1, all, must]")
         self._ks_filter = val
 
     @property
@@ -100,6 +103,10 @@ class KickStartFiles(object):
             kp.readKickstart(ks_)
 
             kp.handler.liveimg.url = self._liveimg
+
+            if 'sshd' not in kp.handler.services.enabled:
+                kp.handler.services.enabled.append('sshd')
+
             kp.handler.scripts.append(self._generate_ks_script(
                 PRE_SCRIPT_01,
                 script_type=KS_SCRIPT_PRE,

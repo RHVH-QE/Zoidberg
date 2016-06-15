@@ -4,8 +4,10 @@ import time
 import json
 import subprocess
 import logging
+import requests
 from utils import init_redis, ReserveUserWrongException
 from threading import Thread
+from constants import NOPXE_URL
 
 redis_conn = init_redis()
 log = logging.getLogger('bender')
@@ -111,9 +113,12 @@ class BeakerProvision(object):
 
     def clear_netboot(self, bkr_name):
         """pass"""
-        return self._exec_cmd('clear_netboot',
-                              bkr_name,
-                              dict(bkr_name=bkr_name))
+        # TODO fix this
+
+        return requests.get(NOPXE_URL.format(bkr_name))
+        # self._exec_cmd('clear_netboot',
+        #                       bkr_name,
+        #                       dict(bkr_name=bkr_name))
 
     def reserve(self, bkr_name):
         """pass"""

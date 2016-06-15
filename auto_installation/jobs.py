@@ -23,7 +23,7 @@ class JobRunner(Thread):
         self.ksins = KickStartFiles()
         self.ksins.liveimg = build_url
         self.job_queue = self.ksins.get_job_queue()
-        self._debug = False
+        self._debug = True
 
     def _wait_for_installation(self, p):
         while True:
@@ -90,8 +90,8 @@ class JobRunner(Thread):
                         "auto installation failed, contine to next job")
                     continue
 
-                logger.info("waiting for the cockpit results")
-                self._wait_for_cockpit(ml[0])
+                # logger.info("waiting for the cockpit results")
+                # self._wait_for_cockpit(ml[0])
 
             else:
                 logger.error(

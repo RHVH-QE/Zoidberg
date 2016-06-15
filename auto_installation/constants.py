@@ -22,6 +22,19 @@ P1_TEST_LIST = ('autopart',
                 'FC',
                 'part', )
 ALL_TEST = ('*', )
+MUST_HAVE_TEST_LIST = (
+    # 'autopart_01',
+    # 'FC_01',
+    # 'FC_06',
+    # 'iscsi_01',
+    # 'raid_01',
+    # 'network_01',
+    'bond_01',
+    # 'vlan_01',
+    # 'firewall_01',
+    # 'selinux_01',
+    # 'services_01',
+)
 
 HOST_POOL = {
     'FC': ('dell-per510-01.lab.eng.pek2.redhat.com', ),
@@ -73,4 +86,7 @@ fi
 fetch /tmp/anamon http://{srv_ip}:{srv_port}/static/anamon.py
 python /tmp/anamon --server {srv_ip} --port {srv_port} --stage pre
 
-""".format(srv_ip=CURRENT_IP_PORT[0], srv_port=CURRENT_IP_PORT[1])
+""".format(srv_ip=CURRENT_IP_PORT[0],
+           srv_port=CURRENT_IP_PORT[1])
+
+NOPXE_URL = "http://lab-01.rhts.eng.pek2.redhat.com:8000/nopxe/{0}"
