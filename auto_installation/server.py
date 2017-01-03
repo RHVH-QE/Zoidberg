@@ -65,13 +65,14 @@ def start_job():
         return redirect('/post_result')
 
 
-@app.route('/done/<bkr_name>')
-def done_job(bkr_name):
+@app.route('/done/<em1ip>/<bkr_name>')
+def done_job(em1ip, bkr_name):
     """todo"""
+    print "Remote node ip is %s" % em1ip
     # LOG.info("publish message 'done to channel %s'", bkr_name)
-    RD_CONN.publish(bkr_name, 'done')
+    RD_CONN.publish(bkr_name, 'done,{}'.format(em1ip))
     RD_CONN.publish("{0}-cockpit".format(bkr_name), "{0},{1},{2}".format(
-        request.remote_addr, 'root', 'redhat'))
+        em1ip, 'root', 'redhat'))
     return "done job"
 
 
@@ -81,7 +82,7 @@ def upload_anaconda_log(stage, log_name, offset):
     data = base64.decodestring(_data['data'])
     log_file = os.path.join(results_logs.current_log_path, stage, log_name)
     log_path = os.path.dirname(log_file)
-    print log_path
+
     if not os.path.exists(log_path):
         os.system("mkdir -p {}".format(log_path))
 

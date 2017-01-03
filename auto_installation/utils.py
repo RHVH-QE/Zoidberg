@@ -20,15 +20,22 @@ User::<{user_name_r}>, but currently reserved by User::<{user_name_w}>'''
 class ResultsAndLogs(object):
     """This class will prepare logs directory structure
     """
-
     def __init__(self):
 
         self._logs_root_dir = os.path.join(PROJECT_ROOT, 'logs')
         self.img_url = None
         self.logger_conf = os.path.join(PROJECT_ROOT, 'logger.yml')
-        self.logger_name = "results"
+        self._logger_name = "results"
         self.logger_dict = self.conf_to_dict()
         self._current_log_path = "/tmp/logs"
+
+    @property
+    def logger_name(self):
+        return self._logger_name
+
+    @logger_name.setter
+    def logger_name(self, val):
+        self._logger_name = val
 
     @property
     def current_log_path(self):
@@ -59,15 +66,17 @@ class ResultsAndLogs(object):
 
 
 def init_redis():
-    pool = redis.ConnectionPool(host='localhost', port=6379,
-                                db=0, password='redhat')
+    pool = redis.ConnectionPool(host='localhost',
+                                port=6379,
+                                db=0,
+                                password='redhat')
     conn = redis.StrictRedis(connection_pool=pool)
     return conn
 
 
 def get_current_ip_port():
     # TODO
-    return '10.66.9.216', '5000'
+    return '10.66.11.155', '5000'
 
 
 def get_current_path():

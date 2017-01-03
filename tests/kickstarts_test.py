@@ -25,6 +25,7 @@ def test_get_all_ks():
 
 @with_setup(setup_func)
 def test_get_smoke_ks():
+    ksf.ks_filter = 'smoke'
     ret = ksf._get_all_ks_files()
     ret_s = string.join(ret)
     for i in SMOKE_TEST_LIST:

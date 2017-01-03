@@ -10,10 +10,11 @@ import fnmatch
 from pykickstart.version import makeVersion
 from pykickstart.parser import KickstartParser, Script
 from pykickstart.constants import KS_SCRIPT_PRE, KS_SCRIPT_POST
+from pykickstart.commands.network import F22_NetworkData
 
 from constants import KS_FILES_DIR, KS_FILES_AUTO_DIR, \
     SMOKE_TEST_LIST, P1_TEST_LIST, ALL_TEST, \
-    POST_SCRIPT_01, HOST_POOL, PRE_SCRIPT_01, MUST_HAVE_TEST_LIST
+    POST_SCRIPT_01, HOST_POOL, PRE_SCRIPT_01, MUST_HAVE_TEST_LIST, DEBUG_LIST
 
 loger = logging.getLogger('bender')
 
@@ -23,7 +24,8 @@ class KickStartFiles(object):
     KS_FILTER = dict(smoke=SMOKE_TEST_LIST,
                      p1=P1_TEST_LIST,
                      all=ALL_TEST,
-                     must=MUST_HAVE_TEST_LIST)
+                     must=MUST_HAVE_TEST_LIST,
+                     debug=DEBUG_LIST)
 
     def __init__(self):
         self._ks_filter = 'must'
@@ -112,8 +114,11 @@ class KickStartFiles(object):
                 script_type=KS_SCRIPT_PRE,
                 error_on_fail=False, ))
             kp.handler.scripts.append(self._generate_ks_script(
-                POST_SCRIPT_01 % bkr_name,
+                POST_SCRIPT_01 + bkr_name[0],
                 error_on_fail=False, ))
+
+            kp.handler.network.network = []
+            kp.handler.network.network.append(F22_NetworkData(device='em2'))
 
             with open(ks_out, 'w') as fp:
                 fp.write(kp.handler.__str__())

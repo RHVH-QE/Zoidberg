@@ -7,7 +7,8 @@ import logging
 import requests
 from utils import init_redis, ReserveUserWrongException
 from threading import Thread
-from constants import NOPXE_URL
+from constants import NOPXE_URL, CB_API
+from cobbler import Cobbler
 
 redis_conn = init_redis()
 log = logging.getLogger('bender')
@@ -32,12 +33,15 @@ class MonitorPubSub(Thread):
             msg = self.p.get_message(ignore_subscribe_messages=True)
             if msg:
                 log.info("get message from channel %s: %s", self.ch_name, msg)
+                with Cobbler(CB_API) as cb:
+                    cb.set_netboot_enable(self.ch_name, False)
                 BeakerProvision().clear_netboot(self.ch_name)
+
                 # self.p.unsubscribe(self.ch_name)
                 # self.p.close()
                 # log.info("wait here for 5 min")
                 # time.sleep(300)
-                redis_conn.publish(self.ch_name, 'success')
+                redis_conn.publish(self.ch_name, msg['data'])
                 break
             elif count > 260:  # wait for 20 minutes
                 log.error("provision job is time-out")
@@ -54,7 +58,7 @@ class BeakerProvision(object):
         # this cmd will provision the given host with rhevh ngn build
         provision='''bkr system-provision \
         --kernel-options \
-        "inst.stage2=http://download.eng.pek2.redhat.com/released/RHEL-7/7.2/Server/x86_64/os \
+        "inst.stage2=http://10.66.10.22:8090/rhevh/ngn-dvd-iso/RHVH-7.2-20160718.1/stage2 \
         inst.ks=http://{srv_ip}:{srv_port}/static/auto/{ks_file} \
         ks=" \
         --distro-tree {distro_tree_id} {bkr_name}''',
