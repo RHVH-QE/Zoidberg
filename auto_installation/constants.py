@@ -11,10 +11,11 @@ KS_FILES_AUTO_DIR = os.path.join(PROJECT_ROOT, 'auto_installation', 'static',
 
 BUILDS_SERVER_URL = "http://10.66.10.22:8090"
 
-CURRENT_IP_PORT = ('10.66.11.155', '5000')
+CURRENT_IP_PORT = ('10.66.9.123', '5000')
 
-STATIC_URL = "http://{0}:{1}/static/ngn-auto-installation-kickstarts/%s".format(
-    CURRENT_IP_PORT[0], CURRENT_IP_PORT[1])
+STATIC_URL = ("http://{0}:{1}/"
+              "static/ngn-auto-installation-kickstarts/%s").format(
+                  CURRENT_IP_PORT[0], CURRENT_IP_PORT[1])
 
 SMOKE_TEST_LIST = ('FC_01', )
 P1_TEST_LIST = (
@@ -48,7 +49,17 @@ HOST_POOL = {
     'iscsi': (),
     'uefi': (),
     'vlan': (),
-    'default': ('dell-per510-01.lab.eng.pek2.redhat.com', ),
+    'default': ('dell-pet105-01.qe.lab.eng.nay.redhat.com', ),
+}
+
+HOSTS = {
+    "dell-pet105-01.qe.lab.eng.nay.redhat.com": {
+        "nic": {
+            "macaddress-enp2s0": "00:22:19:27:54:c7"
+        },
+        "hostname": "",
+        "static_ip": "",
+    }
 }
 
 TR_TPL = '4_0_Node_Auto_ATIKS_{}'
@@ -115,6 +126,8 @@ NOPXE_URL = "http://lab-01.rhts.eng.pek2.redhat.com:8000/nopxe/{0}"
 
 CB_API = "http://10.73.60.74/cobbler_api"
 CB_CREDENTIAL = ('cobbler', 'cobbler')
-CB_PROFILE = 'RHVH-4.0-72-20160919.1'
-CB_SYSTEM = 'dell-per510-01.lab.eng.pek2.redhat.com'
-ARGS_TPL = 'inst.ks=http://{srv_ip}:{srv_port}/static/auto/{ks_file} inst.stage2=http://10.66.10.22:8090/rhvh_ngn/pxedir/RHVH-4.0-20160919.1-RHVH-x86_64-dvd1.iso/stage2'
+CB_PROFILE = 'RHVH-4.0-73-20170104.0'
+CB_SYSTEM = 'dell-pet105-01.qe.lab.eng.nay.redhat.com'
+ARGS_TPL = ('inst.ks=http://{srv_ip}:{srv_port}/static/auto/{ks_file} '
+            'inst.stage2=http://10.66.10.22:8090/'
+            'rhvh_ngn/pxedir/RHVH-4.0-20170104.0-RHVH-x86_64-dvd1.iso/stage2')

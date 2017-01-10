@@ -4,10 +4,9 @@
 import os
 import logging.config
 import base64
-import yaml
+
 from flask import Flask, request, redirect
 
-from beaker import BeakerProvision, MonitorPubSub
 from utils import init_redis, setup_funcs, ResultsAndLogs
 from constants import CURRENT_IP_PORT, BUILDS_SERVER_URL
 from jobs import JobRunner
@@ -19,7 +18,6 @@ from jobs import JobRunner
 RD_CONN = init_redis()
 
 IP, PORT = CURRENT_IP_PORT
-BEAKER = BeakerProvision(srv_ip=IP, srv_port=PORT)
 
 results_logs = ResultsAndLogs()
 
@@ -71,8 +69,8 @@ def done_job(em1ip, bkr_name):
     print "Remote node ip is %s" % em1ip
     # LOG.info("publish message 'done to channel %s'", bkr_name)
     RD_CONN.publish(bkr_name, 'done,{}'.format(em1ip))
-    RD_CONN.publish("{0}-cockpit".format(bkr_name), "{0},{1},{2}".format(
-        em1ip, 'root', 'redhat'))
+    RD_CONN.publish("{0}-cockpit".format(bkr_name),
+                    "{0},{1},{2}".format(em1ip, 'root', 'redhat'))
     return "done job"
 
 

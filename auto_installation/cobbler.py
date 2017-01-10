@@ -1,125 +1,86 @@
+import copy
+import attr
 import xmlrpclib
-from constants import CB_CREDENTIAL, CB_PROFILE
+import logging
+
+from constants import CB_API, CB_CREDENTIAL
 
 
+def _cb_cred_checker(instance, attribute, value):
+    if not isinstance(value, tuple) and not isinstance(value, list):
+        raise ValueError("credential must be `tuple` or `list`")
+    elif len(value) != 2:
+        raise ValueError("credential can only contain 2 elements")
+    else:
+        return True
+
+
+@attr.s
 class Cobbler(object):
-    """A simple wrapper around Cobbler's XMLRPC API.
+    system_tpl = dict(
+        name="",
+        profile="",
+        modify_interface={"macaddress-?": ""},
+        comment="managed-by-zoidberg",
+        status="testing",
+        kernel_options="",
+        kernel_options_post="")
 
-    Cobbler also provides it's own python bindings but those are just
-    distributed with all the other stuff. This small wrapper can be used
-    as long as the bindigs are not split from the rest.
-    """
-    server_url = None
-    server = None
-    ssh_uri = None
-    token = None
-
-    #        "http://cobbler-server.example.org/cobbler_api"
-    def __init__(self, server_url):
-        self.server_url = server_url
-        self.server = xmlrpclib.Server(server_url)
-        self.args = {'kernel_options': ""}
+    cb_api = attr.ib(default=CB_API)
+    credential = attr.ib(default=CB_CREDENTIAL, validator=_cb_cred_checker)
+    token = attr.ib(default=None)
+    log = attr.ib(default=logging.getLogger("Cobbler"))
 
     def __enter__(self):
         self.login()
         return self
 
     def __exit__(self, type, value, traceback):
-        pass
+        self.log.warn("disconnected from {}".format(self.cb_api))
+
+    @property
+    def proxy(self):
+        return xmlrpclib.Server(self.cb_api)
 
     def login(self):
-        self.token = self.server.login(*(CB_CREDENTIAL))
-        return self
+        self.token = self.proxy.login(*(self.credential))
+        self.log.info("logging into {}, get token is {}".format(self.cb_api,
+                                                                self.token))
 
-    def sync(self):
-        print("Syncing")
-        self.server.sync(self.token)
+    def find_system(self, name_pattern):
+        self.log.info("start to querying system {}".format(name_pattern))
 
-    def assign_defaults(self, system_handle, profile, additional_args):
-        args = {
-            "profile": profile,
-            "comment": "managed-by-zoidberg",
-            "status": "testing",
-            "kernel_options": "",
-            "kernel_options_post": ""
-        }
+        ret = self.proxy.find_system(dict(name=name_pattern))
+        if ret:
+            self.log.info("found system : {}".format(ret))
+            return True
+        else:
+            self.log.warning("system not exists")
+            return False
 
-        if additional_args is not None:
-            print("Adding additional args: %s" % additional_args)
-            args.update(additional_args)
+    def add_new_system(self, **kwargs):
+        system_id = self.proxy.new_system(self.token)
+        params = copy.deepcopy(self.system_tpl)
+        params.update(kwargs)
 
-        self.modify_system(system_handle, args)
+        self.log.info("add new host with {}".format(params))
+        for k, v in params.items():
+            self.proxy.modify_system(system_id, k, v, self.token)
 
-    def new_system(self):
-        """Add a new system.
-        """
-        print("Adding a new system")
-        return self.server.new_system(self.token)
+        self.proxy.save_system(system_id, self.token)
 
-    def get_system_handle(self, name):
-        return self.server.get_system_handle(name, self.token)
-
-    def modify_system(self, system_handle, args):
-        for k, v in args.items():
-            print("Modifying system: %s=%s" % (k, v))
-            self.server.modify_system(system_handle, k, v, self.token)
-        self.server.save_system(system_handle, self.token)
-
-    def get_profile_handle(self, name):
-        return self.server.get_profile_handle(name, self.token)
-
-    def modify_profile(self, profile_handle, args):
-        for k, v in args.items():
-            print("Modifying profile: %s=%s" % (k, v))
-            self.server.modify_profile(profile_handle, k, v, self.token)
-        self.server.save_profile(profile_handle, self.token)
-
-    def set_netboot_enable(self, name, pxe):
-        """(Un-)Set netboot.
-        """
-        args = {"netboot-enabled": 1 if pxe else 0}
-
-        system_handle = self.get_system_handle(name)
-        self.modify_system(system_handle, args)
-
-    def remove_system(self, name):
-        try:
-            self.server.remove_system(name, self.token)
-        except Exception as e:
-            print("Exception while removing host: %s" % e.message)
-            print("name: %s, token: %s" % (name, self.token))
-
-    def profiles(self):
-        return [
-            e["name"] for e in self.server.get_profiles(self.token, 1, 1000)
-        ]
-
-    def profile(self, name):
-        return self.server.get_blended_data(name, "")
-
-    def systems(self):
-        return [
-            e["name"] for e in self.server.get_systems(self.token, 1, 1000)
-        ]
-
-    def system(self, name):
-        return self.server.get_system(name, True)
-        # Both have problems with None profiles:
-
-    #        return self.server.get_system_as_rendered(name)
-    #        return self.server.get_blended_data("", name)
-
-    def power_system(self, name, power):
-        assert power in ["on", "off", "status", "reboot"]
-        print("Setting power '%s' on '%s'" % (power, name))
-        args = {"power": power, "systems": [name]}
-        return self.server.background_power_system(args, self.token)
-
-    def change_system(self, bkr_name, args):
-        sh = self.get_system_handle(bkr_name)
-        self.assign_defaults(sh, CB_PROFILE, args)
-        self.set_netboot_enable(bkr_name, True)
+    def remove_system(self, system_name):
+        self.proxy.remove_system(system_name, self.token)
 
 
 if __name__ == '__main__':
-    pass
+    new_system = dict(
+        name="dell-pet105-01",
+        profile="RHVH-4.0-73-20170104.0",
+        modify_interface={"macaddress-enp2s0": "00:22:19:27:54:c7"})
+
+    with Cobbler() as cb:
+        cb.add_new_system(
+            name="dell-pet105-01",
+            profile="RHVH-4.0-73-20170104.0",
+            modify_interface={"macaddress-enp2s0": "00:22:19:27:54:c7"})

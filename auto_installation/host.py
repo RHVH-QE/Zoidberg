@@ -9,6 +9,7 @@ from constants import CB_API, CB_CREDENTIAL, CB_PROFILE, NOPXE_URL, \
 
 log = logging.getLogger("bender")
 
+
 class Host(object):
     """Abstract class prsent testable Host
     """
@@ -35,6 +36,7 @@ class Host(object):
 class CobblerHost(Host):
     """
     """
+
     def __init__(self,
                  cb_api_url=None,
                  cb_credential=None,
@@ -51,7 +53,8 @@ class CobblerHost(Host):
             "comment": "updated-by-zoidberg",
             "status": "testing",
             "kernel_options": "",
-            "kernel_options_post": ""}
+            "kernel_options_post": ""
+        }
 
         self.beaker = CobblerHost(system=self.system)
 
@@ -87,9 +90,7 @@ class CobblerHost(Host):
         pass
 
     def pxe_netboot(self, enabled):
-        args = {
-            "netboot-enabled": 1 if enabled else 0
-        }
+        args = {"netboot-enabled": 1 if enabled else 0}
         tpl = copy.deepcopy(self.args)
         tpl.update(args)
         sh = self._get_system_handle()
@@ -148,28 +149,30 @@ class BeakerHost(Host):
 
     def power_on(self):
         """pass"""
-        return self._exec_cmd('power_on', self.system,
-                              dict(bkr_name=self.system))
+        return self._exec_cmd(
+            'power_on', self.system, dict(bkr_name=self.system))
 
     def power_off(self):
         """pass"""
-        return self._exec_cmd('power_off', self.system,
-                              dict(bkr_name=self.system))
+        return self._exec_cmd(
+            'power_off', self.system, dict(bkr_name=self.system))
 
     def reboot(self):
         """pass"""
-        return self._exec_cmd('power_reboot', self.system,
-                              dict(bkr_name=self.system))
+        return self._exec_cmd(
+            'power_reboot', self.system, dict(bkr_name=self.system))
 
     def provision(self, bkr_name, distro_tree_id='71758'):
         """pass"""
-        return self._exec_cmd('provision',
-                              bkr_name,
-                              dict(bkr_name=bkr_name,
-                                   distro_tree_id=distro_tree_id,
-                                   ks_file=self.ks_file,
-                                   srv_ip=self.srv_ip,
-                                   srv_port=self.srv_port))
+        return self._exec_cmd(
+            'provision',
+            bkr_name,
+            dict(
+                bkr_name=bkr_name,
+                distro_tree_id=distro_tree_id,
+                ks_file=self.ks_file,
+                srv_ip=self.srv_ip,
+                srv_port=self.srv_port))
 
     def pxe_netboot(self, enabled):
         return requests.get(NOPXE_URL.format(self.system))
@@ -193,20 +196,19 @@ class BeakerHost(Host):
 
     def status(self, bkr_name):
         """pass"""
-        ret = self._exec_cmd('status',
-                             bkr_name,
-                             dict(bkr_name=bkr_name),
-                             output=True)
+        ret = self._exec_cmd(
+            'status', bkr_name, dict(bkr_name=bkr_name), output=True)
         data = json.loads(ret)
         if data['current_reservation']:
             if data['current_reservation']['user_name'] == 'yaniwang':
                 return True
             else:
                 raise RuntimeError(
-                    dict(bkr_name=bkr_name,
-                         user_name_r='yaniwang',
-                         # pylint: disable=C0301
-                         user_name_w=data['current_reservation']['user_name']))
+                    dict(
+                        bkr_name=bkr_name,
+                        user_name_r='yaniwang',
+                        # pylint: disable=C0301
+                        user_name_w=data['current_reservation']['user_name']))
         else:
             return False
 

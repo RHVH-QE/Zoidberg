@@ -2,12 +2,10 @@
 """
 import time
 import logging
-import json
-import os
 from threading import Thread
 from kickstarts import KickStartFiles
-from constants import CURRENT_IP_PORT, CB_API, ARGS_TPL
-from beaker import BeakerProvision, MonitorPubSub
+from constants import CURRENT_IP_PORT, ARGS_TPL, HOSTS, CB_PROFILE
+from beaker import Beaker, inst_watcher
 from checkpoints import CheckCheck
 from cobbler import Cobbler
 
@@ -65,21 +63,27 @@ class JobRunner(Thread):
             self.results_logs.get_actual_logger(self.build_url, ks)
 
             logger.info("start provisioning on host %s with %s", ml[0], ks)
-            bp = BeakerProvision(srv_ip=CURRENT_IP_PORT[0],
-                                 srv_port=CURRENT_IP_PORT[1],
-                                 ks_file=ks)
+            bp = Beaker(
+                srv_ip=CURRENT_IP_PORT[0],
+                srv_port=CURRENT_IP_PORT[1],
+                ks_file=ks)
 
             if self._debug:
                 logger.debug("now is debug mode, will not do provisioning")
                 ret = 0
             else:
                 bp.reserve(ml[0])
-                ret = bp.provision(ml[0])
-                with Cobbler(CB_API) as cb:
-                    cb.args['kernel_options'] = ARGS_TPL.format(srv_ip=CURRENT_IP_PORT[0],
-                                                                srv_port=CURRENT_IP_PORT[1],
-                                                                ks_file=ks)
-                    cb.change_system(ml[0], cb.args)
+                ret = bp.reboot(ml[0])
+                with Cobbler() as cb:
+                    kargs = ARGS_TPL.format(
+                        srv_ip=CURRENT_IP_PORT[0],
+                        srv_port=CURRENT_IP_PORT[1],
+                        ks_file=ks)
+                    cb.add_new_system(
+                        name=ml[0],
+                        profile=CB_PROFILE,
+                        modify_interface=HOSTS.get(ml[0])['nic'],
+                        kernel_options=kargs)
 
             logger.info(self.results_logs.current_log_path)
 
@@ -93,7 +97,9 @@ class JobRunner(Thread):
                 p.subscribe(ml[0])
                 logger.info("start daemon thread to listen on channel %s",
                             ml[0])
-                t = MonitorPubSub(ml[0], p)
+                # t = MonitorPubSub(ml[0], p)
+                t = inst_watcher(ml[0], p)
+                t.setDaemon(True)
                 t.start()
                 t.join()
 
@@ -113,10 +119,10 @@ class JobRunner(Thread):
                     logger.info("ip is %s", ret)
                     ck.host_string, ck._host_user, ck.host_pass = (ret, 'root',
                                                                    'redhat')
-                    logger.info(ck.go_check(ks.replace('ati_', '').replace(
-                        '.ks', '')))
+                    logger.info(
+                        ck.go_check(ks.replace('ati_', '').replace('.ks', '')))
                 logger.info("waiting for the cockpit results")
-                cockpit_result_raw = self._wait_for_cockpit(ml[0])
+                self._wait_for_cockpit(ml[0])
                 # cockpit_res = json.loads(cockpit_result_raw)
                 # cockpit_res_path = self.results_logs.current_log_path
                 # with(open(os.path.join(cockpit_res_path, "cockpit.json")), 'w+') as fp:
@@ -130,6 +136,7 @@ class JobRunner(Thread):
 
 if __name__ == '__main__':
     jr = JobRunner(
-        'http://10.66.10.22:8090/rhevh/rhevh7-ng-36/rhev-hypervisor7-ng-3.6-20160516.0/rhev-hypervisor7-ng-3.6-20160516.0.x86_64.liveimg.squashfs')
+        'http://10.66.10.22:8090/rhevh/rhevh7-ng-36/rhev-hypervisor7-ng-3.6-20160516.0/rhev-hypervisor7-ng-3.6-20160516.0.x86_64.liveimg.squashfs'
+    )
     for i in jr.get_job_queue():
         print i
