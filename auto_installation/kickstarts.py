@@ -11,7 +11,7 @@ from pykickstart.parser import KickstartParser, Script
 from pykickstart.constants import KS_SCRIPT_PRE, KS_SCRIPT_POST
 from pykickstart.commands.network import F22_NetworkData
 
-from constants import KS_FILES_DIR, KS_FILES_AUTO_DIR, \
+from .constants import KS_FILES_DIR, KS_FILES_AUTO_DIR, \
     SMOKE_TEST_LIST, P1_TEST_LIST, ALL_TEST, \
     POST_SCRIPT_01, HOST_POOL, PRE_SCRIPT_01, MUST_HAVE_TEST_LIST, DEBUG_LIST, \
     HOSTS

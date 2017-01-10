@@ -4,7 +4,7 @@ import logging.config
 import yaml
 import redis
 import time
-from constants import PROJECT_ROOT
+from .constants import PROJECT_ROOT
 
 log = logging.getLogger('bender')
 
@@ -20,6 +20,7 @@ User::<{user_name_r}>, but currently reserved by User::<{user_name_w}>'''
 class ResultsAndLogs(object):
     """This class will prepare logs directory structure
     """
+
     def __init__(self):
 
         self._logs_root_dir = os.path.join(PROJECT_ROOT, 'logs')
@@ -51,7 +52,8 @@ class ResultsAndLogs(object):
         return img_url.split('/')[-2]
 
     def get_actual_logger(self, img_url, ks_name=''):
-        log_file = os.path.join(PROJECT_ROOT, 'logs', self.get_current_date(),
+        log_file = os.path.join(PROJECT_ROOT, 'logs',
+                                self.get_current_date(),
                                 self.parse_img_url(img_url), ks_name,
                                 self.logger_name)
         if not os.path.exists(log_file):
@@ -66,10 +68,8 @@ class ResultsAndLogs(object):
 
 
 def init_redis():
-    pool = redis.ConnectionPool(host='localhost',
-                                port=6379,
-                                db=0,
-                                password='redhat')
+    pool = redis.ConnectionPool(
+        host='localhost', port=6379, db=0, password='redhat')
     conn = redis.StrictRedis(connection_pool=pool)
     return conn
 

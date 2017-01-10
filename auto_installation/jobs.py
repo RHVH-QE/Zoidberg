@@ -3,11 +3,11 @@
 import time
 import logging
 from threading import Thread
-from kickstarts import KickStartFiles
-from constants import CURRENT_IP_PORT, ARGS_TPL, HOSTS, CB_PROFILE
-from beaker import Beaker, inst_watcher
-from checkpoints import CheckCheck
-from cobbler import Cobbler
+from .kickstarts import KickStartFiles
+from .constants import CURRENT_IP_PORT, ARGS_TPL, HOSTS, CB_PROFILE
+from .beaker import Beaker, inst_watcher
+from .checkpoints import CheckCheck
+from .cobbler import Cobbler
 
 logger = logging.getLogger('bender')
 
@@ -135,8 +135,4 @@ class JobRunner(Thread):
 
 
 if __name__ == '__main__':
-    jr = JobRunner(
-        'http://10.66.10.22:8090/rhevh/rhevh7-ng-36/rhev-hypervisor7-ng-3.6-20160516.0/rhev-hypervisor7-ng-3.6-20160516.0.x86_64.liveimg.squashfs'
-    )
-    for i in jr.get_job_queue():
-        print i
+    pass

@@ -3,7 +3,7 @@ import attr
 import xmlrpclib
 import logging
 
-from constants import CB_API, CB_CREDENTIAL
+from .constants import CB_API, CB_CREDENTIAL
 
 
 def _cb_cred_checker(instance, attribute, value):

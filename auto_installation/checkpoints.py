@@ -41,11 +41,12 @@ class CheckYoo(object):
     def run_cmd(self, cmd, timeout=60):
         ret = None
         try:
-            with settings(host_string=self.host_string,
-                          user=self.host_user,
-                          password=self.host_pass,
-                          disable_known_hosts=True,
-                          connection_attempts=60):
+            with settings(
+                    host_string=self.host_string,
+                    user=self.host_user,
+                    password=self.host_pass,
+                    disable_known_hosts=True,
+                    connection_attempts=60):
                 ret = run(cmd, quiet=True, timeout=timeout)
                 if ret.succeeded:
                     return True, ret
@@ -84,7 +85,7 @@ class CheckYoo(object):
         except CommandTimeout as e:
             log.error(e)
             return False
-        
+
         log.info("Got result %s", ret)
         if ret[0]:
             for s in strs:
@@ -115,45 +116,40 @@ class CheckCheck(CheckYoo):
             timeout=300)
 
     def fc_01(self):
-        ck01 = self.check_strs_in_cmd_output('fdisk -l | grep "Linux LVM"',
-                                             'LVM',
-                                             timeout=300)
+        ck01 = self.check_strs_in_cmd_output(
+            'fdisk -l | grep "Linux LVM"', 'LVM', timeout=300)
         ck02 = self.check_strs_in_cmd_output('lvs', '4.00g', timeout=300)
 
         return ck01 and ck02
 
     def firewall_01(self):
-        return self.check_strs_in_cmd_output('firewall-cmd --state',
-                                             'running',
-                                             timeout=300)
+        return self.check_strs_in_cmd_output(
+            'firewall-cmd --state', 'running', timeout=300)
 
     def iscsi_01(self):
-        ck01 = self.check_strs_in_cmd_output('fdisk -l | grep "Linux LVM"',
-                                             'LVM',
-                                             timeout=300)
+        ck01 = self.check_strs_in_cmd_output(
+            'fdisk -l | grep "Linux LVM"', 'LVM', timeout=300)
         return ck01
 
     def network_01(self):
         ck01 = self.check_strs_in_file(
-            '/etc/sysconfig/network-scripts/ifcfg-em1',
-            ('BOOTPROTO=dhcp',),
+            '/etc/sysconfig/network-scripts/ifcfg-em1', ('BOOTPROTO=dhcp', ),
             timeout=300)
 
         return ck01
 
     def selinux_01(self):
-        return self.check_strs_in_cmd_output('cat /etc/selinux/config',
-                                             'SELINUX=enforcing',
-                                             timeout=300)
+        return self.check_strs_in_cmd_output(
+            'cat /etc/selinux/config', 'SELINUX=enforcing', timeout=300)
 
     def services_01(self):
-        ck01 = self.check_strs_in_cmd_output('systemctl status sshd',
-                                             'active',
-                                             timeout=300)
+        ck01 = self.check_strs_in_cmd_output(
+            'systemctl status sshd', 'active', timeout=300)
         return ck01
 
     def default(self):
-        log.info("perform basic check, installation is finished, reboot is success")
+        log.info(
+            "perform basic check, installation is finished, reboot is success")
         ck01 = True
         return ck01
 
@@ -163,4 +159,4 @@ if __name__ == '__main__':
     ck = CheckCheck()
     ck.host_string, ck._host_user, ck.host_pass = ('10.73.75.228', 'root',
                                                    'redhat')
-    print ck.go_check('bond_01')
+    print(ck.go_check('bond_01'))

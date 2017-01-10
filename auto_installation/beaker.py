@@ -4,8 +4,8 @@ import subprocess
 import time
 import logging
 from threading import Thread
-from cobbler import Cobbler
-from utils import ReserveUserWrongException, init_redis
+from .cobbler import Cobbler
+from .utils import ReserveUserWrongException, init_redis
 
 log = logging.getLogger("Beaker")
 
