@@ -1,1 +1,1 @@
-from .server import app, setup_funcs, RD_CONN
+from server import app, setup_funcs, rd_conn

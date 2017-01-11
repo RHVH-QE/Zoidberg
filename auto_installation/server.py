@@ -7,9 +7,9 @@ import base64
 
 from flask import Flask, request, redirect
 
-from .utils import init_redis, setup_funcs, ResultsAndLogs
-from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL
-from .jobs import JobRunner
+from utils import init_redis, ResultsAndLogs, setup_funcs
+from constants import CURRENT_IP_PORT, BUILDS_SERVER_URL
+from jobs import JobRunner
 
 # LOG_CONF = yaml.load(open(os.path.join(PROJECT_ROOT, 'logger.yml')))
 # logging.config.dictConfig(LOG_CONF['logging'])
@@ -67,9 +67,9 @@ def start_job():
 def done_job(em1ip, bkr_name):
     """todo"""
     print("Remote node ip is {}".format(em1ip))
-    # LOG.info("publish message 'done to channel %s'", bkr_name)
-    RD_CONN.publish(bkr_name, 'done,{}'.format(em1ip))
-    RD_CONN.publish("{0}-cockpit".format(bkr_name),
+
+    rd_conn.publish(bkr_name, 'done,{}'.format(em1ip))
+    rd_conn.publish("{0}-cockpit".format(bkr_name),
                     "{0},{1},{2}".format(em1ip, 'root', 'redhat'))
     return "done job"
 
