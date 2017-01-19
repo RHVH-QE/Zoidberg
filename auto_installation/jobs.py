@@ -1,48 +1,37 @@
-"""Module Doc Here
-"""
 import time
 import logging
+import attr
 from threading import Thread
+
 from .kickstarts import KickStartFiles
-from .constants import CURRENT_IP_PORT, ARGS_TPL, HOSTS, CB_PROFILE
 from .beaker import Beaker, inst_watcher
-from .checkpoints import CheckCheck
+from .constants import CURRENT_IP_PORT, ARGS_TPL, HOSTS, CB_PROFILE
 from .cobbler import Cobbler
+from .checkpoints import CheckCheck
 
-logger = logging.getLogger('bender')
+log = logging.getLogger("bender")
 
 
-class JobRunner(Thread):
-    """class doc here
-    """
-
-    def __init__(self, build_url, rd_conn, results_logs, ks_filter='must'):
-        super(JobRunner, self).__init__()
-        self.daemon = True
-        self.build_url = build_url
-        self.rd_conn = rd_conn
-        self.results_logs = results_logs
-        self.ks_filter = ks_filter
-        self.ksins = KickStartFiles()
-        self.ksins.ks_filter = self.ks_filter
-        self.ksins.liveimg = build_url
-        self.job_queue = self.ksins.get_job_queue()
-        self._debug = False
+@attr.s
+class JobRunner(object):
+    build_url = attr.ib()
+    rd_conn = attr.ib()
+    results_logs = attr.ib()
+    ks_filter = attr.ib(default='must')
+    debug = attr.ib(default=False)
 
     def _wait_for_installation(self, p):
         while True:
             time.sleep(5)
-            logger.info("waiting for installation done")
+            log.info("waitting for install done")
             msg = p.get_message(ignore_subscribe_messages=True)
-
             if msg:
                 if 'done' in msg['data']:
-                    logger.info('autoinstallation job is success')
+                    log.info('autoinstallation job is success')
                     ip = msg['data'].split(',')[1]
                     return ip
-
                 elif msg['data'] == 'fail':
-                    logger.info('autoinstallation job is fail')
+                    log.info('autoinstallation job is fail')
                     return False
 
     def _wait_for_cockpit(self, bkr_name):
@@ -51,53 +40,63 @@ class JobRunner(Thread):
         while True:
             time.sleep(5)
             msg = pubsub_cockpit.get_message(ignore_subscribe_messages=True)
-            logger.info(msg)
+            log.info(msg)
             if msg:
                 if msg['data']:
-                    logger.info("cockpit test is done")
+                    log.info("cockpit test is done")
                     return msg['data']
 
-    def run(self):
-        """pass"""
-        for ks, ml in self.job_queue:
-            self.results_logs.get_actual_logger(self.build_url, ks)
+    def _provision(self, ks, ml):
+        bp = Beaker(
+            srv_ip=CURRENT_IP_PORT[0], srv_port=CURRENT_IP_PORT[1], ks_file=ks)
+        bp.reserve(ml[0])
+        ret = bp.reboot(ml[0])
 
-            logger.info("start provisioning on host %s with %s", ml[0], ks)
-            bp = Beaker(
+        log.info("reboot {} with return code {}".format(ml[0], ret))
+
+        with Cobbler() as cb:
+            kargs = ARGS_TPL.format(
                 srv_ip=CURRENT_IP_PORT[0],
                 srv_port=CURRENT_IP_PORT[1],
                 ks_file=ks)
+            cb.add_new_system(
+                name=ml[0],
+                profile=CB_PROFILE,
+                modify_interface=HOSTS.get(ml[0])['nic'],
+                kernel_options=kargs)
+        return ret
 
-            if self._debug:
-                logger.debug("now is debug mode, will not do provisioning")
+    @property
+    def ksins(self):
+        k = KickStartFiles()
+        k.ks_filter = self.ks_filter
+        k.liveimg = self.build_url
+        return k
+
+    @property
+    def job_queue(self):
+        return self.ksins.get_job_queue()
+
+    def go(self):
+        for ks, ml in self.job_queue:
+            self.results_logs.get_actual_logger(self.build_url, ks)
+            log.info("start provisioning on host %s with %s", ml[0], ks)
+
+            if self.debug:
+                log.debug("now is debug mode, will not do provisioning")
                 ret = 0
             else:
-                bp.reserve(ml[0])
-                ret = bp.reboot(ml[0])
-                with Cobbler() as cb:
-                    kargs = ARGS_TPL.format(
-                        srv_ip=CURRENT_IP_PORT[0],
-                        srv_port=CURRENT_IP_PORT[1],
-                        ks_file=ks)
-                    cb.add_new_system(
-                        name=ml[0],
-                        profile=CB_PROFILE,
-                        modify_interface=HOSTS.get(ml[0])['nic'],
-                        kernel_options=kargs)
+                ret = self._provision(ks, ml)
 
-            logger.info(self.results_logs.current_log_path)
+            log.info(self.results_logs.current_log_path)
 
             if ret == 0:
-                logger.info(
-                    "provisioning on host %s finished with kickstart file %s return code 0",
-                    ml[0], ks)
+                log.info("provisioning on host %s finished " +
+                         "with kickstart file %s return code 0", ml[0], ks)
                 p = self.rd_conn.pubsub(ignore_subscribe_messages=True)
-
-                logger.info("subscribe channel %s", ml[0])
+                log.info("subscribe channel %s", ml[0])
                 p.subscribe(ml[0])
-                logger.info("start daemon thread to listen on channel %s",
-                            ml[0])
-                # t = MonitorPubSub(ml[0], p)
+                log.info("start daemon thread to listen on channel %s", ml[0])
                 t = inst_watcher(ml[0], p)
                 t.setDaemon(True)
                 t.start()
@@ -105,34 +104,28 @@ class JobRunner(Thread):
 
                 ret = self._wait_for_installation(p)
                 if not ret:
-                    logger.info(
-                        "auto installation failed, contine to next job")
+                    log.info("auto installation failed, contine to next job")
                     continue
                 else:
-                    logger.info(
+                    log.info(
                         "auto installation finished, contine to chekcpoints")
 
                     self.results_logs.logger_name = 'checkpoints'
                     self.results_logs.get_actual_logger(self.build_url, ks)
                     ck = CheckCheck()
 
-                    logger.info("ip is %s", ret)
+                    log.info("ip is %s", ret)
                     ck.host_string, ck._host_user, ck.host_pass = (ret, 'root',
                                                                    'redhat')
-                    logger.info(
+                    log.info(
                         ck.go_check(ks.replace('ati_', '').replace('.ks', '')))
-                logger.info("waiting for the cockpit results")
-                self._wait_for_cockpit(ml[0])
-                # cockpit_res = json.loads(cockpit_result_raw)
-                # cockpit_res_path = self.results_logs.current_log_path
-                # with(open(os.path.join(cockpit_res_path, "cockpit.json")), 'w+') as fp:
-                #     fp.write(cockpit_res)
 
+                    # TODO wati for cockpit new results format
             else:
-                logger.error(
-                    "provisioning on host %s failed with return code %s",
-                    ml[0], ret)
+                log.error("provisioning on host %s failed with return code %s",
+                          ml[0], ret)
 
 
-if __name__ == '__main__':
-    pass
+def job_runner(img_url, rd_conn, results_logs):
+    ins = JobRunner(img_url, rd_conn, results_logs)
+    return Thread(target=ins.go)

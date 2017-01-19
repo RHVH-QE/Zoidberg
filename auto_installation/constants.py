@@ -80,7 +80,7 @@ KS_TESTCASE_MAP = {
 # Kickstart related stuff
 
 POST_SCRIPT_01 = """
-EM1IP=$(ip -o -4 addr show em2 | awk -F '[ /]+' '/global/ {print $4}')
+EM1IP=$(ip -o -4 addr show {} | awk -F '[ /]+' '/global/ {{print $4}}')
 curl -s http://%s:%s/done/$EM1IP/""" % (CURRENT_IP_PORT[0], CURRENT_IP_PORT[1])
 
 PRE_SCRIPT_01 = """set -x
@@ -126,8 +126,8 @@ NOPXE_URL = "http://lab-01.rhts.eng.pek2.redhat.com:8000/nopxe/{0}"
 
 CB_API = "http://10.73.60.74/cobbler_api"
 CB_CREDENTIAL = ('cobbler', 'cobbler')
-CB_PROFILE = 'RHVH-4.0-73-20170104.0'
+CB_PROFILE = 'RHVH-4.1-73-20170111.0'
 CB_SYSTEM = 'dell-pet105-01.qe.lab.eng.nay.redhat.com'
 ARGS_TPL = ('inst.ks=http://{srv_ip}:{srv_port}/static/auto/{ks_file} '
             'inst.stage2=http://10.66.10.22:8090/'
-            'rhvh_ngn/pxedir/RHVH-4.0-20170104.0-RHVH-x86_64-dvd1.iso/stage2')
+            'rhvh_ngn/pxedir/RHVH-4.1-20170111.0-RHVH-x86_64-dvd1.iso/stage2')

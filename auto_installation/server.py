@@ -2,23 +2,16 @@
 """
 # pylint: disable=W0403, C0103
 import os
-import logging.config
 import base64
 
 from flask import Flask, request, redirect
 
-from utils import init_redis, ResultsAndLogs, setup_funcs
-from constants import CURRENT_IP_PORT, BUILDS_SERVER_URL
-from jobs import JobRunner
+from .utils import init_redis, ResultsAndLogs, setup_funcs
+from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL
+from .jobs import job_runner
 
-# LOG_CONF = yaml.load(open(os.path.join(PROJECT_ROOT, 'logger.yml')))
-# logging.config.dictConfig(LOG_CONF['logging'])
-# LOG = logging.getLogger('bender')
-
-RD_CONN = init_redis()
-
+rd_conn = init_redis()
 IP, PORT = CURRENT_IP_PORT
-
 results_logs = ResultsAndLogs()
 
 app = Flask(__name__)
@@ -47,15 +40,17 @@ def start_job():
 
     """
     if request.method == 'POST':
-        if RD_CONN.get("running") == "0":
-            RD_CONN.set("running", 1)
+        if rd_conn.get("running") == "0":
+            rd_conn.set("running", 1)
             data = request.get_json()
             img_url = data.get('img', None)
             if img_url:
                 _img_url = img_url.replace('/var/www/builds',
                                            BUILDS_SERVER_URL)
 
-                JobRunner(_img_url, RD_CONN, results_logs).start()
+                t = job_runner(_img_url, rd_conn, results_logs)
+                t.setDaemon(True)
+                t.start()
                 return redirect('/post_result')
         else:
             return redirect('/post_result')

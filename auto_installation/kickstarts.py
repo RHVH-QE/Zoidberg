@@ -12,7 +12,7 @@ from pykickstart.constants import KS_SCRIPT_PRE, KS_SCRIPT_POST
 from pykickstart.commands.network import F22_NetworkData
 
 from .constants import KS_FILES_DIR, KS_FILES_AUTO_DIR, \
-    SMOKE_TEST_LIST, P1_TEST_LIST, ALL_TEST, \
+    SMOKE_TEST_LIST, P1_TEST_LIST, ALL_TEST, HOSTS, \
     POST_SCRIPT_01, HOST_POOL, PRE_SCRIPT_01, MUST_HAVE_TEST_LIST, DEBUG_LIST
 
 loger = logging.getLogger('bender')
@@ -100,6 +100,9 @@ class KickStartFiles(object):
 
             bkr_name = self._get_host(ks_name=ks)
 
+            nic_name = HOSTS.get(bkr_name[0]).get("nic").keys()[0].split('-')[
+                -1]
+
             ks_ = os.path.join(KS_FILES_DIR, ks)
             ks_out = os.path.join(KS_FILES_AUTO_DIR, ks)
 
@@ -117,11 +120,11 @@ class KickStartFiles(object):
                     error_on_fail=False, ))
             kp.handler.scripts.append(
                 self._generate_ks_script(
-                    POST_SCRIPT_01 + bkr_name[0],
+                    POST_SCRIPT_01.format(nic_name) + bkr_name[0],
                     error_on_fail=False, ))
 
             kp.handler.network.network = []
-            kp.handler.network.network.append(F22_NetworkData(device='em2'))
+            kp.handler.network.network.append(F22_NetworkData(device=nic_name))
 
             with open(ks_out, 'w') as fp:
                 fp.write(kp.handler.__str__())
