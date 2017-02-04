@@ -182,22 +182,9 @@ class CheckCheck(CheckYoo):
         '''
         local, fc, iscsi
         '''
-        for line in open(auto_ks_file, 'r'):
-            if line.find('liveimg') == 0:
-                rhvh_version = line.split('-')[-1][0:8]
-                break
-        else:
-            return False
-
-        ck01 = self.check_strs_in_cmd_output('imgbase w',
-                                             rhvh_version,
-                                             timeout=300)
-
-        ck02 = self.check_strs_in_cmd_output('nodectl check',
+        return self.check_strs_in_cmd_output('nodectl check',
                                              'Status: OK',
                                              timeout=300)
-
-        return ck01 and ck02
 
     def _static_network_check(self):
         '''
