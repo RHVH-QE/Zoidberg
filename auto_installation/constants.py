@@ -75,6 +75,23 @@ KS_TESTCASE_MAP = {
     'ati_autopart_01.ks': 'RHEVM-15056',
     'ati_lvm_01.ks': 'RHEVM-15057',
     'ati_ntp.ks': 'RHEVM-15064',
+    'ati_local_01.ks': ('RHEVM-17788',
+                        'RHEVH-17800',
+                        'RHEVH-17801',
+                        'RHEVH-17807',
+                        'RHEVH-17826',
+                        'RHEVH-17828',
+                        'RHEVH-17798',
+                        'RHEVH-17802',
+                        'RHEVH-17803',
+                        'RHEVH-17805',
+                        'RHEVH-17808',
+                        'RHEVH-17811'),
+    'ati_local_02.ks': 'RHEVM-17804',
+    'ati_fc_01.ks': ('RHEVM-17790',
+                     'RHEVM-17806',
+                     'RHEVM-17816',
+                     'RHEVM-16972')
 }
 
 # Kickstart related stuff
