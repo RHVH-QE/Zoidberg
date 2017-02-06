@@ -4,7 +4,7 @@ import os
 PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
 
 KS_FILES_DIR = os.path.join(PROJECT_ROOT, 'auto_installation', 'static',
-                            'ngn-auto-installation-kickstarts')
+                            'rhvh-41')
 
 KS_FILES_AUTO_DIR = os.path.join(PROJECT_ROOT, 'auto_installation', 'static',
                                  'auto')
@@ -17,13 +17,42 @@ STATIC_URL = ("http://{0}:{1}/"
               "static/ngn-auto-installation-kickstarts/%s").format(
                   CURRENT_IP_PORT[0], CURRENT_IP_PORT[1])
 
-SMOKE_TEST_LIST = ('FC_01', )
+DELL_PET105_01 = 'dell-pet105-01.qe.lab.eng.nay.redhat.com'
+DELL_PER510_01 = 'dell-per510-01.lab.eng.pek2.redhat.com'
+
+# TIER1:1, TIER2:2, ALL:3
+TESTCASE_LIST = 1
+
+TIER1_TESTCASE_KS_MACHINE_CHECKPOINT_MAP = {
+    'RHEVM-17788': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
+    'RHEVH-17800': ('ati_local_01.ks', DELL_PET105_01, 'static_network_check'),
+    'RHEVH-17801': ('ati_local_01.ks', DELL_PET105_01, 'hostname_check'),
+    'RHEVH-17807': ('ati_local_01.ks', DELL_PET105_01, 'manually_partition_check'),
+    'RHEVH-17826': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
+    'RHEVH-17828': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
+    'RHEVM-17790': ('ati_fc_01.ks', DELL_PER510_01, 'install_check'),
+    'RHEVM-17806': ('ati_fc_01.ks', DELL_PER510_01, 'auto_partition_check'),
+    'RHEVM-17816': ('ati_fc_01.ks', DELL_PER510_01, 'bond_vlan_check'),
+    'RHEVM-16972': ('ati_fc_01.ks', DELL_PER510_01, 'auto_partition_check')
+    }
+
+TIER2_TESTCASE_KS_MACHINE_CHECKPOINT_MAP = {
+    'RHEVH-17798': ('ati_local_01.ks', DELL_PET105_01, 'lang_check'),
+    'RHEVH-17802': ('ati_local_01.ks', DELL_PET105_01, 'ntp_check'),
+    'RHEVH-17803': ('ati_local_01.ks', DELL_PET105_01, 'keyboard_check'),
+    'RHEVH-17805': ('ati_local_01.ks', DELL_PET105_01, 'security_policy_check'),
+    'RHEVH-17808': ('ati_local_01.ks', DELL_PET105_01, 'kdump_check'),
+    'RHEVH-17811': ('ati_local_01.ks', DELL_PET105_01, 'users_check'),
+    'RHEVM-17804': ('ati_local_02.ks', DELL_PET105_01, 'keyboard_check')
+    }
+
+SMOKE_TEST_LIST = ('FC_01',)
 P1_TEST_LIST = (
     'autopart',
     'bond',
     'FC',
-    'part', )
-ALL_TEST = ('*', )
+    'part',)
+ALL_TEST = ('*',)
 MUST_HAVE_TEST_LIST = (
     # 'autopart_01',
     # 'FC_01',
@@ -39,17 +68,17 @@ MUST_HAVE_TEST_LIST = (
     # 'vlan_01',
     # 'firewall_01',
     # 'selinux_01',
-    'services_01', )
+    'local_01',)
 
-DEBUG_LIST = ('FC_06', )
+DEBUG_LIST = ('FC_06',)
 
 HOST_POOL = {
-    'FC': ('dell-per510-01.lab.eng.pek2.redhat.com', ),
+    'FC': ('dell-per510-01.lab.eng.pek2.redhat.com',),
     'bond': (),
     'iscsi': (),
     'uefi': (),
     'vlan': (),
-    'default': ('dell-pet105-01.qe.lab.eng.nay.redhat.com', ),
+    'default': ('dell-pet105-01.qe.lab.eng.nay.redhat.com',),
 }
 
 HOSTS = {
@@ -59,6 +88,15 @@ HOSTS = {
         },
         "hostname": "",
         "static_ip": "",
+        "ksfiles": ("ati_local_01.ks", "ati_local_02.ks")
+    },
+    "dell-per510-01.lab.eng.pek2.redhat.com": {
+        "nic": {
+            "macaddress-em2": "78:2b:cb:47:93:5e"
+        },
+        "hostname": "",
+        "static_ip": "",
+        "ksfiles": "ati_fc_01.ks"
     }
 }
 
