@@ -233,14 +233,14 @@ class CheckCheck(CheckYoo):
                                              timeout=300)
 
         # check /, /var, /boot size
-        cmd = "expr 15360 - $(lvs --noheadings -o size --unit=m --nosuffix %s/%s | sed -r 's/\s*([0-9]+)\..*/\1/')" % (vgname, 'var')
-        ck03 = self.check_strs_in_cmd_output(cmd, '0', timeout=300)
+        cmd = "expr 15360 = $(lvs --noheadings -o size --unit=m --nosuffix %s/%s | sed -r 's/\s*([0-9]+)\..*/\\1/')" % (vgname, 'var')
+        ck03 = self.check_strs_in_cmd_output(cmd, '1', timeout=300)
 
-        cmd = "expr 6 \*1024 - $(lvs --noheadings -o size --unit=m --nosuffix %s/%s | sed -r 's/\s*([0-9]+)\..*/\1/')" % (vgname, 'root')
+        cmd = "expr 6 \* 1024 - $(lvs --noheadings -o size --unit=m --nosuffix %s/%s | sed -r 's/\s*([0-9]+)\..*/\\1/')" % (vgname, 'root')
         ck04 = self.check_strs_in_cmd_output(cmd, '-', timeout=300)
 
-        cmd = "expr 1024 \* 1024 - $(fdisk -s %s)" % boot_device
-        ck05 = self.check_strs_in_cmd_output(cmd, '0', timeout=300)
+        cmd = "expr 1024 \* 1024 = $(fdisk -s %s)" % boot_device
+        ck05 = self.check_strs_in_cmd_output(cmd, '1', timeout=300)
 
         return ck01 and ck02 and ck03 and ck04 and ck05
 
@@ -273,12 +273,12 @@ class CheckCheck(CheckYoo):
                                              timeout=300)
 
         # check pool grow
-        cmd = "expr 200000 - $(lvs --noheadings -o size --unit=m --nosuffix %s/%s | sed -r 's/\s*([0-9]+)\..*/\1/')" % (vgname, poolname)
+        cmd = "expr 200000 - $(lvs --noheadings -o size --unit=m --nosuffix %s/%s | sed -r 's/\s*([0-9]+)\..*/\\1/')" % (vgname, poolname)
         ck03 = self.check_strs_in_cmd_output(cmd, '-', timeout=300)
 
         # check /boot size
-        cmd = "expr 1024 \* 1024 - $(fdisk -s %s)" % boot_device
-        ck04 = self.check_strs_in_cmd_output(cmd, '0', timeout=300)
+        cmd = "expr 1024 \* 1024 = $(fdisk -s %s)" % boot_device
+        ck04 = self.check_strs_in_cmd_output(cmd, '1', timeout=300)
 
         return ck01 and ck02 and ck03 and ck04
 
@@ -330,7 +330,7 @@ class CheckCheck(CheckYoo):
         '''
         case RHEVM-17805
         '''
-        return self.check_strs_in_cmd_output('ll /root',
+        return self.check_strs_in_cmd_output('ls /root',
                                              'openscap_data',
                                              timeout=300)
 
@@ -352,7 +352,7 @@ class CheckCheck(CheckYoo):
         ck02 = self.check_strs_in_file('/etc/shadow',
                                        'test',
                                        timeout=300)
-        ck03 = self.check_strs_in_cmd_output('ll /home',
+        ck03 = self.check_strs_in_cmd_output('ls /home',
                                              'test',
                                              timeout=300)
         return ck01 and ck02 and ck03
@@ -369,19 +369,19 @@ class CheckCheck(CheckYoo):
         ck = {}
         # tier1
         ck['RHEVM-17788'] = self._install_check(KS_FILES_AUTO_DIR + 'ati_local_01.ks')
-        ck['RHEVH-17800'] = self._static_network_check()
-        ck['RHEVH-17801'] = self._hostname_check()
-        ck['RHEVH-17807'] = self._manually_partition_check()
-        ck['RHEVH-17826'] = ck['RHEVM-17788']
-        ck['RHEVH-17828'] = ck['RHEVM-17788']
+        ck['RHEVM-17800'] = self._static_network_check()
+        ck['RHEVM-17801'] = self._hostname_check()
+        ck['RHEVM-17807'] = self._manually_partition_check()
+        ck['RHEVM-17826'] = ck['RHEVM-17788']
+        ck['RHEVM-17828'] = ck['RHEVM-17788']
 
         # tier2
-        ck['RHEVH-17798'] = self._lang_check()
-        ck['RHEVH-17802'] = self._ntp_check()
-        ck['RHEVH-17803'] = self._us_keyboard_check()
-        ck['RHEVH-17805'] = self._security_policy_check()
-        ck['RHEVH-17808'] = self._kdump_check()
-        ck['RHEVH-17811'] = self._users_check()
+        ck['RHEVM-17798'] = self._lang_check()
+        ck['RHEVM-17802'] = self._ntp_check()
+        ck['RHEVM-17803'] = self._us_keyboard_check()
+        ck['RHEVM-17805'] = self._security_policy_check()
+        ck['RHEVM-17808'] = self._kdump_check()
+        ck['RHEVM-17811'] = self._users_check()
 
         return ck
 
@@ -413,6 +413,6 @@ class CheckCheck(CheckYoo):
 if __name__ == '__main__':
     # 10.73.75.219
     ck = CheckCheck()
-    ck.host_string, ck._host_user, ck.host_pass = ('10.73.75.228', 'root',
+    ck.host_string, ck._host_user, ck.host_pass = ('10.66.148.9', 'root',
                                                    'redhat')
-    print ck.go_check('bond_01')
+    print ck.go_check('local_01')
