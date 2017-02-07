@@ -5,7 +5,7 @@ lang en_US.UTF-8
 timezone Asia/Shanghai --utc --ntpservers=clock02.util.phx2.redhat.com
 
 ### Keyboard ###
-keyboard us
+keyboard --vckeymap=us --xlayouts='us'
 
 ### Kdump ###
 %addon com_redhat_kdump --enable --reserve-mb=200
@@ -19,7 +19,7 @@ profile=standard
 
 ### User ###
 rootpw --plaintext redhat
-auth --enableshadow --passalgo=md5
+auth --enableshadow --passalgo=sha512
 user --name=test --password=redhat --plaintext
 
 ### Misc ###
@@ -27,7 +27,7 @@ services --enabled=sshd
 
 ### Installation mode ###
 install
-#liveimg url will substitued by autoframework
+#liveimg url will be substitued by autoframework
 liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-host-4.1-20170202.0/redhat-virtualization-host-4.1-20170202.0.x86_64.liveimg.squashfs
 text
 reboot
@@ -36,9 +36,9 @@ reboot
 network --onboot=on --bootproto=static --device=enp2s0 --ip=10.66.148.9 --netmask=255.255.252.0 --gateway=10.66.151.254 --hostname=test.redhat.com
 
 ### Partitioning ###
-ignoredisk --only-use=disk/by-id/ata-WDC_WD2502ABYS-18B7A0_WD-WCAT19563677
+ignoredisk --only-use=sda
 zerombr
-clearpart --all
+clearpart --all --initlabel
 bootloader --location=mbr
 part /boot --fstype=ext4 --size=1024
 part pv.01 --size 20000 --grow
@@ -51,19 +51,20 @@ logvol /home --fstype=xfs --name=home --vgname=rhvh --thin --poolname=pool --siz
 
 ### Pre deal ###
 %pre --erroronfail
-dd if=/dev/zero of=/dev/disk/by-id/ata-WDC_WD2502ABYS-18B7A0_WD-WCAT19563677 bs=512 count=1
-dd if=/dev/zero of=/dev/disk/by-id/ata-WDC_WD2502ABYS-18B7A0_WD-WCAT19563677-part1 bs=512 count=1
-dd if=/dev/zero of=/dev/disk/by-id/ata-WDC_WD2502ABYS-18B7A0_WD-WCAT19563677-part2 bs=512 count=1
-dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000002 bs=512 count=1
-dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000002-part1 bs=512 count=1
-dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000002-part2 bs=512 count=1
-dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000003 bs=512 count=1
-dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000003-part1 bs=512 count=1
-dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000004 bs=512 count=1
-dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000004-part1 bs=512 count=1
+dd if=/dev/zero of=/dev/disk/by-id/ata-WDC_WD2502ABYS-18B7A0_WD-WCAT19563677 bs=1M count=1
+dd if=/dev/zero of=/dev/disk/by-id/ata-WDC_WD2502ABYS-18B7A0_WD-WCAT19563677-part1 bs=1M count=1
+dd if=/dev/zero of=/dev/disk/by-id/ata-WDC_WD2502ABYS-18B7A0_WD-WCAT19563677-part2 bs=1M count=1
+dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000002 bs=1M count=1
+dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000002-part1 bs=1M count=1
+dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000002-part2 bs=1M count=1
+dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000003 bs=1M count=1
+dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000003-part1 bs=1M count=1
+dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000004 bs=1M count=1
+dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000004-part1 bs=1M count=1
 %end
 
 ### Post deal ###
 %post --erroronfail
 imgbase layout --init
 %end
+

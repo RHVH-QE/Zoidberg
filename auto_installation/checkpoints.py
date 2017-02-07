@@ -2,8 +2,9 @@ import logging
 from fabric.api import settings, run
 from fabric.exceptions import NetworkError, CommandTimeout
 
-from constants import KS_FILES_AUTO_DIR
+import constants as CONST
 import re
+import os
 
 log = logging.getLogger('bender')
 
@@ -15,6 +16,8 @@ class CheckYoo(object):
         self._host_string = None
         self._host_user = None
         self._host_pass = None
+        self._beaker_name = None
+        self._ksfile = None
 
     @property
     def host_string(self):
@@ -40,6 +43,22 @@ class CheckYoo(object):
     @host_pass.setter
     def host_pass(self, val):
         self._host_pass = val
+
+    @property
+    def beaker_name(self):
+        return self._beaker_name
+
+    @beaker_name.setter
+    def beaker_name(self, val):
+        self._beaker_name = val
+
+    @property
+    def ksfile(self):
+        return self._ksfile
+
+    @ksfile.setter
+    def ksfile(self, val):
+        self._ksfile = val
 
     def run_cmd(self, cmd, timeout=60):
         ret = None
@@ -127,12 +146,13 @@ class CheckYoo(object):
 class CheckCheck(CheckYoo):
     """"""
 
-    def go_check(self, name):
+    def go_check(self, name='check'):
         func = getattr(self, name.lower(), None)
         if func:
             return func()
         else:
-            return self.default()
+            raise NameError('The checkpoint function %s not defined' % name)
+            # return self.default()
 
     def bond_01(self):
         return self.check_strs_in_file(
@@ -140,7 +160,7 @@ class CheckCheck(CheckYoo):
             ('DEVICE=bond00', 'miimon=100 mode=balance-rr'),
             timeout=300)
 
-    def fc_01_00(self):
+    def fc_01(self):
         ck01 = self.check_strs_in_cmd_output('fdisk -l | grep "Linux LVM"',
                                              'LVM',
                                              timeout=300)
@@ -178,18 +198,12 @@ class CheckCheck(CheckYoo):
                                              timeout=300)
         return ck01
 
-    def _install_check(self, auto_ks_file):
-        '''
-        local, fc, iscsi
-        '''
+    def install_check(self):
         return self.check_strs_in_cmd_output('nodectl check',
                                              'Status: OK',
                                              timeout=300)
 
-    def _static_network_check(self):
-        '''
-        case RHEVM-17800
-        '''
+    def static_network_check(self):
         ck01 = self.check_strs_in_cmd_output('ip addr',
                                              'inet 10.66.148.9/22',
                                              timeout=300)
@@ -198,18 +212,12 @@ class CheckCheck(CheckYoo):
                                              timeout=300)
         return ck01 and ck02
 
-    def _hostname_check(self):
-        '''
-        case RHEVM-17801
-        '''
+    def hostname_check(self):
         return self.check_strs_in_cmd_output('hostname',
                                              'test.redhat.com',
                                              timeout=300)
 
-    def _auto_partition_check(self):
-        '''
-        case RHEVM-17806
-        '''
+    def auto_partition_check(self):
         # check mount points and fstype using df
         vgname = 'rhvh_dell--per510--01'
         lvpre = '/dev/mapper/%s' % vgname
@@ -244,10 +252,7 @@ class CheckCheck(CheckYoo):
 
         return ck01 and ck02 and ck03 and ck04 and ck05
 
-    def _manually_partition_check(self):
-        '''
-        case RHEVM-17807
-        '''
+    def manually_partition_check(self):
         # check mount points and fstype using df
         vgname = 'rhvh'
         lvpre = '/dev/mapper/%s' % vgname
@@ -282,10 +287,7 @@ class CheckCheck(CheckYoo):
 
         return ck01 and ck02 and ck03 and ck04
 
-    def _bond_vlan_check(self):
-        '''
-        case RHEVM-17816
-        '''
+    def bond_vlan_check(self):
         ck01 = self.check_strs_in_cmd_output('ip addr',
                                              ('bond0.50', '192.168.50.'),
                                              timeout=300)
@@ -294,58 +296,37 @@ class CheckCheck(CheckYoo):
                                        timeout=300)
         return ck01 and ck02
 
-    def _lang_check(self):
-        '''
-        case RHEVM-17798
-        '''
+    def lang_check(self):
         return self.check_strs_in_cmd_output('localectl status',
                                              'LANG=en_US.UTF-8',
                                              timeout=300)
 
-    def _ntp_check(self):
-        '''
-        case RHEVM-17802
-        '''
+    def ntp_check(self):
         return self.check_strs_in_file('/etc/ntp.conf',
                                        'clock02.util.phx2.redhat.com',
                                        timeout=300)
 
-    def _us_keyboard_check(self):
-        '''
-        case RHEVM-17803
-        '''
+    def us_keyboard_check(self):
         return self.check_strs_in_cmd_output('localectl status',
                                              ('VC Keymap: us', 'X11 Layout: us'),
                                              timeout=300)
 
-    def _ge_keyboard_check(self):
-        '''
-        case RHEVM-17804
-        '''
+    def ge_keyboard_check(self):
         return self.check_strs_in_cmd_output('localectl status',
                                              ('VC Keymap: ge', 'X11 Layout: ge'),
                                              timeout=300)
 
-    def _security_policy_check(self):
-        '''
-        case RHEVM-17805
-        '''
+    def security_policy_check(self):
         return self.check_strs_in_cmd_output('ls /root',
                                              'openscap_data',
                                              timeout=300)
 
-    def _kdump_check(self):
-        '''
-        case RHEVM-17808
-        '''
+    def kdump_check(self):
         return self.check_strs_in_file('/etc/grub2.cfg',
                                        'crashkernel=200M',
                                        timeout=300)
 
-    def _users_check(self):
-        '''
-        case RHEVM-17811
-        '''
+    def users_check(self):
         ck01 = self.check_strs_in_file('/etc/passwd',
                                        'test',
                                        timeout=300)
@@ -358,61 +339,41 @@ class CheckCheck(CheckYoo):
         return ck01 and ck02 and ck03
 
 
-    def _multi_disks_check(self):
-        '''
-        case RHEVM-17813
-        '''
+    def multi_disks_check(self):
         pass
 
+    def _get_machine_name(self, ksfile_name):
+        pass
 
-    def local_01(self):
-        ck = {}
-        # tier1
-        ck['RHEVM-17788'] = self._install_check(KS_FILES_AUTO_DIR + 'ati_local_01.ks')
-        ck['RHEVM-17800'] = self._static_network_check()
-        ck['RHEVM-17801'] = self._hostname_check()
-        ck['RHEVM-17807'] = self._manually_partition_check()
-        ck['RHEVM-17826'] = ck['RHEVM-17788']
-        ck['RHEVM-17828'] = ck['RHEVM-17788']
+    def check(self):
+        # get testcase map
+        if CONST.TEST_LEVEL == 'TIER1':
+            testcase_map = CONST.TIER1_TESTCASE_MAP
+        elif CONST.TEST_LEVEL == 'TIER2':
+            testcase_map = CONST.TIER2_TESTCASE_MAP
+        elif CONST.TEST_LEVEL == 'ALL':
+            testcase_map = dict(CONST.TIER1_TESTCASE_MAP,
+                                **CONST.TIER2_TESTCASE_MAP)
+        else:
+            raise ValueError('Invaild TEST_LEVEL')
 
-        # tier2
-        ck['RHEVM-17798'] = self._lang_check()
-        ck['RHEVM-17802'] = self._ntp_check()
-        ck['RHEVM-17803'] = self._us_keyboard_check()
-        ck['RHEVM-17805'] = self._security_policy_check()
-        ck['RHEVM-17808'] = self._kdump_check()
-        ck['RHEVM-17811'] = self._users_check()
+        # get ksfile name, machine name
+        ksfile_name = os.path.basename(self.ksfile)
+        machine_name = self.beaker_name
 
-        return ck
+        # run check
+        cks = {}
+        for key, value in testcase_map.items():
+            if set((ksfile_name, machine_name)) < set(value):
+                cks[key] = self.go_check(value[2])
 
-    def local_02(self):
-        ck = {}
-        # tier2
-        ck['RHEVM-17804'] = self._ge_keyboard_check()
-
-        return ck
-
-    def fc_01(self):
-        ck = {}
-        # tier1
-        ck['RHEVM-17790'] = self._install_check(KS_FILES_AUTO_DIR + 'ati_fc_01.ks')
-        ck['RHEVM-17806'] = self._auto_partition_check()
-        ck['RHEVM-17816'] = self._bond_vlan_check()
-        ck['RHEVM-16972'] = ck['RHEVM-17806']
-
-        return ck
-
-    def default(self, name):
-        log.info("Can't find corresponding check function for {}" +
-                 "Perform basic check, " +
-                 "installation is finished, reboot is success".format(name))
-        ck01 = True
-        return ck01
-
+        return cks
 
 if __name__ == '__main__':
     # 10.73.75.219
     ck = CheckCheck()
     ck.host_string, ck._host_user, ck.host_pass = ('10.66.148.9', 'root',
                                                    'redhat')
-    print ck.go_check('local_01')
+    ck.beaker_name = CONST.DELL_PET105_01
+    ck.ksfile = os.path.join(CONST.KS_FILES_AUTO_DIR, 'ati_local_01.ks')
+    print ck.go_check()
