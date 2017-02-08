@@ -12,7 +12,7 @@ from pykickstart.constants import KS_SCRIPT_PRE, KS_SCRIPT_POST
 # from pykickstart.commands.network import F22_NetworkData
 
 # import constants
-from .constants import KS_FILES_DIR, KS_FILES_AUTO_DIR, \
+from constants import KS_FILES_DIR, KS_FILES_AUTO_DIR, \
     SMOKE_TEST_LIST, P1_TEST_LIST, ALL_TEST, HOSTS, \
     POST_SCRIPT_01, HOST_POOL, PRE_SCRIPT_01, MUST_HAVE_TEST_LIST, DEBUG_LIST, \
     TEST_LEVEL, TIER1_TESTCASE_MAP, TIER2_TESTCASE_MAP
@@ -63,8 +63,7 @@ class KickStartFiles(object):
         elif TEST_LEVEL == 'TIER2':
             testcase_map = TIER2_TESTCASE_MAP
         elif TEST_LEVEL == 'ALL':
-            testcase_map = dict(TIER1_TESTCASE_MAP,
-                                **TIER2_TESTCASE_MAP)
+            testcase_map = dict(TIER1_TESTCASE_MAP, **TIER2_TESTCASE_MAP)
         else:
             raise ValueError('Invaild TEST_LEVEL')
 
@@ -76,7 +75,7 @@ class KickStartFiles(object):
         for value in testcase_map.itervalues():
             ks = value[0]
             machine = value[1]
-            if machine_ksl_map.has_key(machine):
+            if machine in machine_ksl_map:
                 if ks not in machine_ksl_map.get(machine):
                     machine_ksl_map[machine].append(ks)
             else:
@@ -91,9 +90,10 @@ class KickStartFiles(object):
         for value in testcase_map.itervalues():
             ks = value[0]
             machine = value[1]
-            if ks_mashine_map.has_key(ks):
+            if ks in ks_mashine_map:
                 if machine != ks_mashine_map.get(ks):
-                    raise ValueError('One kickstart file cannot be run on two machines.')
+                    raise ValueError(
+                        'One kickstart file cannot be run on two machines.')
             else:
                 ks_mashine_map[ks] = machine
 
@@ -141,7 +141,6 @@ class KickStartFiles(object):
         ks_machine_map = self._get_ks_machine_map()
 
         for ks in ks_machine_map.keys():
-            kp = KickstartParser(makeVersion())
 
             bkr_name = ks_machine_map.get(ks)
 
@@ -150,31 +149,21 @@ class KickStartFiles(object):
             ks_ = os.path.join(KS_FILES_DIR, ks)
             ks_out = os.path.join(KS_FILES_AUTO_DIR, ks)
 
-            kp.readKickstart(ks_)
+            new_live_img = "liveimg --url=" + self._liveimg
 
-            kp.handler.liveimg.url = self._liveimg
+            os.system("sed '/liveimg --url=/ c\{}' {} > {}".format(
+                new_live_img, ks_, ks_out))
 
-            if 'sshd' not in kp.handler.services.enabled:
-                kp.handler.services.enabled.append('sshd')
+            post_script = self._generate_ks_script(
+                POST_SCRIPT_01.format(nic_name) + bkr_name,
+                error_on_fail=False)
 
-            kp.handler.scripts.append(
-                self._generate_ks_script(
-                    PRE_SCRIPT_01,
-                    script_type=KS_SCRIPT_PRE,
-                    error_on_fail=False,))
-            kp.handler.scripts.append(
-                self._generate_ks_script(
-                    POST_SCRIPT_01.format(nic_name) + bkr_name,
-                    error_on_fail=False,))
+            pre_script = self._generate_ks_script(
+                PRE_SCRIPT_01, script_type=KS_SCRIPT_PRE, error_on_fail=False)
 
-            # kp.handler.network.network = []
-            # kp.handler.network.network.append(F22_NetworkData(device=nic_name))
-
-            with open(ks_out, 'w') as fp:
-                fp.write(kp.handler.__str__())
-            kp = None
-
-        return
+            with open(ks_out, "a") as fp:
+                fp.write(pre_script.__str__())
+                fp.write(post_script.__str__())
 
     def get_job_queue(self):
         print "current test level is %s" % TEST_LEVEL
@@ -185,5 +174,5 @@ class KickStartFiles(object):
 
 if __name__ == '__main__':
     ks = KickStartFiles()
-
+    ks.liveimg = "http://fakeimg.squashfs"
     print(ks.get_job_queue())

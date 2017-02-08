@@ -63,11 +63,12 @@ class CheckYoo(object):
     def run_cmd(self, cmd, timeout=60):
         ret = None
         try:
-            with settings(host_string=self.host_string,
-                          user=self.host_user,
-                          password=self.host_pass,
-                          disable_known_hosts=True,
-                          connection_attempts=60):
+            with settings(
+                    host_string=self.host_string,
+                    user=self.host_user,
+                    password=self.host_pass,
+                    disable_known_hosts=True,
+                    connection_attempts=60):
                 ret = run(cmd, quiet=True, timeout=timeout)
                 if ret.succeeded:
                     return True, ret
@@ -143,6 +144,7 @@ class CheckYoo(object):
             log.error("run cmd %s failed", cmd)
             return False
 
+
 class CheckCheck(CheckYoo):
     """"""
 
@@ -161,90 +163,83 @@ class CheckCheck(CheckYoo):
             timeout=300)
 
     def fc_01(self):
-        ck01 = self.check_strs_in_cmd_output('fdisk -l | grep "Linux LVM"',
-                                             'LVM',
-                                             timeout=300)
+        ck01 = self.check_strs_in_cmd_output(
+            'fdisk -l | grep "Linux LVM"', 'LVM', timeout=300)
         ck02 = self.check_strs_in_cmd_output('lvs', '4.00g', timeout=300)
 
         return ck01 and ck02
 
     def firewall_01(self):
-        return self.check_strs_in_cmd_output('firewall-cmd --state',
-                                             'running',
-                                             timeout=300)
+        return self.check_strs_in_cmd_output(
+            'firewall-cmd --state', 'running', timeout=300)
 
     def iscsi_01(self):
-        ck01 = self.check_strs_in_cmd_output('fdisk -l | grep "Linux LVM"',
-                                             'LVM',
-                                             timeout=300)
+        ck01 = self.check_strs_in_cmd_output(
+            'fdisk -l | grep "Linux LVM"', 'LVM', timeout=300)
         return ck01
 
     def network_01(self):
         ck01 = self.check_strs_in_file(
-            '/etc/sysconfig/network-scripts/ifcfg-em1',
-            ('BOOTPROTO=dhcp',),
+            '/etc/sysconfig/network-scripts/ifcfg-em1', ('BOOTPROTO=dhcp', ),
             timeout=300)
 
         return ck01
 
     def selinux_01(self):
-        return self.check_strs_in_cmd_output('cat /etc/selinux/config',
-                                             'SELINUX=enforcing',
-                                             timeout=300)
+        return self.check_strs_in_cmd_output(
+            'cat /etc/selinux/config', 'SELINUX=enforcing', timeout=300)
 
     def services_01(self):
-        ck01 = self.check_strs_in_cmd_output('systemctl status sshd',
-                                             'active',
-                                             timeout=300)
+        ck01 = self.check_strs_in_cmd_output(
+            'systemctl status sshd', 'active', timeout=300)
         return ck01
 
     def install_check(self):
-        return self.check_strs_in_cmd_output('nodectl check',
-                                             'Status: OK',
-                                             timeout=300)
+        return self.check_strs_in_cmd_output(
+            'nodectl check', 'Status: OK', timeout=300)
 
     def static_network_check(self):
-        ck01 = self.check_strs_in_cmd_output('ip addr',
-                                             'inet 10.66.148.9/22',
-                                             timeout=300)
-        ck02 = self.check_strs_in_cmd_output('ip route',
-                                             'default via 10.66.151.254 dev enp2s0',
-                                             timeout=300)
+        ck01 = self.check_strs_in_cmd_output(
+            'ip addr', 'inet 10.66.148.9/22', timeout=300)
+        ck02 = self.check_strs_in_cmd_output(
+            'ip route', 'default via 10.66.151.254 dev enp2s0', timeout=300)
         return ck01 and ck02
 
     def hostname_check(self):
-        return self.check_strs_in_cmd_output('hostname',
-                                             'test.redhat.com',
-                                             timeout=300)
+        return self.check_strs_in_cmd_output(
+            'hostname', 'test.redhat.com', timeout=300)
 
     def auto_partition_check(self):
         # check mount points and fstype using df
         vgname = 'rhvh_dell--per510--01'
         lvpre = '/dev/mapper/%s' % vgname
         boot_device = '/dev/mapper/mpatha1'
-        df_patterns = [re.compile(r'^%s-rhvh.*ext4.*/' % lvpre),
-                       re.compile(r'^%s.*ext4.*/boot' % boot_device),
-                       re.compile(r'^%s-var.*ext4.*/var') % lvpre]
-        ck01 = self.match_strs_in_cmd_output('df -Th',
-                                             df_patterns,
-                                             timeout=300)
+        df_patterns = [
+            re.compile(r'^%s-rhvh.*ext4.*/' % lvpre),
+            re.compile(r'^%s.*ext4.*/boot' % boot_device),
+            re.compile(r'^%s-var.*ext4.*/var' % lvpre)
+        ]
+        ck01 = self.match_strs_in_cmd_output(
+            'df -Th', df_patterns, timeout=300)
 
         # check pool
         poolname = 'pool00'
-        lvs_patterns = [re.compile(r'^root.*%s' % poolname),
-                        re.compile(r'^rhvh.*%s\s*root$' % poolname),
-                        re.compile(r'^rhvh.*%s\s*rhvh' % poolname),
-                        re.compile(r'^var.*%s' % poolname),
-                        re.compile(r'^swap.*m$')]
-        ck02 = self.match_strs_in_cmd_output('lvs --units m',
-                                             lvs_patterns,
-                                             timeout=300)
+        lvs_patterns = [
+            re.compile(r'^root.*%s' % poolname),
+            re.compile(r'^rhvh.*%s\s*root$' % poolname),
+            re.compile(r'^rhvh.*%s\s*rhvh' % poolname),
+            re.compile(r'^var.*%s' % poolname), re.compile(r'^swap.*m$')
+        ]
+        ck02 = self.match_strs_in_cmd_output(
+            'lvs --units m', lvs_patterns, timeout=300)
 
         # check /, /var, /boot size
-        cmd = "expr 15360 = $(lvs --noheadings -o size --unit=m --nosuffix %s/%s | sed -r 's/\s*([0-9]+)\..*/\\1/')" % (vgname, 'var')
+        cmd = "expr 15360 = $(lvs --noheadings -o size --unit=m --nosuffix %s/%s | sed -r 's/\s*([0-9]+)\..*/\\1/')" % (
+            vgname, 'var')
         ck03 = self.check_strs_in_cmd_output(cmd, '1', timeout=300)
 
-        cmd = "expr 6 \* 1024 - $(lvs --noheadings -o size --unit=m --nosuffix %s/%s | sed -r 's/\s*([0-9]+)\..*/\\1/')" % (vgname, 'root')
+        cmd = "expr 6 \* 1024 - $(lvs --noheadings -o size --unit=m --nosuffix %s/%s | sed -r 's/\s*([0-9]+)\..*/\\1/')" % (
+            vgname, 'root')
         ck04 = self.check_strs_in_cmd_output(cmd, '-', timeout=300)
 
         cmd = "expr 1024 \* 1024 = $(fdisk -s %s)" % boot_device
@@ -257,28 +252,31 @@ class CheckCheck(CheckYoo):
         vgname = 'rhvh'
         lvpre = '/dev/mapper/%s' % vgname
         boot_device = '/dev/sda1'
-        df_patterns = [re.compile(r'^%s-rhvh.*ext4.*/' % lvpre),
-                       re.compile(r'^%s.*ext4.*/boot' % boot_device),
-                       re.compile(r'^%s-var.*ext4.*/var' % lvpre),
-                       re.compile(r'^%s-home.*xfs.*/home' % lvpre)]
-        ck01 = self.match_strs_in_cmd_output('df -Th',
-                                             df_patterns,
-                                             timeout=300)
+        df_patterns = [
+            re.compile(r'^%s-rhvh.*ext4.*/' % lvpre),
+            re.compile(r'^%s.*ext4.*/boot' % boot_device),
+            re.compile(r'^%s-var.*ext4.*/var' % lvpre),
+            re.compile(r'^%s-home.*xfs.*/home' % lvpre)
+        ]
+        ck01 = self.match_strs_in_cmd_output(
+            'df -Th', df_patterns, timeout=300)
 
         # check size and pool
         poolname = 'pool'
-        lvs_patterns = [re.compile(r'^root.*130000.*%s' % poolname),
-                        re.compile(r'^rhvh.*130000.*%s\s*root$' % poolname),
-                        re.compile(r'^rhvh.*130000.*%s\s*rhvh' % poolname),
-                        re.compile(r'^var.*15360.*%s' % poolname),
-                        re.compile(r'^home.*50000.*%s' % poolname),
-                        re.compile(r'^swap.*8000.00m$')]
-        ck02 = self.match_strs_in_cmd_output('lvs --units m',
-                                             lvs_patterns,
-                                             timeout=300)
+        lvs_patterns = [
+            re.compile(r'^root.*130000.*%s' % poolname),
+            re.compile(r'^rhvh.*130000.*%s\s*root$' % poolname),
+            re.compile(r'^rhvh.*130000.*%s\s*rhvh' % poolname),
+            re.compile(r'^var.*15360.*%s' % poolname),
+            re.compile(r'^home.*50000.*%s' % poolname),
+            re.compile(r'^swap.*8000.00m$')
+        ]
+        ck02 = self.match_strs_in_cmd_output(
+            'lvs --units m', lvs_patterns, timeout=300)
 
         # check pool grow
-        cmd = "expr 200000 - $(lvs --noheadings -o size --unit=m --nosuffix %s/%s | sed -r 's/\s*([0-9]+)\..*/\\1/')" % (vgname, poolname)
+        cmd = "expr 200000 - $(lvs --noheadings -o size --unit=m --nosuffix %s/%s | sed -r 's/\s*([0-9]+)\..*/\\1/')" % (
+            vgname, poolname)
         ck03 = self.check_strs_in_cmd_output(cmd, '-', timeout=300)
 
         # check /boot size
@@ -288,56 +286,45 @@ class CheckCheck(CheckYoo):
         return ck01 and ck02 and ck03 and ck04
 
     def bond_vlan_check(self):
-        ck01 = self.check_strs_in_cmd_output('ip addr',
-                                             ('bond0.50', '192.168.50.'),
-                                             timeout=300)
-        ck02 = self.check_strs_in_file('/etc/sysconfig/network-scripts/ifcfg-bond0',
-                                       'mode=active-backup,primary=p1p1,miimon=100',
-                                       timeout=300)
+        ck01 = self.check_strs_in_cmd_output(
+            'ip addr', ('bond0.50', '192.168.50.'), timeout=300)
+        ck02 = self.check_strs_in_file(
+            '/etc/sysconfig/network-scripts/ifcfg-bond0',
+            'mode=active-backup,primary=p1p1,miimon=100',
+            timeout=300)
         return ck01 and ck02
 
     def lang_check(self):
-        return self.check_strs_in_cmd_output('localectl status',
-                                             'LANG=en_US.UTF-8',
-                                             timeout=300)
+        return self.check_strs_in_cmd_output(
+            'localectl status', 'LANG=en_US.UTF-8', timeout=300)
 
     def ntp_check(self):
-        return self.check_strs_in_file('/etc/ntp.conf',
-                                       'clock02.util.phx2.redhat.com',
-                                       timeout=300)
+        return self.check_strs_in_file(
+            '/etc/ntp.conf', 'clock02.util.phx2.redhat.com', timeout=300)
 
     def us_keyboard_check(self):
-        return self.check_strs_in_cmd_output('localectl status',
-                                             ('VC Keymap: us', 'X11 Layout: us'),
-                                             timeout=300)
+        return self.check_strs_in_cmd_output(
+            'localectl status', ('VC Keymap: us', 'X11 Layout: us'),
+            timeout=300)
 
     def ge_keyboard_check(self):
-        return self.check_strs_in_cmd_output('localectl status',
-                                             ('VC Keymap: ge', 'X11 Layout: ge'),
-                                             timeout=300)
+        return self.check_strs_in_cmd_output(
+            'localectl status', ('VC Keymap: ge', 'X11 Layout: ge'),
+            timeout=300)
 
     def security_policy_check(self):
-        return self.check_strs_in_cmd_output('ls /root',
-                                             'openscap_data',
-                                             timeout=300)
+        return self.check_strs_in_cmd_output(
+            'ls /root', 'openscap_data', timeout=300)
 
     def kdump_check(self):
-        return self.check_strs_in_file('/etc/grub2.cfg',
-                                       'crashkernel=200M',
-                                       timeout=300)
+        return self.check_strs_in_file(
+            '/etc/grub2.cfg', 'crashkernel=200M', timeout=300)
 
     def users_check(self):
-        ck01 = self.check_strs_in_file('/etc/passwd',
-                                       'test',
-                                       timeout=300)
-        ck02 = self.check_strs_in_file('/etc/shadow',
-                                       'test',
-                                       timeout=300)
-        ck03 = self.check_strs_in_cmd_output('ls /home',
-                                             'test',
-                                             timeout=300)
+        ck01 = self.check_strs_in_file('/etc/passwd', 'test', timeout=300)
+        ck02 = self.check_strs_in_file('/etc/shadow', 'test', timeout=300)
+        ck03 = self.check_strs_in_cmd_output('ls /home', 'test', timeout=300)
         return ck01 and ck02 and ck03
-
 
     def multi_disks_check(self):
         pass
@@ -369,11 +356,12 @@ class CheckCheck(CheckYoo):
 
         return cks
 
+
 if __name__ == '__main__':
     # 10.73.75.219
     ck = CheckCheck()
-    ck.host_string, ck._host_user, ck.host_pass = ('10.66.148.9', 'root',
+    ck.host_string, ck._host_user, ck.host_pass = ('10.73.75.58', 'root',
                                                    'redhat')
-    ck.beaker_name = CONST.DELL_PET105_01
-    ck.ksfile = os.path.join(CONST.KS_FILES_AUTO_DIR, 'ati_local_01.ks')
+    ck.beaker_name = CONST.DELL_PER510_01
+    ck.ksfile = os.path.join(CONST.KS_FILES_AUTO_DIR, 'ati_fc_01.ks')
     print ck.go_check()

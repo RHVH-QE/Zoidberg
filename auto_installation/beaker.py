@@ -20,7 +20,7 @@ class WatchInstallation(object):
         now = time.time()
         while True:
             msg = self.p.get_message(ignore_subscribe_messages=True)
-            log.debug("waiting for installation message")
+            log.info("waiting for installation message")
             if msg:
                 log.info("get message from channel %s: %s", self.ch_name, msg)
                 with Cobbler() as cb:
