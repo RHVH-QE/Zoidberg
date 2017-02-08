@@ -180,7 +180,7 @@ class CheckCheck(CheckYoo):
 
     def network_01(self):
         ck01 = self.check_strs_in_file(
-            '/etc/sysconfig/network-scripts/ifcfg-em1', ('BOOTPROTO=dhcp', ),
+            '/etc/sysconfig/network-scripts/ifcfg-em1', ('BOOTPROTO=dhcp',),
             timeout=300)
 
         return ck01
@@ -211,8 +211,8 @@ class CheckCheck(CheckYoo):
 
     def auto_partition_check(self):
         # check mount points and fstype using df
-        vgname = 'rhvh_dell--per510--01'
-        lvpre = '/dev/mapper/%s' % vgname
+        vgname = 'rhvh_bootp-73-75-58'
+        lvpre = '/dev/mapper/rhvh_bootp--73--75--58'
         boot_device = '/dev/mapper/mpatha1'
         df_patterns = [
             re.compile(r'^%s-rhvh.*ext4.*/' % lvpre),
@@ -290,7 +290,7 @@ class CheckCheck(CheckYoo):
             'ip addr', ('bond0.50', '192.168.50.'), timeout=300)
         ck02 = self.check_strs_in_file(
             '/etc/sysconfig/network-scripts/ifcfg-bond0',
-            'mode=active-backup,primary=p1p1,miimon=100',
+            'mode=active-backup primary=p1p1 miimon=100',
             timeout=300)
         return ck01 and ck02
 
