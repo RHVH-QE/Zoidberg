@@ -38,7 +38,7 @@ network --onboot=on --bootproto=static --device=enp2s0 --ip=10.66.148.9 --netmas
 ### Partitioning ###
 ignoredisk --only-use=sda
 zerombr
-clearpart --all --initlabel
+clearpart --all
 bootloader --location=mbr
 part /boot --fstype=ext4 --size=1024
 part pv.01 --size 20000 --grow
@@ -50,21 +50,66 @@ logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --size
 logvol /home --fstype=xfs --name=home --vgname=rhvh --thin --poolname=pool --size=50000
 
 ### Pre deal ###
-%pre --erroronfail
-dd if=/dev/zero of=/dev/disk/by-id/ata-WDC_WD2502ABYS-18B7A0_WD-WCAT19563677 bs=1M count=1
-dd if=/dev/zero of=/dev/disk/by-id/ata-WDC_WD2502ABYS-18B7A0_WD-WCAT19563677-part1 bs=1M count=1
-dd if=/dev/zero of=/dev/disk/by-id/ata-WDC_WD2502ABYS-18B7A0_WD-WCAT19563677-part2 bs=1M count=1
-dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000002 bs=1M count=1
-dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000002-part1 bs=1M count=1
-dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000002-part2 bs=1M count=1
-dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000003 bs=1M count=1
-dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000003-part1 bs=1M count=1
-dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000004 bs=1M count=1
-dd if=/dev/zero of=/dev/disk/by-id/scsi-36005076300810b3e0000000000000004-part1 bs=1M count=1
-%end
 
 ### Post deal ###
 %post --erroronfail
 imgbase layout --init
 %end
 
+%post --erroronfail --interpreter=/usr/bin/python
+import pickle
+
+checkdata_map = {}
+
+checkdata_map['lang'] = 'en_US.UTF-8'
+checkdata_map['timezone'] = 'Asia/Shanghai'
+checkdata_map['ntpservers'] = 'clock02.util.phx2.redhat.com'
+checkdata_map['keyboard'] = {'vckeymap': 'us', 'xlayouts': 'us'}
+checkdata_map['kdump'] = {'reserve-mb': '200'}
+checkdata_map['user'] = {'name': 'test'}
+checkdata_map['network'] = {
+    'static': {    
+        'device': 'enp2s0',
+        'ip': '10.66.148.9',
+        'netmask': '255.255.252.0',
+        'gateway': '10.66.151.254',
+        'onboot': 'yes'
+    },
+    'hostname': 'test.redhat.com'
+}
+checkdata_map['boot'] = {
+    'device': '/dev/sda1',
+    'size': '1024'
+}
+checkdata_map['volgroup'] = {'name': 'rhvh'}
+checkdata_map['logvol'] = {
+    'pool': {
+        'name': 'pool',
+        'size': '200000',
+        'grow': True
+    },
+    '/': {
+        'name': 'root',
+        'fstype': 'ext4',
+        'size': '130000'
+    },
+    '/var': {
+        'name': 'var',
+        'fstype': 'ext4',
+        'size': '15360'
+    },
+    '/home': {
+        'name': 'home',
+        'fstype': 'xfs',
+        'size': '50000'
+    },
+    'swap': {
+        'name': 'swap',
+        'size': '8000'
+    }
+}
+
+fp = open('/boot/checkdata_map.pkl', 'wb')
+pickle.dump(checkdata_map, fp)
+fp.close()
+%end

@@ -6,8 +6,9 @@ import os
 import logging
 import fnmatch
 
-from pykickstart.version import makeVersion
-from pykickstart.parser import KickstartParser, Script
+#from pykickstart.version import makeVersion
+#from pykickstart.parser import KickstartParser, Script
+from pykickstart.parser import Script
 from pykickstart.constants import KS_SCRIPT_PRE, KS_SCRIPT_POST
 # from pykickstart.commands.network import F22_NetworkData
 
@@ -15,7 +16,8 @@ from pykickstart.constants import KS_SCRIPT_PRE, KS_SCRIPT_POST
 from constants import KS_FILES_DIR, KS_FILES_AUTO_DIR, \
     SMOKE_TEST_LIST, P1_TEST_LIST, ALL_TEST, HOSTS, \
     POST_SCRIPT_01, HOST_POOL, PRE_SCRIPT_01, MUST_HAVE_TEST_LIST, DEBUG_LIST, \
-    TEST_LEVEL, TIER1_TESTCASE_MAP, TIER2_TESTCASE_MAP
+    TEST_LEVEL
+from utils import get_testcase_map
 
 loger = logging.getLogger('bender')
 
@@ -56,22 +58,9 @@ class KickStartFiles(object):
         # TODO
         return HOST_POOL.get(host_type)
 
-    def _get_testcase_map(self):
-        # get testcase map
-        if TEST_LEVEL == 'TIER1':
-            testcase_map = TIER1_TESTCASE_MAP
-        elif TEST_LEVEL == 'TIER2':
-            testcase_map = TIER2_TESTCASE_MAP
-        elif TEST_LEVEL == 'ALL':
-            testcase_map = dict(TIER1_TESTCASE_MAP, **TIER2_TESTCASE_MAP)
-        else:
-            raise ValueError('Invaild TEST_LEVEL')
-
-        return testcase_map
-
     def _get_machine_ksl_map(self):
         machine_ksl_map = {}
-        testcase_map = self._get_testcase_map()
+        testcase_map = get_testcase_map()
         for value in testcase_map.itervalues():
             ks = value[0]
             machine = value[1]
@@ -86,7 +75,7 @@ class KickStartFiles(object):
 
     def _get_ks_machine_map(self):
         ks_mashine_map = {}
-        testcase_map = self._get_testcase_map()
+        testcase_map = get_testcase_map()
         for value in testcase_map.itervalues():
             ks = value[0]
             machine = value[1]
@@ -104,8 +93,7 @@ class KickStartFiles(object):
         for pat in self.KS_FILTER.get(self._ks_filter, ('*')):
             loger.debug("list ks files match pattern %s", pat)
             ret.extend(
-                fnmatch.filter(
-                    os.listdir(KS_FILES_DIR), "ati_{}*".format(pat)))
+                fnmatch.filter(os.listdir(KS_FILES_DIR), "ati_{}*".format(pat)))
         ret.sort()
         return ret
 
@@ -140,7 +128,7 @@ class KickStartFiles(object):
 
         ks_machine_map = self._get_ks_machine_map()
 
-        for ks in ks_machine_map.keys():
+        for ks in ks_machine_map:
 
             bkr_name = ks_machine_map.get(ks)
 
@@ -151,12 +139,11 @@ class KickStartFiles(object):
 
             new_live_img = "liveimg --url=" + self._liveimg
 
-            os.system("sed '/liveimg --url=/ c\{}' {} > {}".format(
-                new_live_img, ks_, ks_out))
+            os.system("sed '/liveimg --url=/ c\{}' {} > {}".format(new_live_img,
+                                                                   ks_, ks_out))
 
             post_script = self._generate_ks_script(
-                POST_SCRIPT_01.format(nic_name) + bkr_name,
-                error_on_fail=False)
+                POST_SCRIPT_01.format(nic_name) + bkr_name, error_on_fail=False)
 
             pre_script = self._generate_ks_script(
                 PRE_SCRIPT_01, script_type=KS_SCRIPT_PRE, error_on_fail=False)
@@ -166,7 +153,7 @@ class KickStartFiles(object):
                 fp.write(post_script.__str__())
 
     def get_job_queue(self):
-        print "current test level is %s" % TEST_LEVEL
+        print "current test level is %x" % TEST_LEVEL
         self._convert_to_auto_ks()
         return self._get_machine_ksl_map()
         # return [(ks, self._get_host(ks)) for ks in ks_list]

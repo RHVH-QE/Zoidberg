@@ -4,12 +4,17 @@ import logging.config
 import yaml
 import redis
 import time
-from .constants import PROJECT_ROOT
+from constants import PROJECT_ROOT, \
+    ANACONDA_TIER1, ANACONDA_TIER2, KS_TIER1, KS_TIER2, \
+    TEST_LEVEL, \
+    ANACONDA_TIER1_TESTCASE_MAP, ANACONDA_TIER2_TESTCASE_MAP, \
+    KS_TIER1_TESTCASE_MAP, KS_TIER2_TESTCASE_MAP
 
 log = logging.getLogger('bender')
 
 
 class ReserveUserWrongException(Exception):
+
     def __init__(self, message):
         super(ReserveUserWrongException,
               self).__init__('''System <{bkr_name}> must be reserved by \
@@ -96,6 +101,24 @@ def setup_funcs(redis_conn):
     redis_conn.flushdb()
     print("set key 'running' value to '0'")
     redis_conn.set('running', 0, nx=True)
+
+
+def get_testcase_map():
+    # get testcase map
+    testcase_map = {}
+    if TEST_LEVEL & ANACONDA_TIER1:
+        testcase_map.update(ANACONDA_TIER1_TESTCASE_MAP)
+    if TEST_LEVEL & ANACONDA_TIER2:
+        testcase_map.update(ANACONDA_TIER2_TESTCASE_MAP)
+    if TEST_LEVEL & KS_TIER1:
+        testcase_map.update(KS_TIER1_TESTCASE_MAP)
+    if TEST_LEVEL & KS_TIER2:
+        testcase_map.update(KS_TIER2_TESTCASE_MAP)
+
+    if not testcase_map:
+        raise ValueError('Invaild TEST_LEVEL')
+
+    return testcase_map
 
 
 if __name__ == '__main__':

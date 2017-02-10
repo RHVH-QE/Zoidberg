@@ -20,11 +20,16 @@ STATIC_URL = ("http://{0}:{1}/"
 DELL_PET105_01 = 'dell-pet105-01.qe.lab.eng.nay.redhat.com'
 DELL_PER510_01 = 'dell-per510-01.lab.eng.pek2.redhat.com'
 
-# TIER1, TIER2, ALL
-TEST_LEVEL = 'TIER1'
+# ANACONDA-TIER1, ANACONDA-TIER2, KS-TIER1, KS-TIER2,ALL
+ANACONDA_TIER1 = 0x01
+ANACONDA_TIER2 = 0x02
+KS_TIER1 = 0x04
+KS_TIER2 = 0x08
+
+TEST_LEVEL = ANACONDA_TIER1 | ANACONDA_TIER2
 
 # one kickstart file can only be run on a single machine
-TIER1_TESTCASE_MAP = {
+ANACONDA_TIER1_TESTCASE_MAP = {
     'RHEVM-17788': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
     'RHEVM-17800': ('ati_local_01.ks', DELL_PET105_01, 'static_network_check'),
     'RHEVM-17801': ('ati_local_01.ks', DELL_PET105_01, 'hostname_check'),
@@ -35,17 +40,21 @@ TIER1_TESTCASE_MAP = {
     'RHEVM-17806': ('ati_fc_01.ks', DELL_PER510_01, 'auto_partition_check'),
     'RHEVM-17816': ('ati_fc_01.ks', DELL_PER510_01, 'bond_vlan_check'),
     'RHEVM-16972': ('ati_fc_01.ks', DELL_PER510_01, 'auto_partition_check')
-    }
+}
 
-TIER2_TESTCASE_MAP = {
+ANACONDA_TIER2_TESTCASE_MAP = {
     'RHEVM-17798': ('ati_local_01.ks', DELL_PET105_01, 'lang_check'),
     'RHEVM-17802': ('ati_local_01.ks', DELL_PET105_01, 'ntp_check'),
-    'RHEVM-17803': ('ati_local_01.ks', DELL_PET105_01, 'us_keyboard_check'),
+    'RHEVM-17803': ('ati_local_01.ks', DELL_PET105_01, 'keyboard_check'),
     'RHEVM-17805': ('ati_local_01.ks', DELL_PET105_01, 'security_policy_check'),
     'RHEVM-17808': ('ati_local_01.ks', DELL_PET105_01, 'kdump_check'),
     'RHEVM-17811': ('ati_local_01.ks', DELL_PET105_01, 'users_check'),
-    'RHEVM-17804': ('ati_local_02.ks', DELL_PET105_01, 'ge_keyboard_check')
-    }
+    'RHEVM-17804': ('ati_local_02.ks', DELL_PET105_01, 'keyboard_check')
+}
+
+KS_TIER1_TESTCASE_MAP = {}
+
+KS_TIER2_TESTCASE_MAP = {}
 
 SMOKE_TEST_LIST = ('FC_01',)
 P1_TEST_LIST = (
