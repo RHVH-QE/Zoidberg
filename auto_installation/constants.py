@@ -33,7 +33,8 @@ ANACONDA_TIER1_TESTCASE_MAP = {
     'RHEVM-17788': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
     'RHEVM-17800': ('ati_local_01.ks', DELL_PET105_01, 'static_network_check'),
     'RHEVM-17801': ('ati_local_01.ks', DELL_PET105_01, 'hostname_check'),
-    'RHEVM-17807': ('ati_local_01.ks', DELL_PET105_01, 'manually_partition_check'),
+    'RHEVM-17807':
+    ('ati_local_01.ks', DELL_PET105_01, 'manually_partition_check'),
     'RHEVM-17826': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
     'RHEVM-17828': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
     'RHEVM-17790': ('ati_fc_01.ks', DELL_PER510_01, 'install_check'),
@@ -46,7 +47,8 @@ ANACONDA_TIER2_TESTCASE_MAP = {
     'RHEVM-17798': ('ati_local_01.ks', DELL_PET105_01, 'lang_check'),
     'RHEVM-17802': ('ati_local_01.ks', DELL_PET105_01, 'ntp_check'),
     'RHEVM-17803': ('ati_local_01.ks', DELL_PET105_01, 'keyboard_check'),
-    'RHEVM-17805': ('ati_local_01.ks', DELL_PET105_01, 'security_policy_check'),
+    'RHEVM-17805':
+    ('ati_local_01.ks', DELL_PET105_01, 'security_policy_check'),
     'RHEVM-17808': ('ati_local_01.ks', DELL_PET105_01, 'kdump_check'),
     'RHEVM-17811': ('ati_local_01.ks', DELL_PET105_01, 'users_check'),
     'RHEVM-17804': ('ati_local_02.ks', DELL_PET105_01, 'keyboard_check')
@@ -56,13 +58,13 @@ KS_TIER1_TESTCASE_MAP = {}
 
 KS_TIER2_TESTCASE_MAP = {}
 
-SMOKE_TEST_LIST = ('FC_01',)
+SMOKE_TEST_LIST = ('FC_01', )
 P1_TEST_LIST = (
     'autopart',
     'bond',
     'FC',
-    'part',)
-ALL_TEST = ('*',)
+    'part', )
+ALL_TEST = ('*', )
 MUST_HAVE_TEST_LIST = (
     # 'autopart_01',
     # 'FC_01',
@@ -78,17 +80,17 @@ MUST_HAVE_TEST_LIST = (
     # 'vlan_01',
     # 'firewall_01',
     # 'selinux_01',
-    'local_01',)
+    'local_01', )
 
-DEBUG_LIST = ('FC_06',)
+DEBUG_LIST = ('FC_06', )
 
 HOST_POOL = {
-    'FC': ('dell-per510-01.lab.eng.pek2.redhat.com',),
+    'FC': ('dell-per510-01.lab.eng.pek2.redhat.com', ),
     'bond': (),
     'iscsi': (),
     'uefi': (),
     'vlan': (),
-    'default': ('dell-pet105-01.qe.lab.eng.nay.redhat.com',),
+    'default': ('dell-pet105-01.qe.lab.eng.nay.redhat.com', ),
 }
 
 HOSTS = {
@@ -123,22 +125,12 @@ KS_TESTCASE_MAP = {
     'ati_autopart_01.ks': 'RHEVM-15056',
     'ati_lvm_01.ks': 'RHEVM-15057',
     'ati_ntp.ks': 'RHEVM-15064',
-    'ati_local_01.ks': ('RHEVM-17788',
-                        'RHEVH-17800',
-                        'RHEVH-17801',
-                        'RHEVH-17807',
-                        'RHEVH-17826',
-                        'RHEVH-17828',
-                        'RHEVH-17798',
-                        'RHEVH-17802',
-                        'RHEVH-17803',
-                        'RHEVH-17805',
-                        'RHEVH-17808',
-                        'RHEVH-17811'),
+    'ati_local_01.ks':
+    ('RHEVM-17788', 'RHEVH-17800', 'RHEVH-17801', 'RHEVH-17807', 'RHEVH-17826',
+     'RHEVH-17828', 'RHEVH-17798', 'RHEVH-17802', 'RHEVH-17803', 'RHEVH-17805',
+     'RHEVH-17808', 'RHEVH-17811'),
     'ati_local_02.ks': 'RHEVM-17804',
-    'ati_fc_01.ks': ('RHEVM-17790',
-                     'RHEVM-17806',
-                     'RHEVM-17816',
+    'ati_fc_01.ks': ('RHEVM-17790', 'RHEVM-17806', 'RHEVM-17816',
                      'RHEVM-16972')
 }
 
@@ -191,7 +183,7 @@ NOPXE_URL = "http://lab-01.rhts.eng.pek2.redhat.com:8000/nopxe/{0}"
 
 CB_API = "http://10.73.60.74/cobbler_api"
 CB_CREDENTIAL = ('cobbler', 'cobbler')
-CB_PROFILE = 'RHVH-4.1-73-20170111.0'
+CB_PROFILE = 'RHVH-4.1-73-20170209.0'
 CB_SYSTEM = 'dell-pet105-01.qe.lab.eng.nay.redhat.com'
 ARGS_TPL = ('inst.ks=http://{srv_ip}:{srv_port}/static/auto/{ks_file} '
             'inst.stage2=http://10.66.10.22:8090/'

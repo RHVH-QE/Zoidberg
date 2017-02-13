@@ -6,13 +6,9 @@ import os
 import logging
 import fnmatch
 
-#from pykickstart.version import makeVersion
-#from pykickstart.parser import KickstartParser, Script
 from pykickstart.parser import Script
 from pykickstart.constants import KS_SCRIPT_PRE, KS_SCRIPT_POST
-# from pykickstart.commands.network import F22_NetworkData
 
-# import constants
 from constants import KS_FILES_DIR, KS_FILES_AUTO_DIR, \
     SMOKE_TEST_LIST, P1_TEST_LIST, ALL_TEST, HOSTS, \
     POST_SCRIPT_01, HOST_POOL, PRE_SCRIPT_01, MUST_HAVE_TEST_LIST, DEBUG_LIST, \
@@ -93,7 +89,8 @@ class KickStartFiles(object):
         for pat in self.KS_FILTER.get(self._ks_filter, ('*')):
             loger.debug("list ks files match pattern %s", pat)
             ret.extend(
-                fnmatch.filter(os.listdir(KS_FILES_DIR), "ati_{}*".format(pat)))
+                fnmatch.filter(
+                    os.listdir(KS_FILES_DIR), "ati_{}*".format(pat)))
         ret.sort()
         return ret
 
@@ -139,11 +136,12 @@ class KickStartFiles(object):
 
             new_live_img = "liveimg --url=" + self._liveimg
 
-            os.system("sed '/liveimg --url=/ c\{}' {} > {}".format(new_live_img,
-                                                                   ks_, ks_out))
+            os.system("sed '/liveimg --url=/ c\{}' {} > {}".format(
+                new_live_img, ks_, ks_out))
 
             post_script = self._generate_ks_script(
-                POST_SCRIPT_01.format(nic_name) + bkr_name, error_on_fail=False)
+                POST_SCRIPT_01.format(nic_name) + bkr_name,
+                error_on_fail=False)
 
             pre_script = self._generate_ks_script(
                 PRE_SCRIPT_01, script_type=KS_SCRIPT_PRE, error_on_fail=False)

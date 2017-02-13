@@ -173,7 +173,8 @@ class CheckCheck(CheckYoo):
     def _set_checkdata_map(self):
         log.info("start to read checkdata_map.pkl file")
         pkl_file_name = 'checkdata_map.pkl'
-        local_pkl_path = os.path.join(CONST.PROJECT_ROOT, 'logs', pkl_file_name)
+        local_pkl_path = os.path.join(CONST.PROJECT_ROOT, 'logs',
+                                      pkl_file_name)
         remote_pkl_path = os.path.join('/boot', pkl_file_name)
 
         if os.path.exists(local_pkl_path):
@@ -242,18 +243,19 @@ class CheckCheck(CheckYoo):
             fstype = logvol_map.get(lv).get('fstype')
             name = logvol_map.get(lv).get('name')
             if lv == '/':
-                pattern = re.compile(
-                    r'^{}-rhvh.*{}.*{}'.format(lvpre, fstype, lv))
+                pattern = re.compile(r'^{}-rhvh.*{}.*{}'.format(lvpre, fstype,
+                                                                lv))
             else:
-                pattern = re.compile(
-                    r'^{}-{}.*{}.*{}'.format(lvpre, name, fstype, lv))
+                pattern = re.compile(r'^{}-{}.*{}.*{}'.format(lvpre, name,
+                                                              fstype, lv))
 
             df_patterns.append(pattern)
 
         pattern = re.compile(r'^%s.*ext4.*/boot' % boot_device)
         df_patterns.append(pattern)
 
-        return self.match_strs_in_cmd_output('df -Th', df_patterns, timeout=300)
+        return self.match_strs_in_cmd_output(
+            'df -Th', df_patterns, timeout=300)
 
     def _check_manual_partition_size(self):
         # check lv size
@@ -261,14 +263,17 @@ class CheckCheck(CheckYoo):
         logvol_map = self._checkdata_map.get('logvol')
         for lv in logvol_map:
             if logvol_map.get(lv).get('grow'):
-                cmd = "expr {} - $(lvs --noheadings -o size --unit=m --nosuffix {}/{} | sed -r 's/\s*([0-9]+)\..*/\\1/')".format(
-                    logvol_map.get(lv).get('size'), vgname,
-                    logvol_map.get(lv).get('name'))
+                cmd = ("expr {} - $(lvs --noheadings -o size"
+                       " --unit=m --nosuffix {}/{} "
+                       "| sed -r 's/\s*([0-9]+)\..*/\\1/')").format(
+                           logvol_map.get(lv).get('size'), vgname,
+                           logvol_map.get(lv).get('name'))
 
                 ck = self.check_strs_in_cmd_output(cmd, '-', timeout=300)
             else:
-                cmd = "lvs --noheadings -o size --unit=m --nosuffix {}/{} | sed -r 's/\s*([0-9]+)\..*/\\1/'".format(
-                    vgname, logvol_map.get(lv).get('name'))
+                cmd = ("lvs --noheadings -o size --unit=m --nosuffix {}/{} "
+                       "| sed -r 's/\s*([0-9]+)\..*/\\1/'").format(
+                           vgname, logvol_map.get(lv).get('name'))
                 ck = self.check_strs_in_cmd_output(
                     cmd, logvol_map.get(lv).get('size'), timeout=300)
             if not ck:
@@ -287,18 +292,21 @@ class CheckCheck(CheckYoo):
             re.compile(r'^{}.*ext4.*/boot'.format(boot_device)),
             re.compile(r'^{}-var.*ext4.*/var'.format(lvpre))
         ]
-        
-        return self.match_strs_in_cmd_output('df -Th', df_patterns, timeout=300)
+
+        return self.match_strs_in_cmd_output(
+            'df -Th', df_patterns, timeout=300)
 
     def _check_auto_partition_size(self):
         vgname = self._checkdata_map.get('volgroup').get('name')
         # check /var
-        cmd = "lvs --noheadings -o size --unit=m --nosuffix {}/{} | sed -r 's/\s*([0-9]+)\..*/\\1/'".format(
-            vgname, 'var')
+        cmd = ("lvs --noheadings -o size --unit=m --nosuffix {}/{} "
+               "| sed -r 's/\s*([0-9]+)\..*/\\1/'").format(vgname, 'var')
         ck01 = self.check_strs_in_cmd_output(cmd, '15360', timeout=300)
         # check /
-        cmd = "expr 6 \* 1024 - $(lvs --noheadings -o size --unit=m --nosuffix {}/{} | sed -r 's/\s*([0-9]+)\..*/\\1/')".format(
-            vgname, 'root')
+        cmd = ("expr 6 \* 1024 - $(lvs --noheadings -o size "
+               "--unit=m --nosuffix {}/{} | sed -r 's/\s*([0-9]+)\..*/\\1/')"
+               ).format(vgname, 'root')
+
         ck02 = self.check_strs_in_cmd_output(cmd, '-', timeout=300)
         # check /boot
         ck03 = self._check_boot_size()
@@ -360,7 +368,7 @@ class CheckCheck(CheckYoo):
         bond_device = self._checkdata_map.get('network').get('bond').get(
             'device')
         bond_slaves = self._checkdata_map.get('network').get('bond').get(
-            'slaves')         
+            'slaves')
         bond_opts = self._checkdata_map.get('network').get('bond').get('opts')
         bond_onboot = self._checkdata_map.get('network').get('bond').get(
             'onboot')
@@ -380,7 +388,7 @@ class CheckCheck(CheckYoo):
     def vlan_check(self):
         vlan_device = self._checkdata_map.get('network').get('vlan').get(
             'device')
-        vlan_id = self._checkdata_map.get('network').get('vlan').get('id')        
+        vlan_id = self._checkdata_map.get('network').get('vlan').get('id')
         vlan_onboot = self._checkdata_map.get('network').get('vlan').get(
             'onboot')
 
@@ -429,7 +437,9 @@ class CheckCheck(CheckYoo):
     def kdump_check(self):
         reserve_mb = self._checkdata_map.get('kdump').get('reserve-mb')
         return self.check_strs_in_file(
-            '/etc/grub2.cfg', 'crashkernel={}M'.format(reserve_mb), timeout=300)
+            '/etc/grub2.cfg',
+            'crashkernel={}M'.format(reserve_mb),
+            timeout=300)
 
     def users_check(self):
         username = self._checkdata_map.get('user').get('name')
