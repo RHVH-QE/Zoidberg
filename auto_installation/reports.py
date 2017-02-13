@@ -71,6 +71,18 @@ class ResultsToPolarion(object):
             # TODO deal with blocked
             pass
 
+    def parse_results(self, res, tr):
+        with open(res) as fp:
+            res = eval(fp.readlines()[-1].split("::")[-1])
+            for k, v in res.items():
+                if v:
+                    self.export_to_polarion(tr, k, 'passed')
+                else:
+                    self.export_to_polarion(tr, k, 'failed')
+
+                print "be nice with server, sleep 1 sec"
+                time.sleep(1)
+
     def run(self):
         tr = self.create_testrun()
         tr.group_id = self.build
@@ -84,29 +96,14 @@ class ResultsToPolarion(object):
 
         for a, b, c in os.walk(self.root_path):
             for ks in b:
-                print ks
-                with open(os.path.join(a, ks, 'checkpoints')) as fp:
-                    if 'False' in fp.readlines()[-1]:
-                        self.export_to_polarion(tr,
-                                                KS_TESTCASE_MAP.get(ks),
-                                                'failed')
-                        # tr.add_attachment_to_test_record(test_case_id=KS_TESTCASE_MAP.get(ks),
-                        #                                  path=fp.name,
-                        #                                  title='failedLogs')
-                    else:
-                        self.export_to_polarion(tr,
-                                                KS_TESTCASE_MAP.get(ks),
-                                                'passed')
-
-                print "be nice with server, sleep 1 sec"
-                time.sleep(1)
+                self.parse_results(os.path.join(a, ks, 'checkpoints'), tr)
             break
 
 
 if __name__ == '__main__':
-    r = ResultsToPolarion(
-        '/home/dracher/Projects/Zoidberg/app/logs/2017-01-05/redhat-virtualization-host-4.0-20170104.0/ati_autopart_01.ks'
-    )
+    res_path = os.path.realpath(sys.argv[1])
+
+    r = ResultsToPolarion(res_path)
     r.run()
 
     # tr = TestRun(project_id='RHEVM3', test_run_id='4_0_Node_06221451_AutoInstallWithKickstart_Must')
