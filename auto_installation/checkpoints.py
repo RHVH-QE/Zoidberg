@@ -195,6 +195,25 @@ class CheckCheck(CheckYoo):
         else:
             raise ValueError("Can't get checkdata_map")
 
+    def _get_checkpoint_cases_map(self):
+        # get testcase map
+        testcase_map = get_testcase_map()
+        # get ksfile name, machine name
+        ksfile_name = self.ksfile
+        machine_name = self.beaker_name
+
+        checkpoint_cases_map = {}
+        for key, value in testcase_map.items():
+            if set((ksfile_name, machine_name)) < set(value):
+                checkpoint = value[2]
+                if checkpoint in checkpoint_cases_map:
+                    checkpoint_cases_map[checkpoint].append(key)
+                else:
+                    checkpoint_cases_map[checkpoint] = []
+                    checkpoint_cases_map[checkpoint].append(key)
+
+        return checkpoint_cases_map
+
     def _check_device_ifcfg_value(self, nic, key_value_map):
         patterns = []
         for key, value in key_value_map.items():
@@ -474,19 +493,18 @@ class CheckCheck(CheckYoo):
         pass
 
     def check(self):
-        # get testcase map
-        testcase_map = get_testcase_map()
         # set checkdata_map
         self._set_checkdata_map()
-        # get ksfile name, machine name
-        ksfile_name = self.ksfile
-        machine_name = self.beaker_name
+        # get checkpoint cases map
+        checkpoint_cases_map = self._get_checkpoint_cases_map()
+
         # run check
         log.info("Start to run check points, please wait...")
         cks = {}
-        for key, value in testcase_map.items():
-            if set((ksfile_name, machine_name)) < set(value):
-                cks[key] = self.go_check(value[2])
+        for checkpoint, cases in checkpoint_cases_map.items():
+            ck = self.go_check(checkpoint)
+            for case in cases:
+                cks[case] = ck
 
         return cks
 
@@ -502,8 +520,8 @@ class CheckCheck(CheckYoo):
 if __name__ == '__main__':
     # 10.73.75.219
     ck = CheckCheck()
-    ck.host_string, ck._host_user, ck.host_pass = ('10.73.75.58', 'root',
+    ck.host_string, ck._host_user, ck.host_pass = ('10.66.148.9', 'root',
                                                    'redhat')
-    ck.beaker_name = CONST.DELL_PER510_01
-    ck.ksfile = 'ati_fc_01.ks'
+    ck.beaker_name = CONST.DELL_PET105_01
+    ck.ksfile = 'ati_local_01.ks'
     print ck.go_check()
