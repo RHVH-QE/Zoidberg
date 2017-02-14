@@ -58,7 +58,7 @@ class CheckYoo(object):
                     user=self.host_user,
                     password=self.host_pass,
                     disable_known_hosts=True,
-                    connection_attempts=60):
+                    connection_attempts=120):
                 ret = get(remote_path, local_path)
                 if ret.succeeded:
                     return True
