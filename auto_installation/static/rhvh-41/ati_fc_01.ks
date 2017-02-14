@@ -28,6 +28,7 @@ reboot
 ### Network ###
 network --bootproto=dhcp --device=em2
 network --bootproto=dhcp --device=bond0 --bondslaves=p1p1,p1p2 --bondopts=mode=active-backup,primary=p1p1,miimon=100 --vlanid=50
+network --hostname=test.redhat.com
 
 ### Partitioning ###
 ignoredisk --drives=disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244

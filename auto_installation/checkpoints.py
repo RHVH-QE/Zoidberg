@@ -177,7 +177,7 @@ class CheckCheck(CheckYoo):
         self._ksfile = val
 
     def _set_checkdata_map(self):
-        log.info("start to read %s", REMOTE_CHECKDATA_MAP_PKL)
+        log.info("Start to read %s", REMOTE_CHECKDATA_MAP_PKL)
 
         if os.path.exists(LOCAL_CHECKDATA_MAP_PKL):
             os.system('rm -f {}'.format(LOCAL_CHECKDATA_MAP_PKL))
@@ -188,6 +188,8 @@ class CheckCheck(CheckYoo):
             fp = open(LOCAL_CHECKDATA_MAP_PKL, 'rb')
             self._checkdata_map = pickle.load(fp)
             fp.close()
+
+            log.info("Change %s to data finished", CHECKDATA_MAP_PKL)
 
             return True
         else:
@@ -480,6 +482,7 @@ class CheckCheck(CheckYoo):
         ksfile_name = self.ksfile
         machine_name = self.beaker_name
         # run check
+        log.info("Start to run check points, please wait...")
         cks = {}
         for key, value in testcase_map.items():
             if set((ksfile_name, machine_name)) < set(value):
@@ -499,8 +502,8 @@ class CheckCheck(CheckYoo):
 if __name__ == '__main__':
     # 10.73.75.219
     ck = CheckCheck()
-    ck.host_string, ck._host_user, ck.host_pass = ('10.66.148.9', 'root',
+    ck.host_string, ck._host_user, ck.host_pass = ('10.73.75.58', 'root',
                                                    'redhat')
-    ck.beaker_name = CONST.DELL_PET105_01
-    ck.ksfile = 'ati_local_01.ks'
+    ck.beaker_name = CONST.DELL_PER510_01
+    ck.ksfile = 'ati_fc_01.ks'
     print ck.go_check()

@@ -11,7 +11,7 @@ KS_FILES_AUTO_DIR = os.path.join(PROJECT_ROOT, 'auto_installation', 'static',
 
 BUILDS_SERVER_URL = "http://10.66.10.22:8090"
 
-CURRENT_IP_PORT = ('10.66.9.123', '5000')
+CURRENT_IP_PORT = ('10.73.73.23', '5000')
 
 STATIC_URL = ("http://{0}:{1}/"
               "static/ngn-auto-installation-kickstarts/%s").format(
@@ -26,7 +26,8 @@ ANACONDA_TIER2 = 0x02
 KS_TIER1 = 0x04
 KS_TIER2 = 0x08
 
-TEST_LEVEL = ANACONDA_TIER1 | ANACONDA_TIER2
+TEST_LEVEL = ANACONDA_TIER1
+#TEST_LEVEL = ANACONDA_TIER1 | ANACONDA_TIER2
 
 # one kickstart file can only be run on a single machine
 ANACONDA_TIER1_TESTCASE_MAP = {
@@ -186,4 +187,4 @@ CB_PROFILE = 'RHVH-4.1-73-20170209.0'
 CB_SYSTEM = 'dell-pet105-01.qe.lab.eng.nay.redhat.com'
 ARGS_TPL = ('inst.ks=http://{srv_ip}:{srv_port}/static/auto/{ks_file} '
             'inst.stage2=http://10.66.10.22:8090/'
-            'rhvh_ngn/pxedir/RHVH-4.1-20170111.0-RHVH-x86_64-dvd1.iso/stage2')
+            'rhvh_ngn/pxedir/RHVH-4.1-20170209.0-RHVH-x86_64-dvd1.iso/stage2')
