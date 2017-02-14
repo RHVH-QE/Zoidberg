@@ -2,25 +2,18 @@
 lang en_US.UTF-8
 
 ### Timezone ###
-timezone Asia/Shanghai --utc --ntpservers=clock02.util.phx2.redhat.com
+timezone Asia/Shanghai --utc
 
 ### Keyboard ###
 keyboard --vckeymap=ge --xlayouts='ge'
 
 ### Kdump ###
-%addon com_redhat_kdump --enable --reserve-mb=200
-%end
 
 ### Security ###
-%addon org_fedora_oscap
-content-type=scap-security-guide
-profile=standard
-%end
 
 ### User ###
 rootpw --plaintext redhat
 auth --enableshadow --passalgo=sha512
-user --name=test --password=redhat --plaintext
 
 ### Misc ###
 services --enabled=sshd
@@ -33,35 +26,39 @@ text
 reboot
 
 ### Network ###
-network --onboot=on --bootproto=static --device=enp2s0 --ip=10.66.148.9 --netmask=255.255.252.0 --gateway=10.66.151.254 --hostname=test.redhat.com
+network --bootproto=dhcp --device=enp2s0
 
 ### Partitioning ###
 ignoredisk --only-use=sda
 zerombr
 clearpart --all
 bootloader --location=mbr
-part /boot --fstype=ext4 --size=1024
-part pv.01 --size 20000 --grow
-volgroup rhvh pv.01
-logvol swap --fstype=swap --name=swap --vgname=rhvh --size=8000
-logvol none --name=pool --vgname=rhvh --thinpool --size=200000 --grow
-logvol / --fstype=ext4 --name=root --vgname=rhvh --thin --poolname=pool --size=130000
-logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --size=15360
-logvol /home --fstype=xfs --name=home --vgname=rhvh --thin --poolname=pool --size=50000
+autopart --type=thinp
+
+### Pre deal ###
 
 ### Post deal ###
 %post --erroronfail
-imgbase layout --init
-%end
-
-%post --erroronfail --interpreter=/usr/bin/python
+compose_check_data(){
+python << ES
 import pickle
+import os
+
+REMOTE_TMP_FILE_DIR = '/boot/autotest'
+CHECKDATA_MAP_PKL = 'checkdata_map.pkl'
+REMOTE_CHECKDATA_MAP_PKL = os.path.join(REMOTE_TMP_FILE_DIR, CHECKDATA_MAP_PKL)
+
+os.mkdir(REMOTE_TMP_FILE_DIR)
 
 checkdata_map = {}
+checkdata_map['keyboard'] = {'vckeymap': 'ge', 'xlayouts': 'ge'}
 
-checkdata_map['keyboard'] = {'vckeymap': 'us', 'xlayouts': 'us'}
-
-fp = open('/boot/checkdata_map.pkl', 'wb')
+fp = open(REMOTE_CHECKDATA_MAP_PKL, 'wb')
 pickle.dump(checkdata_map, fp)
 fp.close()
+ES
+}
+
+compose_check_data
+imgbase layout --init
 %end

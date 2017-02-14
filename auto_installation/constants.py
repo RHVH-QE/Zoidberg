@@ -33,10 +33,10 @@ ANACONDA_TIER1_TESTCASE_MAP = {
     'RHEVM-17788': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
     'RHEVM-17800': ('ati_local_01.ks', DELL_PET105_01, 'static_network_check'),
     'RHEVM-17801': ('ati_local_01.ks', DELL_PET105_01, 'hostname_check'),
-    'RHEVM-17807':
-    ('ati_local_01.ks', DELL_PET105_01, 'manually_partition_check'),
+    'RHEVM-17807': ('ati_local_01.ks', DELL_PET105_01, 'manually_partition_check'),
     'RHEVM-17826': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
     'RHEVM-17828': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
+    'RHEVM-17799': ('ati_local_01.ks', DELL_PET105_01, 'nic_stat_dur_install_check'),
     'RHEVM-17790': ('ati_fc_01.ks', DELL_PER510_01, 'install_check'),
     'RHEVM-17806': ('ati_fc_01.ks', DELL_PER510_01, 'auto_partition_check'),
     'RHEVM-17816': ('ati_fc_01.ks', DELL_PER510_01, 'bond_vlan_check'),
@@ -47,8 +47,7 @@ ANACONDA_TIER2_TESTCASE_MAP = {
     'RHEVM-17798': ('ati_local_01.ks', DELL_PET105_01, 'lang_check'),
     'RHEVM-17802': ('ati_local_01.ks', DELL_PET105_01, 'ntp_check'),
     'RHEVM-17803': ('ati_local_01.ks', DELL_PET105_01, 'keyboard_check'),
-    'RHEVM-17805':
-    ('ati_local_01.ks', DELL_PET105_01, 'security_policy_check'),
+    'RHEVM-17805': ('ati_local_01.ks', DELL_PET105_01, 'security_policy_check'),
     'RHEVM-17808': ('ati_local_01.ks', DELL_PET105_01, 'kdump_check'),
     'RHEVM-17811': ('ati_local_01.ks', DELL_PET105_01, 'users_check'),
     'RHEVM-17804': ('ati_local_02.ks', DELL_PET105_01, 'keyboard_check')
