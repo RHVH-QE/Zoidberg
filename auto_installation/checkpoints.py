@@ -1,6 +1,7 @@
 import logging
 from fabric.api import settings, run, get
 from fabric.exceptions import NetworkError, CommandTimeout
+from fabric.network import disconnect_all
 
 import re
 import os
@@ -463,6 +464,7 @@ class CheckCheck(CheckYoo):
     def check(self):
         cks = {}
         try:
+            disconnect_all()
             # set checkdata_map
             self._set_checkdata_map()
             # get checkpoint cases map
