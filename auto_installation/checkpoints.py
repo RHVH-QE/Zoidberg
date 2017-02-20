@@ -51,21 +51,16 @@ class CheckYoo(object):
         self._host_pass = val
 
     def get_remote_file(self, remote_path, local_path):
-        ret = None
-        try:
-            with settings(
-                    host_string=self.host_string,
-                    user=self.host_user,
-                    password=self.host_pass,
-                    disable_known_hosts=True,
-                    connection_attempts=120):
-                ret = get(remote_path, local_path)
-                if ret.succeeded:
-                    return True
-                else:
-                    return False
-        except Exception:
-            return False
+        with settings(
+                host_string=self.host_string,
+                user=self.host_user,
+                password=self.host_pass,
+                disable_known_hosts=True,
+                connection_attempts=120):
+            ret = get(remote_path, local_path)
+            if not ret.succeeded:
+                raise ValueError("Can't get {} from remote server:{}.".format(
+                    remote_path, self.host_string))
 
     def run_cmd(self, cmd, timeout=60):
         ret = None
@@ -179,21 +174,22 @@ class CheckCheck(CheckYoo):
     def _set_checkdata_map(self):
         log.info("Start to read %s", REMOTE_CHECKDATA_MAP_PKL)
 
-        if os.path.exists(LOCAL_CHECKDATA_MAP_PKL):
-            os.system('rm -f {}'.format(LOCAL_CHECKDATA_MAP_PKL))
+        try:
+            if os.path.exists(LOCAL_CHECKDATA_MAP_PKL):
+                os.system('rm -f {}'.format(LOCAL_CHECKDATA_MAP_PKL))
 
-        ret = self.get_remote_file(REMOTE_CHECKDATA_MAP_PKL,
-                                   LOCAL_CHECKDATA_MAP_PKL)
-        if ret:
+            self.get_remote_file(REMOTE_CHECKDATA_MAP_PKL,
+                                 LOCAL_CHECKDATA_MAP_PKL)
+
             fp = open(LOCAL_CHECKDATA_MAP_PKL, 'rb')
             self._checkdata_map = pickle.load(fp)
             fp.close()
 
             log.info("Change %s to data finished", CHECKDATA_MAP_PKL)
 
-            return True
-        else:
-            raise ValueError("Can't get checkdata_map")
+        except Exception:
+            raise
+        return
 
     def _get_checkpoint_cases_map(self):
         # get testcase map
@@ -214,12 +210,14 @@ class CheckCheck(CheckYoo):
 
         return checkpoint_cases_map
 
-    def _check_device_ifcfg_value(self, nic, key_value_map):
+    def _check_device_ifcfg_value(self, device_data_map):
         patterns = []
-        for key, value in key_value_map.items():
-            patterns.append(re.compile(r'^{}="?{}"?$'.format(key, value)))
+        for key, value in device_data_map.items():
+            if key.isupper():
+                patterns.append(re.compile(r'^{}="?{}"?$'.format(key, value)))
 
-        ifcfg_file = "/etc/sysconfig/network-scripts/ifcfg-{}".format(nic)
+        ifcfg_file = "/etc/sysconfig/network-scripts/ifcfg-{}".format(
+            device_data_map.get('DEVICE'))
         cmd = 'cat {}'.format(ifcfg_file)
 
         return self.match_strs_in_cmd_output(cmd, patterns, timeout=300)
@@ -257,171 +255,114 @@ class CheckCheck(CheckYoo):
 
         return self.match_strs_in_cmd_output(cmd, patterns, timeout=300)
 
-    def _check_manual_partition_mnt_fstype(self):
-        vgname = self._checkdata_map.get('volgroup').get('name')
+    def _check_parts_mnt_fstype(self):
+        partition = self._checkdata_map.get('partition')
+        vgname = partition.get('volgroup').get('name')
         lvpre = '/dev/mapper/{}'.format(vgname)
-        boot_device = self._checkdata_map.get('boot').get('device')
 
         df_patterns = []
-        logvol_map = self._checkdata_map.get('logvol')
-        for lv in logvol_map:
-            if lv == 'pool' or lv == 'swap':
+        for key in partition:
+            if key in ['pool', 'swap', 'volgroup']:
                 continue
-            fstype = logvol_map.get(lv).get('fstype')
-            name = logvol_map.get(lv).get('name')
-            if lv == '/':
-                pattern = re.compile(
-                    r'^{}-rhvh.*{}.*{}'.format(lvpre, fstype, lv))
+
+            part = partition.get(key)
+            fstype = part.get('fstype')
+            if part.get('lvm'):
+                name = part.get('name')
+                if key == '/':
+                    pattern = re.compile(
+                        r'^{}-rhvh.*{}.*{}'.format(lvpre, fstype, key))
+                else:
+                    pattern = re.compile(
+                        r'^{}-{}.*{}.*{}'.format(lvpre, name, fstype, key))
             else:
+                part_device = part.get('drive') + part.get('partnum')
                 pattern = re.compile(
-                    r'^{}-{}.*{}.*{}'.format(lvpre, name, fstype, lv))
+                    r'^{}.*{}.*{}'.format(part_device, fstype, key))
 
             df_patterns.append(pattern)
 
-        pattern = re.compile(r'^{}.*ext4.*/boot'.format(boot_device))
-        df_patterns.append(pattern)
-
         return self.match_strs_in_cmd_output(
             'df -Th', df_patterns, timeout=300)
 
-    def _check_manual_partition_size(self):
-        # check lv size
-        vgname = self._checkdata_map.get('volgroup').get('name')
-        logvol_map = self._checkdata_map.get('logvol')
-        for lv in logvol_map:
-            if logvol_map.get(lv).get('grow'):
-                cmd = "expr {} - $(lvs --noheadings -o size --unit=m --nosuffix {}/{} | sed -r 's/\s*([0-9]+)\..*/\\1/')".format(
-                    logvol_map.get(lv).get('size'), vgname,
-                    logvol_map.get(lv).get('name'))
+    def _check_parts_size(self):
+        partition = self._checkdata_map.get('partition')
+        vgname = partition.get('volgroup').get('name')
 
-                ck = self.check_strs_in_cmd_output(cmd, '-', timeout=300)
+        for key in partition:
+            if key in ['volgroup']:
+                continue
+
+            part = partition.get(key)
+            if part.get('lvm'):
+                if part.get('percent'):
+                    cmd = 'python -c "print int(' \
+                        "round($(lvs --noheadings -o size --unit=m --nosuffix {}/{}) * 100 / " \
+                        '$(vgs --noheadings -o size --unit=m --nosuffix {})))"'.format(vgname, part.get('name'), vgname)
+                else:
+                    cmd = "lvs --noheadings -o size --unit=m --nosuffix {}/{} | sed -r 's/\s*([0-9]+)\..*/\\1/'".format(
+                        vgname, part.get('name'))
             else:
-                cmd = "lvs --noheadings -o size --unit=m --nosuffix {}/{} | sed -r 's/\s*([0-9]+)\..*/\\1/'".format(
-                    vgname, logvol_map.get(lv).get('name'))
-                ck = self.check_strs_in_cmd_output(
-                    cmd, logvol_map.get(lv).get('size'), timeout=300)
-            if not ck:
+                cmd = "expr $(fdisk -s {}) / 1024".format(
+                    part.get('drive') + part.get('partnum'))
+
+            ret = self.run_cmd(cmd, timeout=300)
+
+            if ret[0]:
+                part_real_size = ret[1]
+            else:
                 return False
-        # check /boot size
-        ck = self._check_boot_size()
 
-        return ck
+            if part.get('grow'):
+                if int(part_real_size) <= int(part.get('size')):
+                    return False
+                else:
+                    maxsize = part.get('maxsize')
+                    if maxsize and int(part_real_size) > int(maxsize):
+                        return False
+            else:
+                if int(part_real_size) != int(part.get('size')):
+                    return False
 
-    def _check_auto_partition_mnt_fstype(self):
-        vgname = self._checkdata_map.get('volgroup').get('name')
-        lvpre = '/dev/mapper/{}'.format(vgname)
-        boot_device = self._checkdata_map.get('boot').get('device')
-        df_patterns = [
-            re.compile(r'^{}-rhvh.*ext4.*/'.format(lvpre)),
-            re.compile(r'^{}.*ext4.*/boot'.format(boot_device)),
-            re.compile(r'^{}-var.*ext4.*/var'.format(lvpre))
-        ]
-
-        return self.match_strs_in_cmd_output(
-            'df -Th', df_patterns, timeout=300)
-
-    def _check_auto_partition_size(self):
-        vgname = self._checkdata_map.get('volgroup').get('name')
-        # check /var
-        cmd = "lvs --noheadings -o size --unit=m --nosuffix {}/{} | sed -r 's/\s*([0-9]+)\..*/\\1/'".format(
-            vgname, 'var')
-        ck01 = self.check_strs_in_cmd_output(cmd, '15360', timeout=300)
-        # check /
-        cmd = "expr 6 \* 1024 - $(lvs --noheadings -o size --unit=m --nosuffix {}/{} | sed -r 's/\s*([0-9]+)\..*/\\1/')".format(
-            vgname, 'root')
-        ck02 = self.check_strs_in_cmd_output(cmd, '-', timeout=300)
-        # check /boot
-        ck03 = self._check_boot_size()
-
-        return ck01 and ck02 and ck03
-
-    def _check_boot_size(self):
-        boot_device = self._checkdata_map.get('boot').get('device')
-        boot_size = int(self._checkdata_map.get('boot').get('size')) * 1024
-        cmd = "fdisk -s {}".format(boot_device)
-
-        return self.check_strs_in_cmd_output(cmd, str(boot_size), timeout=300)
+        return True
 
     def install_check(self):
         return self.check_strs_in_cmd_output(
             'nodectl check', 'Status: OK', timeout=300)
 
-    def manually_partition_check(self):
-        # check mount points and fstype using df
-        ck01 = self._check_manual_partition_mnt_fstype()
-        # check size and pool
-        ck02 = self._check_manual_partition_size()
-
-        return ck01 and ck02
-
-    def auto_partition_check(self):
-        # check mount points and fstype using df
-        ck01 = self._check_auto_partition_mnt_fstype()
-        # check /, /var, /boot size
-        ck02 = self._check_auto_partition_size()
+    def partition_check(self):
+        ck01 = self._check_parts_mnt_fstype()
+        ck02 = self._check_parts_size()
 
         return ck01 and ck02
 
     def static_network_check(self):
-        nic = self._checkdata_map.get('network').get('static').get('device')
-        ipv4 = self._checkdata_map.get('network').get('static').get('ip')
-        netmask = self._checkdata_map.get('network').get('static').get(
-            'netmask')
-        gateway = self._checkdata_map.get('network').get('static').get(
-            'gateway')
-        onboot = self._checkdata_map.get('network').get('static').get('onboot')
+        device_data_map = self._checkdata_map.get('network').get('static')
+        nic_device = device_data_map.get('DEVICE')
+        nic_ipv4 = device_data_map.get('IPADDR')
 
-        key_value_map = {}
-        key_value_map['BOOTPROTO'] = 'static'
-        key_value_map['IPADDR'] = ipv4
-        key_value_map['NETMASK'] = netmask
-        key_value_map['GATEWAY'] = gateway
-        key_value_map['ONBOOT'] = onboot
-
-        ck01 = self._check_device_ifcfg_value(nic, key_value_map)
-
-        ck02 = self._check_device_ipv4_address(nic, ipv4)
-
-        ck03 = self._check_device_connected([nic])
+        ck01 = self._check_device_ifcfg_value(device_data_map)
+        ck02 = self._check_device_ipv4_address(nic_device, nic_ipv4)
+        ck03 = self._check_device_connected([nic_device])
 
         return ck01 and ck02 and ck03
 
     def bond_check(self):
-        bond_device = self._checkdata_map.get('network').get('bond').get(
-            'device')
-        bond_slaves = self._checkdata_map.get('network').get('bond').get(
-            'slaves')
-        bond_opts = self._checkdata_map.get('network').get('bond').get('opts')
-        bond_onboot = self._checkdata_map.get('network').get('bond').get(
-            'onboot')
+        device_data_map = self._checkdata_map.get('network').get('bond')
+        bond_device = device_data_map.get('DEVICE')
+        bond_slaves = device_data_map.get('slaves')
 
-        key_value_map = {}
-        key_value_map['DEVICE'] = bond_device
-        key_value_map['TYPE'] = 'Bond'
-        key_value_map['BONDING_OPTS'] = bond_opts
-        key_value_map['ONBOOT'] = bond_onboot
-
-        ck01 = self._check_bond_has_slave(bond_device, bond_slaves)
-        ck02 = self._check_device_ifcfg_value(bond_device, key_value_map)
+        ck01 = self._check_device_ifcfg_value(device_data_map)
+        ck02 = self._check_bond_has_slave(bond_device, bond_slaves)
         ck03 = self._check_device_connected([bond_device] + bond_slaves)
 
         return ck01 and ck02 and ck03
 
     def vlan_check(self):
-        vlan_device = self._checkdata_map.get('network').get('vlan').get(
-            'device')
-        vlan_id = self._checkdata_map.get('network').get('vlan').get('id')
-        vlan_onboot = self._checkdata_map.get('network').get('vlan').get(
-            'onboot')
+        device_data_map = self._checkdata_map.get('network').get('vlan')
+        vlan_device = device_data_map.get('DEVICE')
 
-        key_value_map = {}
-        key_value_map['DEVICE'] = vlan_device
-        key_value_map['TYPE'] = 'Vlan'
-        key_value_map['BOOTPROTO'] = 'dhcp'
-        key_value_map['VLAN_ID'] = vlan_id
-        key_value_map['ONBOOT'] = vlan_onboot
-
-        ck01 = self._check_device_ifcfg_value(vlan_device, key_value_map)
+        ck01 = self._check_device_ifcfg_value(device_data_map)
         ck02 = self._check_device_connected([vlan_device])
 
         return ck01 and ck02
@@ -432,23 +373,25 @@ class CheckCheck(CheckYoo):
         return ck01 and ck02
 
     def nic_stat_dur_install_check(self):
-        nic_device = self._checkdata_map.get('network').get('nic').get(
-            'device')
-        nic_onboot = self._checkdata_map.get('network').get('nic').get(
-            'onboot')
-        nic_status_dur_install = self._checkdata_map.get('network').get(
-            'nic').get('status')
-
-        key_value_map = {}
-        key_value_map['DEVICE'] = nic_device
-        key_value_map['ONBOOT'] = nic_onboot
+        device_data_map = self._checkdata_map.get('network').get('nic')
+        nic_device = device_data_map.get('DEVICE')
+        nic_status_dur_install = device_data_map.get('status')
 
         ck01 = not nic_status_dur_install
-        ck02 = self._check_device_ifcfg_value(nic_device, key_value_map)
+        ck02 = self._check_device_ifcfg_value(device_data_map)
         ck03 = self._check_device_connected(
             [nic_device], expected_result='false')
 
         return ck01 and ck02 and ck03
+
+    def dhcp_network_check(self):
+        device_data_map = self._checkdata_map.get('network').get('dhcp')
+        nic_device = device_data_map.get('DEVICE')
+
+        ck01 = self._check_device_ifcfg_value(device_data_map)
+        ck02 = self._check_device_connected([nic_device])
+
+        return ck01 and ck02
 
     def hostname_check(self):
         hostname = self._checkdata_map.get('network').get('hostname')
@@ -489,22 +432,54 @@ class CheckCheck(CheckYoo):
         ck03 = self.check_strs_in_cmd_output('ls /home', username, timeout=300)
         return ck01 and ck02 and ck03
 
-    def multi_disks_check(self):
-        pass
+    def firewall_check(self):
+        return self.check_strs_in_cmd_output(
+            'firewall-cmd --state', 'running', timeout=300)
+
+    def selinux_check(self):
+        selinux_status = self._checkdata_map.get('selinux')
+        strs = 'SELINUX={}'.format(selinux_status)
+        return self.check_strs_in_file(
+            '/etc/selinux/config', strs, timeout=300)
+
+    def sshd_check(self):
+        return self.check_strs_in_cmd_output(
+            'systemctl status sshd', 'running', timeout=300)
+
+    def grubby_check(self):
+        checkstr = self._checkdata_map.get('grubby')
+
+        return self.check_strs_in_cmd_output(
+            'grubby --info=0', checkstr, timeout=300)
+
+    def bootloader_check(self):
+        boot_device = self._checkdata_map.get('partition').get('/boot').get(
+            'drive')
+        cmd = 'dd if={} bs=512 count=1 2>&1 | strings |grep -i grub'.format(
+            boot_device)
+
+        return self.check_strs_in_cmd_output(cmd, 'GRUB', timeout=300)
 
     def check(self):
-        # set checkdata_map
-        self._set_checkdata_map()
-        # get checkpoint cases map
-        checkpoint_cases_map = self._get_checkpoint_cases_map()
-
-        # run check
-        log.info("Start to run check points, please wait...")
         cks = {}
-        for checkpoint, cases in checkpoint_cases_map.items():
-            ck = self.go_check(checkpoint)
-            for case in cases:
-                cks[case] = ck
+        try:
+            # set checkdata_map
+            self._set_checkdata_map()
+            # get checkpoint cases map
+            checkpoint_cases_map = self._get_checkpoint_cases_map()
+
+            # run check
+            log.info("Start to run check points, please wait...")
+
+            for checkpoint, cases in checkpoint_cases_map.items():
+                try:
+                    ck = self.go_check(checkpoint)
+                    for case in cases:
+                        cks[case] = ck
+                except NameError as e:
+                    log.error(e)
+        except Exception as e:
+            log.error(e)
 
         return cks
 
@@ -520,8 +495,8 @@ class CheckCheck(CheckYoo):
 if __name__ == '__main__':
     # 10.73.75.219
     ck = CheckCheck()
-    ck.host_string, ck._host_user, ck.host_pass = ('10.66.148.9', 'root',
+    ck.host_string, ck._host_user, ck.host_pass = ('10.73.75.58', 'root',
                                                    'redhat')
-    ck.beaker_name = CONST.DELL_PET105_01
-    ck.ksfile = 'ati_local_01.ks'
+    ck.beaker_name = CONST.DELL_PER510_01
+    ck.ksfile = 'ati_fc_01.ks'
     print ck.go_check()
