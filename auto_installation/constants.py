@@ -28,6 +28,7 @@ KS_TIER2 = 0x08
 
 TEST_LEVEL = ANACONDA_TIER1 | ANACONDA_TIER2 | KS_TIER1 | KS_TIER2
 
+
 # one kickstart file can only be run on a single machine
 ANACONDA_TIER1_TESTCASE_MAP = {
     'RHEVM-17788': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
@@ -71,6 +72,7 @@ KS_TIER1_TESTCASE_MAP = {
 KS_TIER2_TESTCASE_MAP = {
     'RHEVM-17830': ('ati_fc_02.ks', DELL_PER510_01, 'bootloader_check'),
     'RHEVM-17843': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),
+    'RHEVM-17844': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),
     'RHEVM-17845': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),
     'RHEVM-17846': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),
     'RHEVM-17853': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),

@@ -44,7 +44,7 @@ part pv.01 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000022 --siz
 part pv.02 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000023 --size=1 --grow
 part pv.03 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000024 --size=1 --grow
 volgroup rhvh pv.01 pv.02 pv.03
-logvol swap --fstype=swap --name=swap --vgname=rhvh --size=8000
+logvol swap --fstype=swap --name=swap --vgname=rhvh --recommended
 logvol none --name=pool --vgname=rhvh --thinpool --size=300000 --grow
 logvol / --fstype=ext4 --name=root --vgname=rhvh --thin --poolname=pool --size=300000
 logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --size=15360
@@ -143,7 +143,7 @@ checkdata_map['partition'] = {
     'swap': {
         'lvm': True,
         'name': 'swap',
-        'size': '8000'
+        'recommended': True
     }
 }
 

@@ -256,6 +256,39 @@ class CheckCheck(CheckYoo):
 
         return self.match_strs_in_cmd_output(cmd, patterns, timeout=300)
 
+    def _check_recommended_swap_size(self):
+        cmd = "free -g | grep Mem | sed -r 's/\s*Mem:\s*([0-9]+)\s*.*/\\1/'"
+        ret = self.run_cmd(cmd, timeout=300)
+        if ret[0]:
+            memtotal = int(ret[1])
+        else:
+            return False
+
+        cmd = "free -g |grep Swap | sed -r 's/\s*Swap:\s*([0-9]+)\s*.*/\\1/'"
+        ret = self.run_cmd(cmd, timeout=300)
+        if ret[0]:
+            swap = int(ret[1])
+        else:
+            return False
+
+        if memtotal < 2:
+            if int(round(float(swap) / float(memtotal))) != 2:
+                return False
+        elif memtotal < 8:
+            # the mem size calculation algorithm is not just get value from 'free' cmd
+            # ignore swap size comparison when mem size in 2 to 8 Gib.
+            #if swap != memtotal:
+            #return False
+            return True
+        elif memtotal < 64:
+            if int(round(float(memtotal) / float(swap))) != 2:
+                return False
+        else:
+            if swap != 4:
+                return False
+
+        return True
+
     def _check_parts_mnt_fstype(self):
         partition = self._checkdata_map.get('partition')
         vgname = partition.get('volgroup').get('name')
@@ -321,6 +354,15 @@ class CheckCheck(CheckYoo):
                     maxsize = part.get('maxsize')
                     if maxsize and int(part_real_size) > int(maxsize):
                         return False
+            elif part.get('recommended'):
+                if key == 'swap':
+                    if not self._check_recommended_swap_size():
+                        return False
+                elif key == '/boot':
+                    if int(part_real_size) != 1024:
+                        return False
+                else:
+                    return False
             else:
                 if int(part_real_size) != int(part.get('size')):
                     return False
@@ -500,5 +542,5 @@ if __name__ == '__main__':
     ck.host_string, ck._host_user, ck.host_pass = ('10.73.75.58', 'root',
                                                    'redhat')
     ck.beaker_name = CONST.DELL_PER510_01
-    ck.ksfile = 'ati_fc_01.ks'
+    ck.ksfile = 'ati_fc_02.ks'
     print ck.go_check()
