@@ -28,7 +28,6 @@ KS_TIER2 = 0x08
 
 TEST_LEVEL = ANACONDA_TIER1 | ANACONDA_TIER2 | KS_TIER1 | KS_TIER2
 
-
 # one kickstart file can only be run on a single machine
 ANACONDA_TIER1_TESTCASE_MAP = {
     'RHEVM-17788': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
@@ -84,6 +83,7 @@ KS_TIER2_TESTCASE_MAP = {
     'RHEVM-17873': ('ati_fc_02.ks', DELL_PER510_01, 'users_check'),
     'RHEVM-17867': ('ati_local_02.ks', DELL_PET105_01, 'selinux_check'),
     'RHEVM-17847': ('ati_local_02.ks', DELL_PET105_01, 'partition_check'),
+    'RHEVM-17861': ('ati_local_02.ks', DELL_PET105_01, 'static_network_check')
 }
 
 SMOKE_TEST_LIST = ('FC_01', )

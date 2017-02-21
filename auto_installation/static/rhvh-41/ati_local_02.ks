@@ -27,7 +27,7 @@ text
 reboot
 
 ### Network ###
-network --device=enp2s0 --bootproto=dhcp
+network --device=enp2s0 --bootproto=dhcp --ipv6=2620:52:0:4294:222:19ff:fe27:54c7/64
 network --hostname=test.redhat.com
 
 ### Partitioning ###
@@ -64,6 +64,13 @@ checkdata_map = {}
 
 checkdata_map['keyboard'] = {'vckeymap': 'ge', 'xlayouts': 'ge'}
 checkdata_map['selinux'] = 'permissive'
+
+checkdata_map['network'] = {
+    'static': {
+        'DEVICE': 'enp2s0',
+        'IPV6ADDR': '2620:52:0:4294:222:19ff:fe27:54c7/64'
+    }
+}
 
 checkdata_map['partition'] = {
     '/boot': {

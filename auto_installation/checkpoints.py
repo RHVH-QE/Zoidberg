@@ -243,6 +243,12 @@ class CheckCheck(CheckYoo):
 
         return self.match_strs_in_cmd_output(cmd, patterns, timeout=300)
 
+    def _check_device_ipv6_address(self, nic, ipv6):
+        patterns = [re.compile(r'^inet6\s+{}'.format(ipv6))]
+        cmd = 'ip -f inet6 addr show {}'.format(nic)
+
+        return self.match_strs_in_cmd_output(cmd, patterns, timeout=300)
+
     def _check_bond_has_slave(self, bond, slaves, expected_result='yes'):
         patterns = []
         for slave in slaves:
@@ -383,12 +389,21 @@ class CheckCheck(CheckYoo):
         device_data_map = self._checkdata_map.get('network').get('static')
         nic_device = device_data_map.get('DEVICE')
         nic_ipv4 = device_data_map.get('IPADDR')
+        nic_ipv6 = device_data_map.get('IPV6ADDR')
 
         ck01 = self._check_device_ifcfg_value(device_data_map)
-        ck02 = self._check_device_ipv4_address(nic_device, nic_ipv4)
-        ck03 = self._check_device_connected([nic_device])
 
-        return ck01 and ck02 and ck03
+        ck02 = True
+        if nic_ipv4:
+            ck02 = self._check_device_ipv4_address(nic_device, nic_ipv4)
+
+        ck03 = True
+        if nic_ipv6:
+            ck03 = self._check_device_ipv6_address(nic_device, nic_ipv6)
+
+        ck04 = self._check_device_connected([nic_device])
+
+        return ck01 and ck02 and ck03 and ck04
 
     def bond_check(self):
         device_data_map = self._checkdata_map.get('network').get('bond')
@@ -520,7 +535,7 @@ class CheckCheck(CheckYoo):
                     ck = self.go_check(checkpoint)
                     for case in cases:
                         cks[case] = ck
-                except NameError as e:
+                except Exception as e:
                     log.error(e)
         except Exception as e:
             log.error(e)
@@ -539,8 +554,8 @@ class CheckCheck(CheckYoo):
 if __name__ == '__main__':
     # 10.73.75.219
     ck = CheckCheck()
-    ck.host_string, ck._host_user, ck.host_pass = ('10.73.75.58', 'root',
+    ck.host_string, ck._host_user, ck.host_pass = ('10.66.148.9', 'root',
                                                    'redhat')
-    ck.beaker_name = CONST.DELL_PER510_01
-    ck.ksfile = 'ati_fc_02.ks'
+    ck.beaker_name = CONST.DELL_PET105_01
+    ck.ksfile = 'ati_local_02.ks'
     print ck.go_check()
