@@ -75,7 +75,7 @@ class ResultsAndLogs(object):
         log_file = os.path.join(PROJECT_ROOT, 'logs',
                                 self.get_current_date(),
                                 self.parse_img_url(img_url),
-                                ks_name='')
+                                ks_name)
         if os.path.exists(log_file):
             os.system('rm -rf {}/*'.format(log_file))
 
