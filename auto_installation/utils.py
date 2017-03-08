@@ -1,5 +1,4 @@
 import os
-import logging
 import logging.config
 import yaml
 import redis
@@ -8,7 +7,8 @@ from constants import PROJECT_ROOT, \
     ANACONDA_TIER1, ANACONDA_TIER2, KS_TIER1, KS_TIER2, \
     TEST_LEVEL, \
     ANACONDA_TIER1_TESTCASE_MAP, ANACONDA_TIER2_TESTCASE_MAP, \
-    KS_TIER1_TESTCASE_MAP, KS_TIER2_TESTCASE_MAP
+    KS_TIER1_TESTCASE_MAP, KS_TIER2_TESTCASE_MAP, \
+    KS_PRESSURE_MAP
 
 log = logging.getLogger('bender')
 
@@ -71,6 +71,14 @@ class ResultsAndLogs(object):
 
         logging.config.dictConfig(self.logger_dict['logging'])
 
+    def del_actual_logger(self, img_url, ks_name=''):
+        log_file = os.path.join(PROJECT_ROOT, 'logs',
+                                self.get_current_date(),
+                                self.parse_img_url(img_url),
+                                ks_name='')
+        if os.path.exists(log_file):
+            os.system('rm -rf {}/*'.format(log_file))
+
 
 def init_redis():
     pool = redis.ConnectionPool(
@@ -119,6 +127,62 @@ def get_testcase_map():
         raise ValueError('Invaild TEST_LEVEL')
 
     return testcase_map
+
+def get_machine_ksl_map():
+    machine_ksl_map = {}
+    testcase_map = get_testcase_map()
+    for value in testcase_map.itervalues():
+        ks = value[0]
+        machine = value[1]
+        flag = False
+        if machine in machine_ksl_map:
+            if ks not in machine_ksl_map.get(machine):
+                flag = True
+        else:
+            machine_ksl_map[machine] = []
+            flag = True
+
+        if flag:
+            if ks in KS_PRESSURE_MAP:
+                ks_repeat_ls = [ks] * int(KS_PRESSURE_MAP.get(ks))
+                machine_ksl_map[machine].extend(ks_repeat_ls)
+            else:
+                machine_ksl_map[machine].append(ks)
+    for k in machine_ksl_map:
+        machine_ksl_map[k].sort()
+
+    return machine_ksl_map
+
+def get_ks_machine_map():
+    ks_mashine_map = {}
+    testcase_map = get_testcase_map()
+    for value in testcase_map.itervalues():
+        ks = value[0]
+        machine = value[1]
+        if ks in ks_mashine_map:
+            if machine != ks_mashine_map.get(ks):
+                raise ValueError(
+                    'One kickstart file cannot be run on two machines.')
+        else:
+            ks_mashine_map[ks] = machine
+
+    return ks_mashine_map
+
+def get_checkpoint_cases_map(ks, mc):
+    # get testcase map
+    testcase_map = get_testcase_map()
+
+    checkpoint_cases_map = {}
+    for key, value in testcase_map.items():
+        if set((ks, mc)) < set(value):
+            checkpoint = value[2]
+            if checkpoint in checkpoint_cases_map:
+                checkpoint_cases_map[checkpoint].append(key)
+            else:
+                checkpoint_cases_map[checkpoint] = []
+                checkpoint_cases_map[checkpoint].append(key)
+
+    return checkpoint_cases_map
 
 
 if __name__ == '__main__':

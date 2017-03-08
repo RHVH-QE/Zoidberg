@@ -2,10 +2,14 @@ import os
 import time
 import datetime
 from pylarion.test_run import TestRun
-from constants import TR_ID, TR_PROJECT_ID, TR_TPL, KS_TESTCASE_MAP
+from constants import TR_ID, TR_PROJECT_ID, TR_TPL, \
+    KS_PRESSURE_MAP
+from utils import get_testcase_map
+import sys
+import re
 
-# import ssl
-# ssl._create_default_https_context = ssl._create_unverified_context
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 
 def make_test_run():
@@ -16,14 +20,14 @@ def make_test_run():
 
 class ResultsToPolarion(object):
     """
-    /home/dracher/Projects/Zoidberg/app/logs/2016-06-21/rhev-hypervisor7-ng-4.0-20160616.0/ati_FC_01.ks/checkpoints
+    /home/dracher/Zoidberg/logs/2017-03-08/redhat-virtualization-host-4.1-20170208.0
     """
 
     def __init__(self, path):
         self.path = path.rstrip('/')
         _path = self.path.split('/')
-        self.build = _path[-2]
-        self.root_path = os.path.join('/', *_path[:-1])
+        self.build = _path[-1]
+        self.root_path = self.path
         self.ks_list = os.listdir(self.root_path)
 
     @staticmethod
@@ -71,17 +75,58 @@ class ResultsToPolarion(object):
             # TODO deal with blocked
             pass
 
-    def parse_results(self, res, tr):
-        with open(res) as fp:
-            res = eval(fp.readlines()[-1].split("::")[-1])
-            for k, v in res.items():
-                if v:
-                    self.export_to_polarion(tr, k, 'passed')
-                else:
-                    self.export_to_polarion(tr, k, 'failed')
+    def _pre_parse_results(self, res):
+        ks = res.split('/')[-2]
+        print ks
+        if ks in KS_PRESSURE_MAP:
+            num = int(KS_PRESSURE_MAP[ks])
+        else:
+            num = 1
+        print num
 
-                print "be nice with server, sleep 1 sec"
-                time.sleep(1)
+        p1 = re.compile(r"{'RHEVM-\d")
+        p2 = re.compile(r'InitiatorName=iqn')
+        rets = []
+        iqns= []
+        for line in open(res):
+            if p1.search(line):
+                rets.append(eval(line.split("::")[-1]))
+            if p2.search(line):
+                iqns.append(line.split(":")[-1].rstrip("')\n"))
+
+        retNum = len(rets)
+        print retNum
+        if retNum != num:
+            newret = {}
+        else:
+            newret = rets[0]
+            if num > 1:
+                for ret in rets[1:]:
+                    for k in newret:
+                        newret[k] = newret[k] and ret[k]
+
+                if len(iqns) == num and len(set(iqns)) != num:
+                    testcase_map = get_testcase_map()
+                    for k, v in testcase_map.items():
+                        if 'iqn_check' in v and k in newret:
+                            newret[k] = False
+                            break
+
+        with open(res, 'a') as fp:
+            fp.write('Final Results :: {}'.format(newret))
+
+        return newret
+
+    def parse_results(self, res, tr):
+        ret = self._pre_parse_results(res)
+        for k, v in ret.items():
+            if v:
+                self.export_to_polarion(tr, k, 'passed')
+            else:
+                self.export_to_polarion(tr, k, 'failed')
+
+            print "be nice with server, sleep 1 sec"
+            time.sleep(1)
 
     def run(self):
         tr = self.create_testrun()

@@ -32,7 +32,7 @@ reboot
 network --bootproto=static --device=em2 --ip=10.73.75.58 --netmask=255.255.252.0 --gateway=10.73.75.254
 network --bootproto=dhcp --device=em1
 network --bootproto=dhcp --device=bond0 --bondslaves=p1p1,p1p2 --bondopts=mode=balance-rr,miimon=100 --vlanid=50
-network --hostname=test.redhat.com
+network --hostname=fctest.redhat.com
 
 ### Partitioning ###
 ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244

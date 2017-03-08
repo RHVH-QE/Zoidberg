@@ -28,7 +28,7 @@ reboot
 
 ### Network ###
 network --device=enp2s0 --bootproto=dhcp --ipv6=2620:52:0:4294:222:19ff:fe27:54c7/64
-network --hostname=test.redhat.com
+network --hostname=localtest.redhat.com
 
 ### Partitioning ###
 ignoredisk --only-use=sda

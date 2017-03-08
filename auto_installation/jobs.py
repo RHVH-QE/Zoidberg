@@ -5,7 +5,7 @@ from threading import Thread
 
 from .kickstarts import KickStartFiles
 from .beaker import Beaker, inst_watcher
-from .constants import CURRENT_IP_PORT, ARGS_TPL, HOSTS, CB_PROFILE
+from .constants import CURRENT_IP_PORT, ARGS_TPL, HOSTS, CB_PROFILE, KS_KERPARAMS_MAP
 from .cobbler import Cobbler
 from .checkpoints import CheckCheck
 
@@ -54,11 +54,16 @@ class JobRunner(object):
 
         log.info("reboot {} with return code {}".format(m, ret))
 
+        addition_kernel_params = ''
+        if ks in KS_KERPARAMS_MAP:
+            addition_kernel_params = KS_KERPARAMS_MAP.get(ks)
+
         with Cobbler() as cb:
             kargs = ARGS_TPL.format(
                 srv_ip=CURRENT_IP_PORT[0],
                 srv_port=CURRENT_IP_PORT[1],
-                ks_file=ks)
+                ks_file=ks,
+                addition_params=addition_kernel_params)
             cb.add_new_system(
                 name=m,
                 profile=CB_PROFILE,
@@ -79,6 +84,10 @@ class JobRunner(object):
 
     def go(self):
         for m, ksl in self.job_queue.items():
+            #Delete checkpoints log firstly
+            for ks in ksl:
+                self.results_logs.del_actual_logger(self.build_url, ks)
+
             for ks in ksl:
                 self.results_logs.get_actual_logger(self.build_url, ks)
                 log.info("start provisioning on host %s with %s", m, ks)

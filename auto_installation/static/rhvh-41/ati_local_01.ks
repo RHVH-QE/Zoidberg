@@ -35,7 +35,7 @@ reboot
 ### Network ###
 network --device=enp2s0 --bootproto=static --ip=10.66.148.9 --netmask=255.255.252.0 --gateway=10.66.151.254
 network --device=enp6s1f0 --bootproto=dhcp --activate --onboot=no
-network --hostname=test.redhat.com
+network --hostname=localtest.redhat.com
 
 ### Partitioning ###
 ignoredisk --only-use=sda
@@ -99,7 +99,7 @@ checkdata_map['network'] = {
         'status': status,
         'ONBOOT': 'no'
     },
-    'hostname': 'test.redhat.com'
+    'hostname': 'localtest.redhat.com'
 }
 
 checkdata_map['partition'] = {

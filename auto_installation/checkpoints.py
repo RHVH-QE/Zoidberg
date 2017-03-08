@@ -7,7 +7,7 @@ import re
 import os
 import pickle
 import constants as CONST
-from utils import get_testcase_map
+from utils import get_checkpoint_cases_map
 
 log = logging.getLogger('bender')
 
@@ -86,11 +86,11 @@ class CheckYoo(object):
         log.info("start to check if %s in %s", strs, fp)
         try:
             ret = self.run_cmd('cat {}'.format(fp), timeout=timeout)
+            log.info("Got result %s", ret)
         except CommandTimeout as e:
             log.error(e)
             return False
 
-        log.info("Got result %s", ret)
         if ret[0]:
             for s in strs:
                 if s not in ret[1]:
@@ -106,12 +106,11 @@ class CheckYoo(object):
         log.info("start to check if %s in %s output", strs, cmd)
         try:
             ret = self.run_cmd(cmd, timeout=timeout)
-            log.info(ret)
+            log.info("Got result %s", ret)
         except CommandTimeout as e:
             log.error(e)
             return False
 
-        log.info("Got result %s", ret)
         if ret[0]:
             for s in strs:
                 if s not in ret[1]:
@@ -127,17 +126,18 @@ class CheckYoo(object):
         log.info("start to match if %s in %s output", patterns, cmd)
         try:
             ret = self.run_cmd(cmd, timeout=timeout)
-            log.info("Got result %s", ret)
+            color = re.compile(r'\x1B\[([0-9]{1,2}((;[0-9]{1,2})*)?)?[m|K]')
+            newret = color.sub('', ret[1])
+            log.info("Got result %s", (ret[0], newret))
         except CommandTimeout as e:
             log.error(e)
             return False
 
         if ret[0]:
-            lines = ret[1].split('\n')
+            lines = newret.split('\n')
             for p in patterns:
                 for line in lines:
-                    match = p.match(line.strip())
-                    if match:
+                    if p.search(line.strip()):
                         break
                 else:
                     log.error("can not match pattern %s in %s", p, cmd)
@@ -192,25 +192,6 @@ class CheckCheck(CheckYoo):
             raise
         return
 
-    def _get_checkpoint_cases_map(self):
-        # get testcase map
-        testcase_map = get_testcase_map()
-        # get ksfile name, machine name
-        ksfile_name = self.ksfile
-        machine_name = self.beaker_name
-
-        checkpoint_cases_map = {}
-        for key, value in testcase_map.items():
-            if set((ksfile_name, machine_name)) < set(value):
-                checkpoint = value[2]
-                if checkpoint in checkpoint_cases_map:
-                    checkpoint_cases_map[checkpoint].append(key)
-                else:
-                    checkpoint_cases_map[checkpoint] = []
-                    checkpoint_cases_map[checkpoint].append(key)
-
-        return checkpoint_cases_map
-
     def _check_device_ifcfg_value(self, device_data_map):
         patterns = []
         for key, value in device_data_map.items():
@@ -227,11 +208,9 @@ class CheckCheck(CheckYoo):
         patterns = []
         for nic in nics:
             if expected_result == 'yes':
-                patterns.append(
-                    re.compile(r'^.*{}.*:.*connected.*$'.format(nic)))
+                patterns.append(re.compile(r'^{}:connected$'.format(nic)))
             else:
-                patterns.append(
-                    re.compile(r'^.*{}.*:.*disconnected.*$'.format(nic)))
+                patterns.append(re.compile(r'^{}:disconnected$'.format(nic)))
 
         cmd = 'nmcli -t -f DEVICE,STATE dev'
 
@@ -376,8 +355,9 @@ class CheckCheck(CheckYoo):
         return True
 
     def install_check(self):
-        return self.check_strs_in_cmd_output(
-            'nodectl check', 'Status: OK', timeout=300)
+        patterns = [re.compile(r'^Status: OK')]
+        return self.match_strs_in_cmd_output(
+            'nodectl check', patterns, timeout=300)
 
     def partition_check(self):
         ck01 = self._check_parts_mnt_fstype()
@@ -453,62 +433,63 @@ class CheckCheck(CheckYoo):
 
     def hostname_check(self):
         hostname = self._checkdata_map.get('network').get('hostname')
-        return self.check_strs_in_cmd_output('hostname', hostname, timeout=300)
+        return self.check_strs_in_cmd_output(
+            'hostname', [hostname], timeout=300)
 
     def lang_check(self):
         lang = self._checkdata_map.get('lang')
         return self.check_strs_in_cmd_output(
-            'localectl status', lang, timeout=300)
+            'localectl status', [lang], timeout=300)
 
     def ntp_check(self):
         ntp = self._checkdata_map.get('ntpservers')
-        return self.check_strs_in_file('/etc/ntp.conf', ntp, timeout=300)
+        return self.check_strs_in_file('/etc/ntp.conf', [ntp], timeout=300)
 
     def keyboard_check(self):
         vckey = self._checkdata_map.get('keyboard').get('vckeymap')
         xlayouts = self._checkdata_map.get('keyboard').get('xlayouts')
         return self.check_strs_in_cmd_output(
             'localectl status',
-            ('VC Keymap: {}'.format(vckey), 'X11 Layout: {}'.format(xlayouts)),
+            ['VC Keymap: {}'.format(vckey), 'X11 Layout: {}'.format(xlayouts)],
             timeout=300)
 
     def security_policy_check(self):
         return self.check_strs_in_cmd_output(
-            'ls /root', 'openscap_data', timeout=300)
+            'ls /root', ['openscap_data'], timeout=300)
 
     def kdump_check(self):
         reserve_mb = self._checkdata_map.get('kdump').get('reserve-mb')
         return self.check_strs_in_file(
-            '/etc/grub2.cfg',
-            'crashkernel={}M'.format(reserve_mb),
+            '/etc/grub2.cfg', ['crashkernel={}M'.format(reserve_mb)],
             timeout=300)
 
     def users_check(self):
         username = self._checkdata_map.get('user').get('name')
-        ck01 = self.check_strs_in_file('/etc/passwd', username, timeout=300)
-        ck02 = self.check_strs_in_file('/etc/shadow', username, timeout=300)
-        ck03 = self.check_strs_in_cmd_output('ls /home', username, timeout=300)
+        ck01 = self.check_strs_in_file('/etc/passwd', [username], timeout=300)
+        ck02 = self.check_strs_in_file('/etc/shadow', [username], timeout=300)
+        ck03 = self.check_strs_in_cmd_output(
+            'ls /home', [username], timeout=300)
         return ck01 and ck02 and ck03
 
     def firewall_check(self):
         return self.check_strs_in_cmd_output(
-            'firewall-cmd --state', 'running', timeout=300)
+            'firewall-cmd --state', ['running'], timeout=300)
 
     def selinux_check(self):
         selinux_status = self._checkdata_map.get('selinux')
         strs = 'SELINUX={}'.format(selinux_status)
         return self.check_strs_in_file(
-            '/etc/selinux/config', strs, timeout=300)
+            '/etc/selinux/config', [strs], timeout=300)
 
     def sshd_check(self):
         return self.check_strs_in_cmd_output(
-            'systemctl status sshd', 'running', timeout=300)
+            'systemctl status sshd', ['running'], timeout=300)
 
     def grubby_check(self):
         checkstr = self._checkdata_map.get('grubby')
 
         return self.check_strs_in_cmd_output(
-            'grubby --info=0', checkstr, timeout=300)
+            'grubby --info=0', [checkstr], timeout=300)
 
     def bootloader_check(self):
         boot_device = self._checkdata_map.get('partition').get('/boot').get(
@@ -516,7 +497,15 @@ class CheckCheck(CheckYoo):
         cmd = 'dd if={} bs=512 count=1 2>&1 | strings |grep -i grub'.format(
             boot_device)
 
-        return self.check_strs_in_cmd_output(cmd, 'GRUB', timeout=300)
+        return self.check_strs_in_cmd_output(cmd, ['GRUB'], timeout=300)
+
+    def fips_check(self):
+        return self.check_strs_in_file(
+            '/proc/sys/crypto/fips_enabled', ['1'], timeout=300)
+
+    def iqn_check(self):
+        return self.check_strs_in_file(
+            '/etc/iscsi/initiatorname.iscsi', ['iqn'], timeout=300)
 
     def check(self):
         cks = {}
@@ -525,7 +514,8 @@ class CheckCheck(CheckYoo):
             # set checkdata_map
             self._set_checkdata_map()
             # get checkpoint cases map
-            checkpoint_cases_map = self._get_checkpoint_cases_map()
+            checkpoint_cases_map = get_checkpoint_cases_map(self.ksfile,
+                                                            self.beaker_name)
 
             # run check
             log.info("Start to run check points, please wait...")
@@ -557,5 +547,5 @@ if __name__ == '__main__':
     ck.host_string, ck._host_user, ck.host_pass = ('10.66.148.9', 'root',
                                                    'redhat')
     ck.beaker_name = CONST.DELL_PET105_01
-    ck.ksfile = 'ati_local_02.ks'
+    ck.ksfile = 'ati_local_01.ks'
     print ck.go_check()
