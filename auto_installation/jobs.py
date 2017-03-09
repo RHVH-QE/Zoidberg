@@ -84,7 +84,7 @@ class JobRunner(object):
 
     def go(self):
         for m, ksl in self.job_queue.items():
-            #Delete checkpoints log firstly
+            # Delete checkpoints log firstly
             for ks in ksl:
                 self.results_logs.del_actual_logger(self.build_url, ks)
 
@@ -114,25 +114,32 @@ class JobRunner(object):
 
                     ret = self._wait_for_installation(p)
                     if not ret:
-                        log.info("auto installation failed, contine to next job")
+                        log.info(
+                            "auto installation failed, contine to next job")
                         continue
                     else:
-                        log.info("auto installation finished, contine to chekcpoints")
+                        log.info(
+                            "auto installation finished, contine to chekcpoints"
+                        )
 
                         self.results_logs.logger_name = 'checkpoints'
                         self.results_logs.get_actual_logger(self.build_url, ks)
                         ck = CheckCheck()
 
                         log.info("ip is %s", ret)
-                        ck.host_string, ck._host_user, ck.host_pass = (ret, 'root', 'redhat')
+                        ck.host_string, ck._host_user, ck.host_pass = (
+                            ret, 'root', 'redhat')
                         ck.beaker_name = m
                         ck.ksfile = ks
                         log.info(ck.go_check())
 
                         # TODO wati for cockpit new results format
                 else:
-                    log.error("provisioning on host %s failed with return code %s",
-                              m, ret)
+                    log.error(
+                        "provisioning on host %s failed with return code %s",
+                        m, ret)
+
+        self.rd_conn.set("running", "0")
 
 
 def job_runner(img_url, rd_conn, results_logs):

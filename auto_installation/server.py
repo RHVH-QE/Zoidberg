@@ -1,13 +1,13 @@
-"""
-"""
+from __future__ import unicode_literals
 # pylint: disable=W0403, C0103
 import os
 import base64
 
-from flask import Flask, request, redirect
+from flask import Flask, request, redirect, abort
+from flask_socketio import SocketIO, send
 
 from .utils import init_redis, ResultsAndLogs, setup_funcs
-from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL
+from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL, CB_PROFILE, HOSTS, TEST_LEVEL
 from .jobs import job_runner
 
 rd_conn = init_redis()
@@ -15,6 +15,7 @@ IP, PORT = CURRENT_IP_PORT
 results_logs = ResultsAndLogs()
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 
 
 @app.route('/post_result/<code>')
@@ -53,9 +54,14 @@ def start_job():
                 t.start()
                 return redirect('/post_result')
         else:
-            return redirect('/post_result')
+            return redirect('/goaway')
     else:
-        return redirect('/post_result')
+        abort(406)
+
+
+@app.route('/goaway', methods=['GET'])
+def goaway():
+    return "automation test already running, please goaway"
 
 
 @app.route('/done/<em1ip>/<bkr_name>')
@@ -85,3 +91,11 @@ def upload_anaconda_log(stage, log_name, offset):
             fp.write(data)
             fp.flush()
     return "upload done"
+
+
+# =========== websocket api ===================================================
+
+
+@socketio.on('running', namespace='/api')
+def handle_message(msg):
+    send(rd_conn.get("running"))

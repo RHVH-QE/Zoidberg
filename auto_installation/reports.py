@@ -85,7 +85,7 @@ class ResultsToPolarion(object):
         p1 = re.compile(r"{'RHEVM-\d")
         p2 = re.compile(r'InitiatorName=iqn')
         rets = []
-        iqns= []
+        iqns = []
         for line in open(res):
             if p1.search(line):
                 rets.append(eval(line.split("::")[-1]))
@@ -109,7 +109,7 @@ class ResultsToPolarion(object):
                             newret[k] = False
                             break
 
-        #with open(res, 'a') as fp:
+        # with open(res, 'a') as fp:
         #    fp.write('Final Results :: {}'.format(newret))
 
         return newret
