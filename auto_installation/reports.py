@@ -77,12 +77,10 @@ class ResultsToPolarion(object):
 
     def _pre_parse_results(self, res):
         ks = res.split('/')[-2]
-        print ks
         if ks in KS_PRESSURE_MAP:
             num = int(KS_PRESSURE_MAP[ks])
         else:
             num = 1
-        print num
 
         p1 = re.compile(r"{'RHEVM-\d")
         p2 = re.compile(r'InitiatorName=iqn')
@@ -95,7 +93,6 @@ class ResultsToPolarion(object):
                 iqns.append(line.split(":")[-1].rstrip("')\n"))
 
         retNum = len(rets)
-        print retNum
         if retNum != num:
             newret = {}
         else:
@@ -112,8 +109,8 @@ class ResultsToPolarion(object):
                             newret[k] = False
                             break
 
-        with open(res, 'a') as fp:
-            fp.write('Final Results :: {}'.format(newret))
+        #with open(res, 'a') as fp:
+        #    fp.write('Final Results :: {}'.format(newret))
 
         return newret
 
