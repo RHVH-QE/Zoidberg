@@ -167,8 +167,8 @@ NOPXE_URL = "http://lab-01.rhts.eng.pek2.redhat.com:8000/nopxe/{0}"
 
 CB_API = "http://10.73.60.74/cobbler_api"
 CB_CREDENTIAL = ('cobbler', 'cobbler')
-CB_PROFILE = 'RHVH-4.1-73-20170209.0'
+CB_PROFILE = 'RHVH-4.1-73-20170309.0'
 ARGS_TPL = ('inst.ks=http://{srv_ip}:{srv_port}/static/auto/{ks_file} '
             'inst.stage2=http://10.66.10.22:8090/'
-            'rhvh_ngn/pxedir/RHVH-4.1-20170209.0-RHVH-x86_64-dvd1.iso/stage2 '
+            'rhvh_ngn/pxedir/RHVH-4.1-20170309.0-RHVH-x86_64-dvd1.iso/stage2 '
             '{addition_params}')

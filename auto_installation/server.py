@@ -4,7 +4,7 @@ import os
 import base64
 
 from flask import Flask, request, redirect, abort
-from flask_socketio import SocketIO, send
+from flask_socketio import SocketIO, send, emit
 
 from .utils import init_redis, ResultsAndLogs, setup_funcs
 from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL, CB_PROFILE, HOSTS, TEST_LEVEL
@@ -96,6 +96,18 @@ def upload_anaconda_log(stage, log_name, offset):
 # =========== websocket api ===================================================
 
 
-@socketio.on('running', namespace='/api')
-def handle_message(msg):
-    send(rd_conn.get("running"))
+@socketio.on('status')
+def get_curretn_status(msg):
+    ret = {
+        'cb_profile': CB_PROFILE,
+        'running': rd_conn.get("running"),
+        'test_level': TEST_LEVEL,
+        'hosts': HOSTS
+    }
+    emit('currentStatus', ret)
+
+
+@socketio.on('build')
+def get_current_build(msg):
+    build_path = results_logs.current_log_path
+    emit('currentBuild', build_path)

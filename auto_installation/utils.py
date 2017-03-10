@@ -14,7 +14,6 @@ log = logging.getLogger('bender')
 
 
 class ReserveUserWrongException(Exception):
-
     def __init__(self, message):
         super(ReserveUserWrongException,
               self).__init__('''System <{bkr_name}> must be reserved by \
@@ -74,8 +73,7 @@ class ResultsAndLogs(object):
     def del_actual_logger(self, img_url, ks_name=''):
         log_file = os.path.join(PROJECT_ROOT, 'logs',
                                 self.get_current_date(),
-                                self.parse_img_url(img_url),
-                                ks_name)
+                                self.parse_img_url(img_url), ks_name)
         if os.path.exists(log_file):
             os.system('rm -rf {}/*'.format(log_file))
 
@@ -128,6 +126,7 @@ def get_testcase_map():
 
     return testcase_map
 
+
 def get_machine_ksl_map():
     machine_ksl_map = {}
     testcase_map = get_testcase_map()
@@ -153,6 +152,7 @@ def get_machine_ksl_map():
 
     return machine_ksl_map
 
+
 def get_ks_machine_map():
     ks_mashine_map = {}
     testcase_map = get_testcase_map()
@@ -167,6 +167,7 @@ def get_ks_machine_map():
             ks_mashine_map[ks] = machine
 
     return ks_mashine_map
+
 
 def get_checkpoint_cases_map(ks, mc):
     # get testcase map
