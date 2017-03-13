@@ -110,5 +110,6 @@ def get_curretn_status(msg):
 @socketio.on('build')
 def get_current_build(msg):
     build_path = results_logs.current_log_path
-    ret = {'path': build_path, 'log': get_lastline_of_file(build_path)}
+    log_file = results_logs.current_log_file
+    ret = {'path': build_path, 'log': get_lastline_of_file(log_file)}
     emit('currentBuild', ret)

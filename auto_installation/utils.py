@@ -34,6 +34,7 @@ class ResultsAndLogs(object):
         self._logger_name = "results"
         self.logger_dict = self.conf_to_dict()
         self._current_log_path = "/tmp/logs"
+        self._current_log_file = "/tmp/logs"
 
     @property
     def logger_name(self):
@@ -46,6 +47,10 @@ class ResultsAndLogs(object):
     @property
     def current_log_path(self):
         return self._current_log_path
+
+    @property
+    def current_log_file(self):
+        return self._current_log_file
 
     def get_current_date(self):
         return time.strftime("%Y-%m-%d", time.localtime())
@@ -65,6 +70,7 @@ class ResultsAndLogs(object):
             os.system("mkdir -p {0}".format(os.path.dirname(log_file)))
 
         self._current_log_path = os.path.dirname(log_file)
+        self._current_log_file = log_file
 
         self.logger_dict['logging']['handlers']['logfile'][
             'filename'] = log_file
