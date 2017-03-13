@@ -6,7 +6,7 @@ import base64
 from flask import Flask, request, redirect, abort
 from flask_socketio import SocketIO, send, emit
 
-from .utils import init_redis, ResultsAndLogs, setup_funcs
+from .utils import init_redis, ResultsAndLogs, setup_funcs, get_lastline_of_file
 from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL, CB_PROFILE, HOSTS, TEST_LEVEL
 from .jobs import job_runner
 
@@ -110,4 +110,5 @@ def get_curretn_status(msg):
 @socketio.on('build')
 def get_current_build(msg):
     build_path = results_logs.current_log_path
-    emit('currentBuild', build_path)
+    ret = {'path': build_path, 'log': get_lastline_of_file(build_path)}
+    emit('currentBuild', ret)

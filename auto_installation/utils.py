@@ -3,6 +3,7 @@ import logging.config
 import yaml
 import redis
 import time
+import subprocess as sp
 from constants import PROJECT_ROOT, \
     ANACONDA_TIER1, ANACONDA_TIER2, KS_TIER1, KS_TIER2, \
     TEST_LEVEL, \
@@ -186,5 +187,9 @@ def get_checkpoint_cases_map(ks, mc):
     return checkpoint_cases_map
 
 
+def get_lastline_of_file(file_path):
+    return sp.check_output(['tail', '-3', file_path])
+
+
 if __name__ == '__main__':
-    pass
+    print get_lastline_of_file("/tmp/git_gutter_2orm5g")
