@@ -2,17 +2,21 @@ from __future__ import unicode_literals
 # pylint: disable=W0403, C0103
 import os
 import base64
+import json
 
 from flask import Flask, request, redirect, abort
-from flask_socketio import SocketIO, send, emit
+from flask_socketio import SocketIO, emit
 
 from .utils import init_redis, ResultsAndLogs, setup_funcs, get_lastline_of_file
-from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL, CB_PROFILE, HOSTS, TEST_LEVEL
+from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL, CB_PROFILE, HOSTS, TEST_LEVEL, PROJECT_ROOT
 from .jobs import job_runner
+from .cobbler import Cobbler
+from .mongodata import MongoQuery
 
 rd_conn = init_redis()
 IP, PORT = CURRENT_IP_PORT
 results_logs = ResultsAndLogs()
+mongo = MongoQuery()
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -113,3 +117,36 @@ def get_current_build(msg):
     log_file = results_logs.current_log_file
     ret = {'path': build_path, 'log': get_lastline_of_file(log_file)}
     emit('currentBuild', ret)
+
+
+@socketio.on('pxe_profiles')
+def get_pxe_profiles(msg):
+    with Cobbler() as cb:
+        emit('pxeProfiles', cb.profiles)
+
+
+@socketio.on('pre_auto')
+def pre_auto_job(msg):
+    ts_level = sum([int(i) for i in msg['tslevel']])
+    pxe = msg['pxe']
+    # build = msg['build']
+
+    cfg = os.path.join(PROJECT_ROOT, 'auto_installation', 'constants.json')
+    cfg_ = None
+
+    with open(cfg) as fp:
+        cfg_ = json.load(fp)
+        cfg_['cb_profile'] = pxe
+        cfg_['test_level'] = ts_level
+    with open(cfg, 'w') as fp:
+        json.dump(cfg_, fp)
+
+
+@socketio.on('rhvh_builds')
+def get_rhvh_builds(msg):
+    emit('rhvhBuilds', mongo.rhvh_build_names(msg))
+
+
+@socketio.on('bkr_machines')
+def get_bkr_machines(msg):
+    emit('bkrMachines', mongo.machines(msg))

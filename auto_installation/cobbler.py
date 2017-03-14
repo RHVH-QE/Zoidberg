@@ -42,6 +42,11 @@ class Cobbler(object):
     def proxy(self):
         return xmlrpclib.Server(self.cb_api)
 
+    @property
+    def profiles(self):
+        ret = self.proxy.get_profiles()
+        return [pn['name'] for pn in ret if pn['name'].startswith('RHVH')]
+
     def login(self):
         self.token = self.proxy.login(*(self.credential))
         self.log.info("logging into {}, get token is {}".format(self.cb_api,
@@ -74,13 +79,16 @@ class Cobbler(object):
 
 
 if __name__ == '__main__':
-    new_system = dict(
-        name="dell-pet105-01",
-        profile="RHVH-4.0-73-20170104.0",
-        modify_interface={"macaddress-enp2s0": "00:22:19:27:54:c7"})
+    # new_system = dict(
+    #     name="dell-pet105-01",
+    #     profile="RHVH-4.0-73-20170104.0",
+    #     modify_interface={"macaddress-enp2s0": "00:22:19:27:54:c7"})
+
+    # with Cobbler() as cb:
+    #     cb.add_new_system(
+    #         name="dell-pet105-01",
+    #         profile="RHVH-4.0-73-20170104.0",
+    #         modify_interface={"macaddress-enp2s0": "00:22:19:27:54:c7"})
 
     with Cobbler() as cb:
-        cb.add_new_system(
-            name="dell-pet105-01",
-            profile="RHVH-4.0-73-20170104.0",
-            modify_interface={"macaddress-enp2s0": "00:22:19:27:54:c7"})
+        print cb.profiles

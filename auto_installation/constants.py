@@ -1,7 +1,11 @@
 """Here put all project level costants"""
 import os
+import json
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
+
+cfgjson = os.path.join(PROJECT_ROOT, 'auto_installation', 'constants.json')
+CFGS = json.load(open(cfgjson))
 
 KS_FILES_DIR = os.path.join(PROJECT_ROOT, 'auto_installation', 'static',
                             'rhvh-41')
@@ -26,7 +30,7 @@ ANACONDA_TIER2 = 0x02
 KS_TIER1 = 0x04
 KS_TIER2 = 0x08
 
-TEST_LEVEL = ANACONDA_TIER1 | ANACONDA_TIER2 | KS_TIER1 | KS_TIER2
+TEST_LEVEL = CFGS['test_level']
 # TEST_LEVEL = ANACONDA_TIER2
 
 # one kickstart file can only be run on a single machine
@@ -167,7 +171,7 @@ NOPXE_URL = "http://lab-01.rhts.eng.pek2.redhat.com:8000/nopxe/{0}"
 
 CB_API = "http://10.73.60.74/cobbler_api"
 CB_CREDENTIAL = ('cobbler', 'cobbler')
-CB_PROFILE = 'RHVH-4.1-73-20170309.0'
+CB_PROFILE = CFGS['cb_profile']
 ARGS_TPL = ('inst.ks=http://{srv_ip}:{srv_port}/static/auto/{ks_file} '
             'inst.stage2=http://10.66.10.22:8090/'
             'rhvh_ngn/pxedir/RHVH-4.1-20170309.0-RHVH-x86_64-dvd1.iso/stage2 '
