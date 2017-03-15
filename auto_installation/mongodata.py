@@ -32,11 +32,19 @@ class MongoQuery(object):
 
     def machines(self, q=''):
         c = self.collection('machines')
-        return [
+        # for i in c.find(projection=['basic.ids.hostname', 'comments']):
+        #     print i.get('comments', [''])
+        auto = [
             i['basic']['ids']['hostname']
-            for i in c.find(projection=['basic.ids.hostname'])
-            if i['basic']['ids']
+            for i in c.find(projection=['basic.ids.hostname', 'comments'])
+            if i['basic']['ids'] and i.get('comments', [''])[0] == 'zoidberg'
         ]
+        manual = [
+            i['basic']['ids']['hostname']
+            for i in c.find(projection=['basic.ids.hostname', 'comments'])
+            if i['basic']['ids'] and i.get('comments', [''])[0] != 'zoidberg'
+        ]
+        return [auto, manual]
 
 
 if __name__ == '__main__':

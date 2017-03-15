@@ -125,6 +125,16 @@ def get_pxe_profiles(msg):
         emit('pxeProfiles', cb.profiles)
 
 
+@socketio.on('rhvh_builds')
+def get_rhvh_builds(msg):
+    emit('rhvhBuilds', mongo.rhvh_build_names(msg))
+
+
+@socketio.on('bkr_machines')
+def get_bkr_machines(msg):
+    emit('bkrMachines', mongo.machines(msg))
+
+
 @socketio.on('pre_auto')
 def pre_auto_job(msg):
     ts_level = sum([int(i) for i in msg['tslevel']])
@@ -142,11 +152,5 @@ def pre_auto_job(msg):
         json.dump(cfg_, fp)
 
 
-@socketio.on('rhvh_builds')
-def get_rhvh_builds(msg):
-    emit('rhvhBuilds', mongo.rhvh_build_names(msg))
-
-
-@socketio.on('bkr_machines')
-def get_bkr_machines(msg):
-    emit('bkrMachines', mongo.machines(msg))
+if __name__ == '__main__':
+    pass

@@ -29,7 +29,7 @@ class Cobbler(object):
     cb_api = attr.ib(default=CB_API)
     credential = attr.ib(default=CB_CREDENTIAL, validator=_cb_cred_checker)
     token = attr.ib(default=None)
-    log = attr.ib(default=logging.getLogger("Cobbler"))
+    log = attr.ib(default=logging.getLogger("bender"))
 
     def __enter__(self):
         self.login()
