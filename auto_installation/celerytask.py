@@ -22,6 +22,10 @@ class RhvhTask(object):
     def simple(self):
         self.c.send_task('tasker.tasks.add', (2, 2))
 
+    def lanuchAuto(self, build_name, pxe, ts_level):
+        self.c.send_task('tasker.rhvh_auto.launch_autotesting',
+                         (build_name, pxe, ts_level))
+
 
 if __name__ == '__main__':
     rt = RhvhTask()

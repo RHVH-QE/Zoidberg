@@ -12,11 +12,13 @@ from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL, CB_PROFILE, HOSTS, TE
 from .jobs import job_runner
 from .cobbler import Cobbler
 from .mongodata import MongoQuery
+from .celerytask import RhvhTask
 
 rd_conn = init_redis()
 IP, PORT = CURRENT_IP_PORT
 results_logs = ResultsAndLogs()
 mongo = MongoQuery()
+rt = RhvhTask()
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -139,7 +141,7 @@ def get_bkr_machines(msg):
 def pre_auto_job(msg):
     ts_level = sum([int(i) for i in msg['tslevel']])
     pxe = msg['pxe']
-    # build = msg['build']
+    build = msg['build']
 
     cfg = os.path.join(PROJECT_ROOT, 'auto_installation', 'constants.json')
     cfg_ = None
@@ -150,6 +152,8 @@ def pre_auto_job(msg):
         cfg_['test_level'] = ts_level
     with open(cfg, 'w') as fp:
         json.dump(cfg_, fp)
+
+    rt.lanuchAuto(build, pxe, ts_level)
 
 
 if __name__ == '__main__':
