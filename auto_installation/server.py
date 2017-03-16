@@ -12,11 +12,13 @@ from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL, CB_PROFILE, HOSTS, TE
 from .jobs import job_runner
 from .cobbler import Cobbler
 from .mongodata import MongoQuery
+from .celerytask import RhvhTask
 
 rd_conn = init_redis()
 IP, PORT = CURRENT_IP_PORT
 results_logs = ResultsAndLogs()
 mongo = MongoQuery()
+rt = RhvhTask()
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -127,11 +129,21 @@ def get_pxe_profiles(msg):
         emit('pxeProfiles', cb.profiles)
 
 
+@socketio.on('rhvh_builds')
+def get_rhvh_builds(msg):
+    emit('rhvhBuilds', mongo.rhvh_build_names(msg))
+
+
+@socketio.on('bkr_machines')
+def get_bkr_machines(msg):
+    emit('bkrMachines', mongo.machines(msg))
+
+
 @socketio.on('pre_auto')
 def pre_auto_job(msg):
     ts_level = sum([int(i) for i in msg['tslevel']])
     pxe = msg['pxe']
-    # build = msg['build']
+    build = msg['build']
 
     cfg = os.path.join(PROJECT_ROOT, 'auto_installation', 'constants.json')
     cfg_ = None
@@ -143,12 +155,8 @@ def pre_auto_job(msg):
     with open(cfg, 'w') as fp:
         json.dump(cfg_, fp)
 
-
-@socketio.on('rhvh_builds')
-def get_rhvh_builds(msg):
-    emit('rhvhBuilds', mongo.rhvh_build_names(msg))
+    rt.lanuchAuto(build, pxe, ts_level)
 
 
-@socketio.on('bkr_machines')
-def get_bkr_machines(msg):
-    emit('bkrMachines', mongo.machines(msg))
+if __name__ == '__main__':
+    pass
