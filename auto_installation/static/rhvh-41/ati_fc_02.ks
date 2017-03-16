@@ -102,11 +102,13 @@ checkdata_map['network'] = {
     }
 }
 
+checkdata_map['bootdevice'] = '/dev/mapper/36005076300810b3e0000000000000022'
+
 checkdata_map['partition'] = {
     '/boot': {
         'lvm': False,
-        'drive': '/dev/mapper/mpatha',
-        'partnum': '1',
+        'device_alias': '/dev/mapper/mpatha1',
+        'device_wwid': '/dev/mapper/36005076300810b3e0000000000000022p1',        
         'fstype': 'ext4',
         'size': '1024'
     },

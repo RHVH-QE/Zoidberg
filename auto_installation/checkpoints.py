@@ -295,7 +295,7 @@ class CheckCheck(CheckYoo):
                     pattern = re.compile(
                         r'^{}-{}.*{}.*{}'.format(lvpre, name, fstype, key))
             else:
-                part_device = part.get('drive') + part.get('partnum')
+                part_device = part.get('device_alias')
                 pattern = re.compile(
                     r'^{}.*{}.*{}'.format(part_device, fstype, key))
 
@@ -322,34 +322,38 @@ class CheckCheck(CheckYoo):
                     cmd = "lvs --noheadings -o size --unit=m --nosuffix {}/{} | sed -r 's/\s*([0-9]+)\..*/\\1/'".format(
                         vgname, part.get('name'))
             else:
-                cmd = "expr $(fdisk -s {}) / 1024".format(
-                    part.get('drive') + part.get('partnum'))
+                cmd = "expr $(fdisk -s {}) / 1024".format(part.get('device_wwid'))
 
             ret = self.run_cmd(cmd, timeout=300)
 
             if ret[0]:
-                part_real_size = ret[1]
+                for line in ret[1].split('\n'):
+                    if re.match(r'\d+$', line):
+                        part_real_size = int(line.strip())
+                        break
+                else:
+                    return False
             else:
                 return False
 
             if part.get('grow'):
-                if int(part_real_size) <= int(part.get('size')):
+                if part_real_size <= int(part.get('size')):
                     return False
                 else:
                     maxsize = part.get('maxsize')
-                    if maxsize and int(part_real_size) > int(maxsize):
+                    if maxsize and part_real_size > int(maxsize):
                         return False
             elif part.get('recommended'):
                 if key == 'swap':
                     if not self._check_recommended_swap_size():
                         return False
                 elif key == '/boot':
-                    if int(part_real_size) != 1024:
+                    if part_real_size != 1024:
                         return False
                 else:
                     return False
             else:
-                if int(part_real_size) != int(part.get('size')):
+                if part_real_size != int(part.get('size')):
                     return False
 
         return True
@@ -492,8 +496,7 @@ class CheckCheck(CheckYoo):
             'grubby --info=0', [checkstr], timeout=300)
 
     def bootloader_check(self):
-        boot_device = self._checkdata_map.get('partition').get('/boot').get(
-            'drive')
+        boot_device = self._checkdata_map.get('bootdevice')
         cmd = 'dd if={} bs=512 count=1 2>&1 | strings |grep -i grub'.format(
             boot_device)
 
@@ -523,8 +526,12 @@ class CheckCheck(CheckYoo):
             for checkpoint, cases in checkpoint_cases_map.items():
                 try:
                     ck = self.go_check(checkpoint)
+                    if ck:
+                        newck = 'passed'
+                    else:
+                        newck = 'failed'
                     for case in cases:
-                        cks[case] = ck
+                        cks[case] = newck
                 except Exception as e:
                     log.error(e)
         except Exception as e:
