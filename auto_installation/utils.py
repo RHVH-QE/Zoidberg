@@ -73,7 +73,7 @@ class ResultsAndLogs(object):
     def get_actual_logger(self, ks_name=''):
         log_file = os.path.join(PROJECT_ROOT, 'logs',
                                 self.get_current_date(),
-                                self.parse_img_url(self.img_url), ks_name,
+                                self.parse_img_url(), ks_name,
                                 self.logger_name)
         if not os.path.exists(log_file):
             os.system("mkdir -p {0}".format(os.path.dirname(log_file)))
@@ -89,7 +89,7 @@ class ResultsAndLogs(object):
     def del_existing_logs(self, ks_name=''):
         log_file = os.path.join(PROJECT_ROOT, 'logs',
                                 self.get_current_date(),
-                                self.parse_img_url(self.img_url), ks_name)
+                                self.parse_img_url(), ks_name)
         if os.path.exists(log_file):
             os.system('rm -rf {}/*'.format(log_file))
     
@@ -129,7 +129,7 @@ class ResultsAndLogs(object):
         return newret
 
     def gen_final_results(self):
-        build = self.parse_img_url(self.img_url)
+        build = self.parse_img_url()
         log_root_path = os.path.join(PROJECT_ROOT, 'logs',
                                      self.get_current_date(),
                                      build)
