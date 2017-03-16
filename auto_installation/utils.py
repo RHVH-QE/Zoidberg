@@ -272,7 +272,7 @@ def get_checkpoint_cases_map(ks, mc):
 
 
 def get_lastline_of_file(file_path):
-    return sp.check_output(['tail', '-3', file_path])
+    return sp.check_output(['tail', '-1', file_path])
 
 
 if __name__ == '__main__':

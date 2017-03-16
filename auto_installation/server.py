@@ -53,7 +53,7 @@ def start_job():
                 _img_url = img_url.replace('/var/www/builds',
                                            BUILDS_SERVER_URL)
                 
-                results_logs.img_url(_img_url)
+                results_logs.img_url = _img_url
 
                 t = job_runner(_img_url, rd_conn, results_logs)
                 t.setDaemon(True)
