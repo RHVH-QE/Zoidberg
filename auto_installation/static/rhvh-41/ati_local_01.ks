@@ -105,8 +105,8 @@ checkdata_map['network'] = {
 checkdata_map['partition'] = {
     '/boot': {
         'lvm': False,
-        'drive': '/dev/sda',
-        'partnum': '1',
+        'device_alias': '/dev/sda1',
+        'device_wwid': '/dev/sda1',
         'fstype': 'ext4',
         'size': '1024'
     },

@@ -86,10 +86,10 @@ class JobRunner(object):
         for m, ksl in self.job_queue.items():
             # Delete checkpoints log firstly
             for ks in ksl:
-                self.results_logs.del_actual_logger(self.build_url, ks)
+                self.results_logs.del_existing_logs(ks)
 
             for ks in ksl:
-                self.results_logs.get_actual_logger(self.build_url, ks)
+                self.results_logs.get_actual_logger(ks)
                 log.info("start provisioning on host %s with %s", m, ks)
 
                 if self.debug:
@@ -123,7 +123,7 @@ class JobRunner(object):
                         )
 
                         self.results_logs.logger_name = 'checkpoints'
-                        self.results_logs.get_actual_logger(self.build_url, ks)
+                        self.results_logs.get_actual_logger(ks)
                         ck = CheckCheck()
 
                         log.info("ip is %s", ret)
@@ -138,7 +138,8 @@ class JobRunner(object):
                     log.error(
                         "provisioning on host %s failed with return code %s",
                         m, ret)
-
+        
+        self.results_logs.gen_final_results()
         self.rd_conn.set("running", "0")
 
 

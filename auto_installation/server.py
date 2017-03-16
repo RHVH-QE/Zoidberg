@@ -52,6 +52,8 @@ def start_job():
             if img_url:
                 _img_url = img_url.replace('/var/www/builds',
                                            BUILDS_SERVER_URL)
+                
+                results_logs.img_url(_img_url)
 
                 t = job_runner(_img_url, rd_conn, results_logs)
                 t.setDaemon(True)
