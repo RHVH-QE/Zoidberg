@@ -40,7 +40,7 @@ class ResultsToPolarion(object):
 
     def create_testrun(self, level='Must'):
         ret = TestRun.create(TR_PROJECT_ID,
-                             TR_ID.format(self.build, self.get_current_date()),
+                             TR_ID.format(self.build.replace(".", "_"), self.get_current_date()),
                              TR_TPL.format(level))
         return ret
 
