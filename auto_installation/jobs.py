@@ -139,7 +139,6 @@ class JobRunner(object):
                         "provisioning on host %s failed with return code %s",
                         m, ret)
         
-        self.results_logs.gen_final_results()
         self.rd_conn.set("running", "0")
 
 

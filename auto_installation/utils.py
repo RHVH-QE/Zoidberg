@@ -1,5 +1,4 @@
 import os
-import re
 import logging.config
 import yaml
 import redis
@@ -11,7 +10,6 @@ from constants import PROJECT_ROOT, \
     ANACONDA_TIER1_TESTCASE_MAP, ANACONDA_TIER2_TESTCASE_MAP, \
     KS_TIER1_TESTCASE_MAP, KS_TIER2_TESTCASE_MAP, \
     KS_PRESSURE_MAP
-import json
 
 log = logging.getLogger('bender')
 
@@ -40,7 +38,7 @@ class ResultsAndLogs(object):
     @property
     def img_url(self):
         return self._img_url
-    
+
     @img_url.setter
     def img_url(self, val):
         self._img_url = val
@@ -92,75 +90,6 @@ class ResultsAndLogs(object):
                                 self.parse_img_url(), ks_name)
         if os.path.exists(log_file):
             os.system('rm -rf {}/*'.format(log_file))
-    
-    def _parse_results(self, res):
-        ks = res.split('/')[-2]
-        if ks in KS_PRESSURE_MAP:
-            num = int(KS_PRESSURE_MAP[ks])
-        else:
-            num = 1
-
-        p1 = re.compile(r"{'RHEVM-\d")
-        p2 = re.compile(r'InitiatorName=iqn')
-        rets = []
-        iqns = []
-        for line in open(res):
-            if p1.search(line):
-                rets.append(eval(line.split("::")[-1]))
-            if p2.search(line):
-                iqns.append(line.split(":")[-1].rstrip("')\n"))
-
-        retNum = len(rets)
-        if retNum != num:
-            newret = {}
-        else:
-            newret = rets[0]
-            if num > 1:
-                for ret in rets[1:]:
-                    for k in newret:
-                        newret[k] = newret[k] and ret[k]
-
-                if len(iqns) == num and len(set(iqns)) != num:
-                    testcase_map = get_testcase_map()
-                    for k, v in testcase_map.items():
-                        if 'iqn_check' in v and k in newret:
-                            newret[k] = False
-                            break
-        return newret
-
-    def gen_final_results(self):
-        build = self.parse_img_url()
-        log_root_path = os.path.join(PROJECT_ROOT, 'logs',
-                                     self.get_current_date(),
-                                     build)
-        if not os.path.exists(log_root_path):
-            return
-        
-        final_results = {build: {}}
-        actual_run_cases = []
-        pass_num = 0
-        failed_num = 0
-        for a, b, c in os.walk(log_root_path):
-            for ks in b:
-                ret = self._parse_results(os.path.join(a, ks, 'checkpoints'))
-                final_results[build][ks] = ret
-                actual_run_cases.extend(list(ret.keys()))
-                values = list(ret.values())
-                pass_num = pass_num + values.count('passed')
-                failed_num = failed_num + values.count('failed')
-            break
-        
-        need_run_cases = list(get_testcase_map().keys())
-        final_results['sum']['build'] = build
-        final_results['sum']['total'] = len(need_run_cases)
-        final_results['sum']['pass'] = pass_num
-        final_results['sum']['failed'] = failed_num
-        final_results['sum']['error'] = len(need_run_cases) - len(actual_run_cases)
-        final_results['sum']['errorlist'] = list(set(need_run_cases) - set(actual_run_cases))
-        
-        final_results_jfile = os.path.join(log_root_path, 'final_results.json')
-        with open(final_results_jfile, 'w') as json_file:
-            json_file.write(json.dumps(final_results, sort_keys=True, indent =4))
 
 
 def init_redis():
