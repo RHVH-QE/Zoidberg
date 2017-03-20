@@ -322,7 +322,8 @@ class CheckCheck(CheckYoo):
                     cmd = "lvs --noheadings -o size --unit=m --nosuffix {}/{} | sed -r 's/\s*([0-9]+)\..*/\\1/'".format(
                         vgname, part.get('name'))
             else:
-                cmd = "expr $(fdisk -s {}) / 1024".format(part.get('device_wwid'))
+                cmd = "expr $(fdisk -s {}) / 1024".format(
+                    part.get('device_wwid'))
 
             ret = self.run_cmd(cmd, timeout=300)
 
