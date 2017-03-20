@@ -9,7 +9,7 @@ from constants import PROJECT_ROOT, \
     TEST_LEVEL, \
     ANACONDA_TIER1_TESTCASE_MAP, ANACONDA_TIER2_TESTCASE_MAP, \
     KS_TIER1_TESTCASE_MAP, KS_TIER2_TESTCASE_MAP, \
-    KS_PRESSURE_MAP
+    KS_PRESSURE_MAP, DEBUG_TIER, DEBUG_TIER_TESTCASE_MAP
 
 log = logging.getLogger('bender')
 
@@ -134,6 +134,8 @@ def get_testcase_map():
         testcase_map.update(KS_TIER1_TESTCASE_MAP)
     if TEST_LEVEL & KS_TIER2:
         testcase_map.update(KS_TIER2_TESTCASE_MAP)
+    if TEST_LEVEL & DEBUG_TIER:
+        testcase_map.update(DEBUG_TIER_TESTCASE_MAP)
 
     if not testcase_map:
         raise ValueError('Invaild TEST_LEVEL')

@@ -45,7 +45,7 @@ class Cobbler(object):
     @property
     def profiles(self):
         ret = self.proxy.get_profiles()
-        return [pn['name'] for pn in ret if pn['name'].startswith('RHVH')]
+        return [pn['name'] for pn in ret if pn['name'].startswith('RHVH-4')]
 
     def login(self):
         self.token = self.proxy.login(*(self.credential))

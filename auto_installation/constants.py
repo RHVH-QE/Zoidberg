@@ -29,6 +29,7 @@ ANACONDA_TIER1 = 0x01
 ANACONDA_TIER2 = 0x02
 KS_TIER1 = 0x04
 KS_TIER2 = 0x08
+DEBUG_TIER = 0x10
 
 TEST_LEVEL = CFGS['test_level']
 # TEST_LEVEL = ANACONDA_TIER2
@@ -95,6 +96,10 @@ KS_TIER2_TESTCASE_MAP = {
     'RHEVM-17867': ('ati_local_02.ks', DELL_PET105_01, 'selinux_check'),
     'RHEVM-17847': ('ati_local_02.ks', DELL_PET105_01, 'partition_check'),
     'RHEVM-17861': ('ati_local_02.ks', DELL_PET105_01, 'static_network_check')
+}
+
+DEBUG_TIER_TESTCASE_MAP = {
+    'RHEVM-17788': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
 }
 
 KS_PRESSURE_MAP = {'ati_fc_03.ks': '3'}
