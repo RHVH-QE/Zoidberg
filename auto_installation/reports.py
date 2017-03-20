@@ -1,10 +1,13 @@
 import os
 import time
+import argparse
 import datetime
-from pylarion.test_run import TestRun
+try:
+    from pylarion.test_run import TestRun
+except ImportError:
+    print("pylarion must be installed")
 from constants import TR_ID, TR_PROJECT_ID, TR_TPL, \
     KS_PRESSURE_MAP
-import sys
 import re
 import json
 from utils import get_testcase_map
@@ -40,14 +43,11 @@ class ResultsToPolarion(object):
 
     def create_testrun(self, level='Must'):
         ret = TestRun.create(TR_PROJECT_ID,
-                             TR_ID.format(self.build.replace(".", "_"), self.get_current_date()),
+                             TR_ID.format(
+                                 self.build.replace(".", "_"),
+                                 self.get_current_date()),
                              TR_TPL.format(level))
         return ret
-
-    # def add_attachment_to_record(self, tr=None):
-    #     tr.add_attachment_to_test_record(test_case_id='RHEVM-15058',
-    #                                      path='/home/dracher/Projects/Zoidberg/app/logs/2016-06-21/rhev-hypervisor7-ng-4.0-20160616.0/ati_services_01.ks/checkpoints',
-    #                                      title='results')
 
     def export_to_polarion(
             self,
@@ -145,7 +145,8 @@ class ResultsToPolarion(object):
         try:
             with open(final_results_jfile, 'w') as json_file:
                 json_file.write(
-                    json.dumps(final_results, sort_keys=True, indent=4))
+                    json.dumps(
+                        final_results, sort_keys=True, indent=4))
 
             return final_results_jfile
         except Exception as e:
@@ -184,22 +185,24 @@ class ResultsToPolarion(object):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 3:
-        action = sys.argv[2]
-        if action != '-l' and action != '-p':
-            print "The input param is incorrect, the action should be -l or -p."
-            sys.exit()
-    elif len(sys.argv) == 2:
-        action = '-l'
-    else:
-        print "The input params num is incorrect."
-        sys.exit()
+    parser = argparse.ArgumentParser(description=(
+        'Script used to generate test-run '
+        'summary or upload results to polarion'))
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        '-l',
+        action='store_true',
+        help='generate final summary in json format')
+    group.add_argument(
+        '-p', action='store_true', help='upload test results to polarion')
+    parser.add_argument('results_path', help="path to results log directory")
+    args = parser.parse_args()
 
-    res_path = os.path.realpath(sys.argv[1])
+    res_path = args.results_path
+    if args.p:
+        action = '-p'
+    if args.l:
+        action = '-l'
 
     r = ResultsToPolarion(res_path, action)
     r.run()
-
-    # tr = TestRun(project_id='RHEVM3', test_run_id='4_0_Node_06221451_AutoInstallWithKickstart_Must')
-    # tr.add_attachment_to_test_record(test_case_id='RHEVM-15058', path='/home/dracher/Projects/Zoidberg/app/logs/2016-06-21/rhev-hypervisor7-ng-4.0-20160616.0/ati_network_01.ks/checkpoints', title='failedLogs')
-# /logs/2016-09-08/redhat-virtualization-host-4.0-20160906.0/ati_autopart_01.ks/results
