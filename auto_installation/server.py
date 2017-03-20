@@ -54,7 +54,7 @@ def start_job():
             if img_url:
                 _img_url = img_url.replace('/var/www/builds',
                                            BUILDS_SERVER_URL)
-                
+
                 results_logs.img_url = _img_url
 
                 t = job_runner(_img_url, rd_conn, results_logs)
@@ -156,6 +156,26 @@ def pre_auto_job(msg):
         json.dump(cfg_, fp)
 
     rt.lanuchAuto(build, pxe, ts_level)
+
+
+@socketio.on('last_result')
+def get_last_result(msg):
+    log_path = results_logs.current_log_path
+    result_file = os.path.join(os.path.dirname(log_path), 'final_results.json')
+    ret_none = {
+        "sum": {
+            "build": "",
+            "error": -1,
+            "errorlist": [],
+            "failed": -1,
+            "passed": -1,
+            "total": -1
+        }
+    }
+    if not os.path.exists(result_file):
+        emit('lastRes', ret_none)
+    else:
+        emit('lastRes', json.load(open(result_file)))
 
 
 if __name__ == '__main__':
