@@ -13,6 +13,7 @@ from .jobs import job_runner
 from .cobbler import Cobbler
 from .mongodata import MongoQuery
 from .celerytask import RhvhTask
+from .reports import ResultsToPolarion
 
 rd_conn = init_redis()
 IP, PORT = CURRENT_IP_PORT
@@ -160,8 +161,6 @@ def pre_auto_job(msg):
 
 @socketio.on('last_result')
 def get_last_result(msg):
-    log_path = results_logs.current_log_path
-    result_file = os.path.join(os.path.dirname(log_path), 'final_results.json')
     ret_none = {
         "sum": {
             "build": "",
@@ -172,6 +171,15 @@ def get_last_result(msg):
             "total": -1
         }
     }
+    log_path = os.path.dirname(results_logs.current_log_path)
+    try:
+        ResultsToPolarion(log_path, '-l').run()
+    except IOError as e:
+        print(e)
+        emit('lastRes', ret_none)
+
+    result_file = os.path.join(log_path, 'final_results.json')
+
     if not os.path.exists(result_file):
         emit('lastRes', ret_none)
     else:
