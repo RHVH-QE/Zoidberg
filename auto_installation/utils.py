@@ -92,6 +92,9 @@ class ResultsAndLogs(object):
             os.system('rm -rf {}/*'.format(log_file))
 
 
+results_logs = ResultsAndLogs()
+
+
 def init_redis():
     pool = redis.ConnectionPool(
         host='localhost', port=6379, db=0, password='redhat')

@@ -3,11 +3,12 @@ from __future__ import unicode_literals
 import os
 import base64
 import json
+import utils
 
 from flask import Flask, request, redirect, abort, jsonify
 from flask_cors import CORS
 
-from .utils import init_redis, ResultsAndLogs, setup_funcs, get_lastline_of_file
+from .utils import init_redis, setup_funcs, get_lastline_of_file
 from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL, CB_PROFILE, HOSTS, TEST_LEVEL, PROJECT_ROOT
 from .jobs import job_runner
 from .cobbler import Cobbler
@@ -17,7 +18,8 @@ from .reports import ResultsToPolarion
 
 rd_conn = init_redis()
 IP, PORT = CURRENT_IP_PORT
-results_logs = ResultsAndLogs()
+# ensure singleton instance
+results_logs = utils.results_logs
 mongo = MongoQuery()
 rt = RhvhTask()
 
