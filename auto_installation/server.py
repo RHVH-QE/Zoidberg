@@ -4,8 +4,8 @@ import os
 import base64
 import json
 
-from flask import Flask, request, redirect, abort
-from flask_socketio import SocketIO, emit
+from flask import Flask, request, redirect, abort, jsonify
+from flask_cors import CORS
 
 from .utils import init_redis, ResultsAndLogs, setup_funcs, get_lastline_of_file
 from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL, CB_PROFILE, HOSTS, TEST_LEVEL, PROJECT_ROOT
@@ -22,7 +22,7 @@ mongo = MongoQuery()
 rt = RhvhTask()
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+CORS(app, resources=r'/api/*')
 
 
 @app.route('/post_result/<code>')
@@ -102,65 +102,69 @@ def upload_anaconda_log(stage, log_name, offset):
     return "upload done"
 
 
-# =========== websocket api ===================================================
+# =========== api section ======================================================
 
 
-@socketio.on('status')
-def get_curretn_status(msg):
+@app.route('/api/v1/current/status')
+def get_current_status():
     ret = {
         'cb_profile': CB_PROFILE,
         'running': rd_conn.get("running"),
         'test_level': TEST_LEVEL,
         'hosts': HOSTS
     }
-    emit('currentStatus', ret)
+    return jsonify(ret)
 
 
-@socketio.on('build')
-def get_current_build(msg):
+@app.route('/api/v1/current/build')
+def get_current_build():
     build_path = results_logs.current_log_path
     log_file = results_logs.current_log_file
     ret = {'path': build_path, 'log': get_lastline_of_file(log_file)}
-    emit('currentBuild', ret)
+    return jsonify(ret)
 
 
-@socketio.on('pxe_profiles')
-def get_pxe_profiles(msg):
+@app.route('/api/v1/pxe/profiles')
+def get_pxe_profiles():
     with Cobbler() as cb:
-        emit('pxeProfiles', cb.profiles)
+        return jsonify(cb.profiles)
 
 
-@socketio.on('rhvh_builds')
-def get_rhvh_builds(msg):
-    emit('rhvhBuilds', mongo.rhvh_build_names(msg))
+@app.route('/api/v1/rhvh_builds/<qname>')
+def get_rhvh_builds(qname):
+    return jsonify(mongo.rhvh_build_names(qname))
 
 
-@socketio.on('bkr_machines')
-def get_bkr_machines(msg):
-    emit('bkrMachines', mongo.machines(msg))
+@app.route('/api/v1/bkr_machines')
+def get_bkr_machines():
+    return jsonify(mongo.machines())
 
 
-@socketio.on('pre_auto')
-def pre_auto_job(msg):
-    ts_level = sum([int(i) for i in msg['tslevel']])
-    pxe = msg['pxe']
-    build = msg['build']
+@app.route('/api/v1/autojob/lanuch', methods=['POST'])
+def auto_job_lanuch():
+    if request.method == 'POST':
+        msg = request.get_json()
+        print msg
+        ts_level = sum([int(i) for i in msg['tslevel']])
+        pxe = msg['pxe']
+        build = msg['build']
 
-    cfg = os.path.join(PROJECT_ROOT, 'auto_installation', 'constants.json')
-    cfg_ = None
+        cfg = os.path.join(PROJECT_ROOT, 'auto_installation', 'constants.json')
+        cfg_ = None
 
-    with open(cfg) as fp:
-        cfg_ = json.load(fp)
-        cfg_['cb_profile'] = pxe
-        cfg_['test_level'] = ts_level
-    with open(cfg, 'w') as fp:
-        json.dump(cfg_, fp)
+        with open(cfg) as fp:
+            cfg_ = json.load(fp)
+            cfg_['cb_profile'] = pxe
+            cfg_['test_level'] = ts_level
+        with open(cfg, 'w') as fp:
+            json.dump(cfg_, fp)
+        # abort(401)
+        # rt.lanuchAuto(build, pxe, ts_level)
+        return jsonify("job is launched")
 
-    rt.lanuchAuto(build, pxe, ts_level)
 
-
-@socketio.on('last_result')
-def get_last_result(msg):
+@app.route('/api/v1/autojob/last_result')
+def get_last_result():
     ret_none = {
         "sum": {
             "build": "",
@@ -176,14 +180,14 @@ def get_last_result(msg):
         ResultsToPolarion(log_path, '-l').run()
     except IOError as e:
         print(e)
-        emit('lastRes', ret_none)
+        return jsonify(ret_none)
 
     result_file = os.path.join(log_path, 'final_results.json')
 
     if not os.path.exists(result_file):
-        emit('lastRes', ret_none)
+        return jsonify(ret_none)
     else:
-        emit('lastRes', json.load(open(result_file)))
+        return jsonify(json.load(open(result_file)))
 
 
 if __name__ == '__main__':
