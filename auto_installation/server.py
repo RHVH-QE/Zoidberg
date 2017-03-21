@@ -159,7 +159,7 @@ def auto_job_lanuch():
         with open(cfg, 'w') as fp:
             json.dump(cfg_, fp)
         # abort(401)
-        # rt.lanuchAuto(build, pxe, ts_level)
+        rt.lanuchAuto(build, pxe, ts_level)
         return jsonify("job is launched")
 
 
