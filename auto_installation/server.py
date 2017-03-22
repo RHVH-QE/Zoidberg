@@ -17,7 +17,6 @@ from .celerytask import RhvhTask
 from .reports import ResultsToPolarion
 
 rd_conn = init_redis()
-setup_funcs(rd_conn)
 IP, PORT = CURRENT_IP_PORT
 # ensure singleton instance
 results_logs = utils.results_logs
