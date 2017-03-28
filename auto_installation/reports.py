@@ -30,21 +30,16 @@ class ResultsToPolarion(object):
     def __init__(self, path, action):
         self.action = action
         self.path = path.rstrip('/')
-        _path = self.path.split('/')
-        self.build = _path[-1]
-        self.root_path = self.path
-        self.ks_list = [
-            x for x in os.listdir(self.root_path) if re.match(r'.*\.ks$', x)
-        ]
+        self.jfilename = "final_results.json"
 
     @staticmethod
     def get_current_date():
         return time.strftime("%m%d%H%M", time.localtime())
 
-    def create_testrun(self, level='Must'):
+    def create_testrun(self, build, level='Must'):
         ret = TestRun.create(TR_PROJECT_ID,
                              TR_ID.format(
-                                 self.build.replace(".", "_"),
+                                 build.replace(".", "_"),
                                  self.get_current_date()),
                              TR_TPL.format(level))
         return ret
@@ -79,7 +74,7 @@ class ResultsToPolarion(object):
             # TODO deal with blocked
             pass
 
-    def _parse_results(self, res):
+    def _parse_checkpoints(self, res):
         ks = res.split('/')[-2]
         if ks in KS_PRESSURE_MAP:
             num = int(KS_PRESSURE_MAP[ks])
@@ -114,15 +109,18 @@ class ResultsToPolarion(object):
                             break
         return newret
 
-    def gen_final_results(self):
-        final_results = {self.build: {}}
+    def _gen_results_jfile(self):
+        build = self.path.split('/')[-1]
+        root_path = self.path
+
+        final_results = {build: {}}
         actual_run_cases = []
         pass_num = 0
         failed_num = 0
-        for a, b, c in os.walk(self.root_path):
+        for a, b, c in os.walk(root_path):
             for ks in b:
-                ret = self._parse_results(os.path.join(a, ks, 'checkpoints'))
-                final_results[self.build][ks] = ret
+                ret = self._parse_checkpoints(os.path.join(a, ks, 'checkpoints'))
+                final_results[build][ks] = ret
                 actual_run_cases.extend(list(ret.keys()))
                 values = list(ret.values())
                 pass_num = pass_num + values.count('passed')
@@ -131,7 +129,7 @@ class ResultsToPolarion(object):
 
         need_run_cases = list(get_testcase_map().keys())
         final_results['sum'] = {}
-        final_results['sum']['build'] = self.build
+        final_results['sum']['build'] = build
         final_results['sum']['total'] = len(need_run_cases)
         final_results['sum']['passed'] = pass_num
         final_results['sum']['failed'] = failed_num
@@ -140,8 +138,8 @@ class ResultsToPolarion(object):
         final_results['sum']['errorlist'] = list(
             set(need_run_cases) - set(actual_run_cases))
 
-        final_results_jfile = os.path.join(self.root_path,
-                                           'final_results.json')
+        final_results_jfile = os.path.join(root_path,
+                                           self.jfilename)
         try:
             with open(final_results_jfile, 'w') as json_file:
                 json_file.write(
@@ -154,27 +152,41 @@ class ResultsToPolarion(object):
             return None
 
     def run(self):
-        final_results_jfile = self.gen_final_results()
-        if not final_results_jfile:
-            print "Didn't generate the final results json file."
-            return
-        else:
-            print "Generated {}".format(final_results_jfile)
+        if self.action in ['-l', '-b']:
+            final_results_jfile = self._gen_results_jfile()
+            if not final_results_jfile:
+                print "Generate final results json file failed."
+                return
+            else:
+                print "Generated {}".format(final_results_jfile)
 
-        if self.action == '-p':
+        if self.action == "-p":
+            if self.path.split('/')[-1] != self.jfilename:
+                print "Input wrong results json file."
+                return
+            final_results_jfile = self.path
+
+        if self.action in ['-p', '-b']:
             print "Begin to transport results to polarion..."
-            tr = self.create_testrun()
-            tr.group_id = self.build
+
+            final_results = json.load(open(final_results_jfile))
+            build = final_results.get('sum').get('build')
+            ks_list = []
+            for k in final_results.get(build):
+                ks_list.append(k.encode())
+            ks_list.sort()
+
+            tr = self.create_testrun(build)
+            tr.group_id = build
             tr.description = 'automatic installation use {} with {}'.format(
-                self.build, self.ks_list)
+                build, ks_list)
             tr.status = 'finished'
             tr.update()
 
             print tr.uri
             print tr.test_run_id
 
-            final_results = json.load(open(final_results_jfile))
-            rets = final_results.get(self.build).values()
+            rets = final_results.get(build).values()
             for ret in rets:
                 for k, v in ret.items():
                     self.export_to_polarion(tr, k, v)
@@ -194,7 +206,13 @@ if __name__ == '__main__':
         action='store_true',
         help='generate final summary in json format')
     group.add_argument(
-        '-p', action='store_true', help='upload test results to polarion')
+        '-p',
+        action='store_true',
+        help='upload test results to polarion only using json file')
+    group.add_argument(
+        '-b',
+        action='store_true',
+        help='generate final summary in json format and upload results to polarion')
     parser.add_argument('results_path', help="path to results log directory")
     args = parser.parse_args()
 
@@ -203,6 +221,8 @@ if __name__ == '__main__':
         action = '-p'
     if args.l:
         action = '-l'
+    if args.b:
+        action = '-b'
 
     r = ResultsToPolarion(res_path, action)
     r.run()
