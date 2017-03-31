@@ -151,6 +151,39 @@ class ResultsToPolarion(object):
             print e
             return None
 
+    def _report_to_polarion_by_jfile(self, jfile):
+        if jfile.split('/')[-1] != self.jfilename:
+            print "Input wrong results json file."
+            return
+
+        print "Begin to transport results to polarion..."
+
+        final_results = json.load(open(jfile))
+        build = final_results.get('sum').get('build')
+        ks_list = []
+        for k in final_results.get(build):
+            ks_list.append(k.encode())
+        ks_list.sort()
+
+        tr = self.create_testrun(build)
+        tr.group_id = build
+        tr.description = 'automatic installation use {} with {}'.format(
+            build, ks_list)
+        tr.status = 'finished'
+        tr.update()
+
+        print tr.uri
+        print tr.test_run_id
+
+        rets = final_results.get(build).values()
+        for ret in rets:
+            for k, v in ret.items():
+                self.export_to_polarion(tr, k, v)
+                print "be nice with server, sleep 1 sec"
+                time.sleep(1)
+
+        print "Transport results to polarion finished."
+
     def run(self):
         if self.action in ['-l', '-b']:
             final_results_jfile = self._gen_results_jfile()
@@ -159,41 +192,11 @@ class ResultsToPolarion(object):
                 return
             else:
                 print "Generated {}".format(final_results_jfile)
-
-        if self.action == "-p":
-            if self.path.split('/')[-1] != self.jfilename:
-                print "Input wrong results json file."
-                return
+        else:
             final_results_jfile = self.path
 
         if self.action in ['-p', '-b']:
-            print "Begin to transport results to polarion..."
-
-            final_results = json.load(open(final_results_jfile))
-            build = final_results.get('sum').get('build')
-            ks_list = []
-            for k in final_results.get(build):
-                ks_list.append(k.encode())
-            ks_list.sort()
-
-            tr = self.create_testrun(build)
-            tr.group_id = build
-            tr.description = 'automatic installation use {} with {}'.format(
-                build, ks_list)
-            tr.status = 'finished'
-            tr.update()
-
-            print tr.uri
-            print tr.test_run_id
-
-            rets = final_results.get(build).values()
-            for ret in rets:
-                for k, v in ret.items():
-                    self.export_to_polarion(tr, k, v)
-                    print "be nice with server, sleep 1 sec"
-                    time.sleep(1)
-
-            print "Transport results to polarion finished."
+            self._report_to_polarion_by_jfile(final_results_jfile)
 
 
 if __name__ == '__main__':

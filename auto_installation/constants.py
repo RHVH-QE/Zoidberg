@@ -58,26 +58,28 @@ ANACONDA_TIER2_TESTCASE_MAP = {
     ('ati_local_01.ks', DELL_PET105_01, 'security_policy_check'),
     'RHEVM-17808': ('ati_local_01.ks', DELL_PET105_01, 'kdump_check'),
     'RHEVM-17811': ('ati_local_01.ks', DELL_PET105_01, 'users_check'),
+    'RHEVM-18210': ('ati_local_01.ks', DELL_PET105_01, 'layout_init_check'),
     'RHEVM-17804': ('ati_local_02.ks', DELL_PET105_01, 'keyboard_check'),
     'RHEVM-17823': ('ati_local_02.ks', DELL_PET105_01, 'fips_check'),
-    'RHEVM-17818': ('ati_fc_03.ks', DELL_PER510_01, 'install_check'),
-    'RHEVM-17819': ('ati_fc_03.ks', DELL_PER510_01, 'install_check'),
-    'RHEVM-17824': ('ati_fc_03.ks', DELL_PER510_01, 'iqn_check'),
+    'RHEVM-17818': ('ati_fc_04.ks', DELL_PER510_01, 'install_check'),
+    'RHEVM-17819': ('ati_fc_04.ks', DELL_PER510_01, 'install_check'),
+    'RHEVM-17824': ('ati_fc_04.ks', DELL_PER510_01, 'iqn_check'),
+    'RHEVM-17815': ('ati_fc_03.ks', DELL_PER510_01, 'vlan_check'),
 }
 
 KS_TIER1_TESTCASE_MAP = {
     'RHEVM-17831': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check'),
     'RHEVM-17851': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17865': ('ati_fc_01.ks', DELL_PER510_01, 'selinux_check'),
     'RHEVM-17833': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17854': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),
     'RHEVM-17858': ('ati_fc_02.ks', DELL_PER510_01, 'dhcp_network_check'),
-    'RHEVM-17860': ('ati_fc_02.ks', DELL_PER510_01, 'bond_vlan_check'),
-    'RHEVM-17862': ('ati_fc_02.ks', DELL_PER510_01, 'bond_vlan_check'),
+    'RHEVM-17860': ('ati_fc_02.ks', DELL_PER510_01, 'bond_check'),
+    'RHEVM-17862': ('ati_fc_02.ks', DELL_PER510_01, 'vlan_check'),
     'RHEVM-17863': ('ati_fc_02.ks', DELL_PER510_01, 'bond_vlan_check'),
     'RHEVM-17864': ('ati_fc_02.ks', DELL_PER510_01, 'firewall_check'),
     'RHEVM-17869': ('ati_fc_02.ks', DELL_PER510_01, 'sshd_check'),
-    'RHEVM-17874': ('ati_fc_02.ks', DELL_PER510_01, 'grubby_check')
+    'RHEVM-17874': ('ati_fc_02.ks', DELL_PER510_01, 'grubby_check'),
+    'RHEVM-17865': ('ati_fc_03.ks', DELL_PER510_01, 'selinux_check'),
+    'RHEVM-17854': ('ati_fc_03.ks', DELL_PER510_01, 'partition_check'),
 }
 
 KS_TIER2_TESTCASE_MAP = {
@@ -95,14 +97,21 @@ KS_TIER2_TESTCASE_MAP = {
     'RHEVM-17873': ('ati_fc_02.ks', DELL_PER510_01, 'users_check'),
     'RHEVM-17867': ('ati_local_02.ks', DELL_PET105_01, 'selinux_check'),
     'RHEVM-17847': ('ati_local_02.ks', DELL_PET105_01, 'partition_check'),
-    'RHEVM-17861': ('ati_local_02.ks', DELL_PET105_01, 'static_network_check')
+    'RHEVM-17861': ('ati_local_02.ks', DELL_PET105_01, 'static_network_check'),
+    'RHEVM-17834': ('ati_fc_03.ks', DELL_PER510_01, 'partition_check'),
+    'RHEVM-17835': ('ati_fc_03.ks', DELL_PER510_01, 'partition_check'),
+    'RHEVM-17836': ('ati_fc_03.ks', DELL_PER510_01, 'partition_check'),
+    'RHEVM-17838': ('ati_fc_03.ks', DELL_PER510_01, 'partition_check'),
+    'RHEVM-17839': ('ati_fc_03.ks', DELL_PER510_01, 'partition_check'),
+    'RHEVM-17848': ('ati_fc_03.ks', DELL_PER510_01, 'partition_check'),
 }
 
 DEBUG_TIER_TESTCASE_MAP = {
-    'RHEVM-17788': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
+    'RHEVM-17834': ('ati_fc_03.ks', DELL_PER510_01, 'partition_check'),
+    'RHEVM-18210': ('ati_local_01.ks', DELL_PET105_01, 'layout_init_check'),
 }
 
-KS_PRESSURE_MAP = {'ati_fc_03.ks': '3'}
+KS_PRESSURE_MAP = {'ati_fc_04.ks': '3'}
 
 KS_KERPARAMS_MAP = {'ati_local_02.ks': 'fips=1'}
 
@@ -169,6 +178,13 @@ fi
 fetch /tmp/anamon http://{srv_ip}:{srv_port}/static/anamon.py
 python /tmp/anamon --server {srv_ip} --port {srv_port} --stage pre
 
+# To clear all parts
+allparts=$(sfdisk -d | grep "/dev/"| grep -v "^#" | cut -d ":" -f1)
+for part in $allparts
+do
+    cmd="dd if=/dev/zero of=$part bs=512 count=16"
+    eval $cmd
+done
 """.format(
     srv_ip=CURRENT_IP_PORT[0], srv_port=CURRENT_IP_PORT[1])
 

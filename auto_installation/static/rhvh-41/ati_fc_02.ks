@@ -29,9 +29,9 @@ text
 reboot
 
 ### Network ###
-network --bootproto=static --device=em2 --ip=10.73.75.58 --netmask=255.255.252.0 --gateway=10.73.75.254
-network --bootproto=dhcp --device=em1
-network --bootproto=dhcp --device=bond0 --bondslaves=p1p1,p1p2 --bondopts=mode=balance-rr,miimon=100 --vlanid=50
+network --device=em2 --bootproto=static --ip=10.73.75.58 --netmask=255.255.252.0 --gateway=10.73.75.254
+network --device=em1 --bootproto=dhcp
+network --device=bond0 --bootproto=dhcp --bondslaves=p1p1,p1p2 --bondopts=mode=balance-rr,miimon=100 --vlanid=50
 network --hostname=fctest.redhat.com
 
 ### Partitioning ###
