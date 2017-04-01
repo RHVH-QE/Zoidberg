@@ -179,7 +179,7 @@ fetch /tmp/anamon http://{srv_ip}:{srv_port}/static/anamon.py
 python /tmp/anamon --server {srv_ip} --port {srv_port} --stage pre
 
 # To clear all parts
-allparts=$(sfdisk -d | grep "/dev/"| grep -v "^#" | cut -d ":" -f1)
+allparts=$(sfdisk -d | grep "/dev/mapper"| grep -v "^#" | cut -d ":" -f1)
 for part in $allparts
 do
     cmd="dd if=/dev/zero of=$part bs=512 count=16"
