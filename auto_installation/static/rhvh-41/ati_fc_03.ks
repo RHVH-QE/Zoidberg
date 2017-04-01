@@ -39,7 +39,7 @@ clearpart --all
 bootloader --location=mbr
 part /boot --fstype=ext4 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000022 --size=1024
 part swap --fstype=swap --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000024 --recommended
-part /data --fstype=xfs --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000022 --label=redhat --size=5000 --grow --maxsize=10000
+part /data --fstype=xfs --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000022 --size=5000 --grow --maxsize=10000
 part pv.01 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000022 --size=1 --grow
 part pv.02 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000023 --size=1 --grow
 volgroup rhvh pv.01 pv.02
@@ -99,7 +99,6 @@ checkdata_map['partition'] = {
         'lvm': False,
         'device_alias': '/dev/mapper/mpatha2',
         'device_wwid': '/dev/mapper/36005076300810b3e0000000000000022p2',
-        'label': 'redhat',
         'fstype': 'xfs',
         'size': '5000',
         'grow': True,

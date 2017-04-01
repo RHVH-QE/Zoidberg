@@ -397,9 +397,9 @@ class CheckCheck(CheckYoo):
     def partition_check(self):
         ck01 = self._check_parts_mnt_fstype()
         ck02 = self._check_parts_size()
-        ck03 = self._check_parts_label()
+        #ck03 = self._check_parts_label()
 
-        return ck01 and ck02 and ck03
+        return ck01 and ck02
 
     def static_network_check(self):
         device_data_map = self._checkdata_map.get('network').get('static')
