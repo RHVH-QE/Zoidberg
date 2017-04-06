@@ -1,0 +1,172 @@
+{
+  "rhvh41_he_install_bv": {
+    "CASES": [
+      "tests/rhvh41/test_he_install_bv.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_common_ui_dashboard": {
+    "CASES": [
+      "tests/rhvh41/test_common_ui_dashboard.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_dashboard_ui_uefi": {
+    "CASES": [
+      "tests/rhvh41/test_dashboard_ui_efi.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_he_install_vlan": {
+    "CASES": [
+      "tests/rhvh41/test_he_install_vlan.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_dashboard_ui": {
+    "CASES": [
+      "tests/rhvh41/test_dashboard_ui.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_he_install_redeploy": {
+    "CASES": [
+      "tests/rhvh41/test_he_install_redeploy.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_dashboard_nodectl": {
+    "CASES": [
+      "tests/rhvh41/test_dashboard_nodectl.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_he_install_bond": {
+    "CASES": [
+      "tests/rhvh41/test_he_install_bond.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_normal": {
+    "CASES": [
+      "tests/rhvh41/test_dashboard_nodectl.py", 
+      "tests/rhvh41/test_dashboard_ui.py", 
+      "tests/rhvh41/test_vm_unregisterd.py", 
+      "tests/rhvh41/test_common_subscription.py", 
+      "tests/rhvh41/test_he_install.py", 
+      "tests/rhvh41/test_he_info.py", 
+      "tests/rhvh41/test_vm_registerd.py", 
+      "tests/rhvh41/test_he_info_add_host.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_he_info_add_host": {
+    "CASES": [
+      "tests/rhvh41/test_he_info_add_host.py"
+    ], 
+    "TAG": [
+      "RHVH41", 
+      "ANOTHER_HOST"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_common_ui_system": {
+    "CASES": [
+      "tests/rhvh41/test_common_ui_system.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_vm_registerd": {
+    "CASES": [
+      "tests/rhvh41/test_vm_registerd.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_common_tools_subscription": {
+    "CASES": [
+      "tests/rhvh41/test_common_tools_subscription.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_he_info": {
+    "CASES": [
+      "tests/rhvh41/test_he_info.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_vm_unregister": {
+    "CASES": [
+      "tests/rhvh41/test_vm_unregister.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_he_install": {
+    "CASES": [
+      "tests/rhvh41/test_he_install.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_dashboard_ui_fc": {
+    "CASES": [
+      "tests/rhvh41/test_dashboard_ui_fc.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }, 
+  "rhvh41_he_install_non_default_port": {
+    "CASES": [
+      "tests/rhvh41/test_he_install_non_default_port.py"
+    ], 
+    "TAG": [
+      "RHVH41"
+    ], 
+    "CONFIG": "tests/rhvh41/conf.py"
+  }
+}

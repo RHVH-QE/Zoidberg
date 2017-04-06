@@ -81,8 +81,8 @@ def done_job(em1ip, bkr_name):
     print("Remote node ip is {}".format(em1ip))
 
     rd_conn.publish(bkr_name, 'done,{}'.format(em1ip))
-    rd_conn.publish("{0}-cockpit".format(bkr_name),
-                    "{0},{1},{2}".format(em1ip, 'root', 'redhat'))
+    rd_conn.publish("{0}-cockpit".format(bkr_name), "{0},{1},{2}".format(
+        em1ip, 'root', 'redhat'))
     return "done job"
 
 
@@ -104,7 +104,7 @@ def upload_anaconda_log(stage, log_name, offset):
     return "upload done"
 
 
-# =========== api section ======================================================
+# =========== api section =====================================================
 
 
 @app.route('/api/v1/current/status')
@@ -190,6 +190,13 @@ def get_last_result():
         return jsonify(ret_none)
     else:
         return jsonify(json.load(open(result_file)))
+
+
+@app.route('/api/v1/cockpit/tslevel')
+def get_cockpit_tslevel():
+    cockpit_tslevle_fp = os.path.join(PROJECT_ROOT, 'auto_installation',
+                                      'test_scen.json')
+    return jsonify(json.load(open(cockpit_tslevle_fp)))
 
 
 if __name__ == '__main__':

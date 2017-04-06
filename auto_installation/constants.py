@@ -23,6 +23,7 @@ STATIC_URL = ("http://{0}:{1}/"
 
 DELL_PET105_01 = 'dell-pet105-01.qe.lab.eng.nay.redhat.com'
 DELL_PER510_01 = 'dell-per510-01.lab.eng.pek2.redhat.com'
+DELL_OP790_01 = 'dell-op790-01.qe.lab.eng.nay.redhat.com'
 
 # ANACONDA-TIER1, ANACONDA-TIER2, KS-TIER1, KS-TIER2,ALL
 ANACONDA_TIER1 = 0x01
@@ -30,6 +31,7 @@ ANACONDA_TIER2 = 0x02
 KS_TIER1 = 0x04
 KS_TIER2 = 0x08
 DEBUG_TIER = 0x10
+COCKPIT_TIER = 0x20
 
 TEST_LEVEL = CFGS['test_level']
 # TEST_LEVEL = ANACONDA_TIER2
@@ -102,6 +104,10 @@ DEBUG_TIER_TESTCASE_MAP = {
     'RHEVM-17788': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
 }
 
+COCKPIT_TIER_TESTCASE_MAP = {
+    'RHEVM-17788': ('ati_local_01.ks', DELL_OP790_01, 'install_check'),
+}
+
 KS_PRESSURE_MAP = {'ati_fc_03.ks': '3'}
 
 KS_KERPARAMS_MAP = {'ati_local_02.ks': 'fips=1'}
@@ -117,6 +123,13 @@ HOSTS = {
     DELL_PER510_01: {
         "nic": {
             "macaddress-em2": "78:2b:cb:47:93:5e"
+        },
+        "hostname": "",
+        "static_ip": ""
+    },
+    DELL_OP790_01: {
+        "nic": {
+            "macaddress-em1": "d4:be:d9:95:61:ca"
         },
         "hostname": "",
         "static_ip": ""
