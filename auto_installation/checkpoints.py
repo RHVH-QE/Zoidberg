@@ -262,8 +262,8 @@ class CheckCheck(CheckYoo):
         elif memtotal < 8:
             # the mem size calculation algorithm is not just get value from 'free' cmd
             # ignore swap size comparison when mem size in 2 to 8 Gib.
-            #if swap != memtotal:
-            #return False
+            # if swap != memtotal:
+            # return False
             return True
         elif memtotal < 64:
             if int(round(float(memtotal) / float(swap))) != 2:
@@ -276,8 +276,10 @@ class CheckCheck(CheckYoo):
 
     def _check_parts_mnt_fstype(self):
         partition = self._checkdata_map.get('partition')
-        vgname = partition.get('volgroup').get('name')
-        lvpre = '/dev/mapper/{}'.format(vgname)
+        volgroup = partition.get('volgroup')
+        if volgroup:
+            vgname = volgroup.get('name')
+            lvpre = '/dev/mapper/{}'.format(vgname)
 
         df_patterns = []
         for key in partition:
@@ -306,7 +308,9 @@ class CheckCheck(CheckYoo):
 
     def _check_parts_size(self):
         partition = self._checkdata_map.get('partition')
-        vgname = partition.get('volgroup').get('name')
+        volgroup = partition.get('volgroup')
+        if volgroup:
+            vgname = volgroup.get('name')
 
         for key in partition:
             if key in ['volgroup']:
@@ -359,6 +363,32 @@ class CheckCheck(CheckYoo):
 
         return True
 
+    def _check_parts_label(self):
+        partition = self._checkdata_map.get('partition')
+        volgroup = partition.get('volgroup')
+        if volgroup:
+            vgname = volgroup.get('name')
+
+        for key in partition:
+            if key in ['volgroup']:
+                continue
+
+            part = partition.get(key)
+            label = part.get('label')
+            if label:
+                if part.get('lvm'):
+                    device = "/dev/mapper/{}-{}".format(vgname, part.get('name'))
+                else:
+                    device = part.get('device_wwid')
+
+                cmd = "blkid {}".format(device)
+                strs = [part.get('label')]
+                ret = self.check_strs_in_cmd_output(cmd, strs, timeout=300)
+                if not ret:
+                    return False
+
+        return True
+
     def install_check(self):
         patterns = [re.compile(r'^Status: OK')]
         return self.match_strs_in_cmd_output(
@@ -367,6 +397,7 @@ class CheckCheck(CheckYoo):
     def partition_check(self):
         ck01 = self._check_parts_mnt_fstype()
         ck02 = self._check_parts_size()
+        #ck03 = self._check_parts_label()
 
         return ck01 and ck02
 
@@ -510,6 +541,17 @@ class CheckCheck(CheckYoo):
     def iqn_check(self):
         return self.check_strs_in_file(
             '/etc/iscsi/initiatorname.iscsi', ['iqn'], timeout=300)
+
+    def layout_init_check(self):
+        resstr = ("imgbased.imgbase.ExistingImgbaseWithTags: "
+                  "Looks like the system already has imgbase working properly.\r\n"
+                  "However, imgbase was called with --init. If this was intentional, "
+                  "please untag the existing volumes and try again.")
+        ret = self.run_cmd('imgbase layout --init', timeout=300)
+        if not ret[0]:
+            if resstr in ret[1]:
+                return True
+        return False
 
     def check(self):
         cks = {}
