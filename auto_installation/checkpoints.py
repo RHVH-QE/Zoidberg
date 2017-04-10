@@ -208,7 +208,7 @@ class CheckCheck(CheckYoo):
         patterns = []
         for nic in nics:
             if expected_result == 'yes':
-                patterns.append(re.compile(r'^{}:connected$'.format(nic)))
+                patterns.append(re.compile(r'^{}:(connected|connecting)$'.format(nic)))
             else:
                 patterns.append(re.compile(r'^{}:disconnected$'.format(nic)))
 
@@ -283,7 +283,7 @@ class CheckCheck(CheckYoo):
 
         df_patterns = []
         for key in partition:
-            if key in ['pool', 'swap', 'volgroup']:
+            if key in ['pool', 'pool_meta', 'swap', 'volgroup']:
                 continue
 
             part = partition.get(key)
@@ -397,7 +397,7 @@ class CheckCheck(CheckYoo):
     def partition_check(self):
         ck01 = self._check_parts_mnt_fstype()
         ck02 = self._check_parts_size()
-        #ck03 = self._check_parts_label()
+        # ck03 = self._check_parts_label()
 
         return ck01 and ck02
 
