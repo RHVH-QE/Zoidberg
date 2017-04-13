@@ -44,8 +44,8 @@ ANACONDA_TIER1_TESTCASE_MAP = {
     'RHEVM-17807': ('ati_local_01.ks', DELL_PET105_01, 'partition_check'),
     'RHEVM-17826': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
     'RHEVM-17828': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
-    'RHEVM-17799':
-    ('ati_local_01.ks', DELL_PET105_01, 'nic_stat_dur_install_check'),
+    'RHEVM-17799': ('ati_local_01.ks', DELL_PET105_01,
+                    'nic_stat_dur_install_check'),
     'RHEVM-17790': ('ati_fc_01.ks', DELL_PER510_01, 'install_check'),
     'RHEVM-17806': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check'),
     'RHEVM-17816': ('ati_fc_01.ks', DELL_PER510_01, 'bond_vlan_check'),
@@ -56,8 +56,8 @@ ANACONDA_TIER2_TESTCASE_MAP = {
     'RHEVM-17798': ('ati_local_01.ks', DELL_PET105_01, 'lang_check'),
     'RHEVM-17802': ('ati_local_01.ks', DELL_PET105_01, 'ntp_check'),
     'RHEVM-17803': ('ati_local_01.ks', DELL_PET105_01, 'keyboard_check'),
-    'RHEVM-17805':
-    ('ati_local_01.ks', DELL_PET105_01, 'security_policy_check'),
+    'RHEVM-17805': ('ati_local_01.ks', DELL_PET105_01,
+                    'security_policy_check'),
     'RHEVM-17808': ('ati_local_01.ks', DELL_PET105_01, 'kdump_check'),
     'RHEVM-17811': ('ati_local_01.ks', DELL_PET105_01, 'users_check'),
     'RHEVM-18210': ('ati_local_01.ks', DELL_PET105_01, 'layout_init_check'),
@@ -114,7 +114,7 @@ DEBUG_TIER_TESTCASE_MAP = {
 }
 
 COCKPIT_TIER_TESTCASE_MAP = {
-    'RHEVM-17788': ('ati_local_01.ks', DELL_OP790_01, 'install_check'),
+    'RHEVM-17788': ('ati_cockpit_01.ks', DELL_OP790_01, 'install_check'),
 }
 
 KS_PRESSURE_MAP = {'ati_fc_03.ks': '3'}
@@ -154,6 +154,12 @@ TR_ID = '4_1_Node_Install_AutoTest_{}_{}'
 POST_SCRIPT_01 = """
 EM1IP=$(ip -o -4 addr show {} | awk -F '[ /]+' '/global/ {{print $4}}')
 curl -s http://%s:%s/done/$EM1IP/""" % (CURRENT_IP_PORT[0], CURRENT_IP_PORT[1])
+
+# this ks will triger cockpit test
+POST_SCRIPT_02 = """
+EM1IP=$(ip -o -4 addr show {} | awk -F '[ /]+' '/global/ {{print $4}}')
+curl -s http://%s:%s/done/$EM1IP/cockpit""" % (CURRENT_IP_PORT[0],
+                                               CURRENT_IP_PORT[1])
 
 PRE_SCRIPT_01 = """set -x
 # Some distros have curl in their minimal install set, others have wget.

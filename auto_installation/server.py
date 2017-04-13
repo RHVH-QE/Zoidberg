@@ -76,14 +76,18 @@ def goaway():
 
 
 @app.route('/done/<em1ip>/<bkr_name>')
-def done_job(em1ip, bkr_name):
+@app.route('/done/<em1ip>/<bkr_name>/<cockpit>')
+def done_job(em1ip, bkr_name, cockpit=None):
     """todo"""
-    print("Remote node ip is {}".format(em1ip))
+    if cockpit is None:
+        print("Remote node ip is {}".format(em1ip))
 
-    rd_conn.publish(bkr_name, 'done,{}'.format(em1ip))
-    rd_conn.publish("{0}-cockpit".format(bkr_name), "{0},{1},{2}".format(
-        em1ip, 'root', 'redhat'))
-    return "done job"
+        rd_conn.publish(bkr_name, 'done,{}'.format(em1ip))
+        rd_conn.publish("{0}-cockpit".format(bkr_name), "{0},{1},{2}".format(
+            em1ip, 'root', 'redhat'))
+        return "done job"
+    else:
+        return
 
 
 @app.route('/upload/<stage>/<log_name>/<offset>')
@@ -150,6 +154,7 @@ def auto_job_lanuch():
         ts_level = sum([int(i) for i in msg['tslevel']])
         pxe = msg['pxe']
         build = msg['build']
+        target_build = msg['target_build']
 
         cfg = os.path.join(PROJECT_ROOT, 'auto_installation', 'constants.json')
         cfg_ = None
@@ -158,10 +163,11 @@ def auto_job_lanuch():
             cfg_ = json.load(fp)
             cfg_['cb_profile'] = pxe
             cfg_['test_level'] = ts_level
+            cfg_['target_build'] = target_build
         with open(cfg, 'w') as fp:
             json.dump(cfg_, fp)
         # abort(401)
-        rt.lanuchAuto(build, pxe, ts_level)
+        # rt.lanuchAuto(build, pxe, ts_level, target_build)
         return jsonify("job is launched")
 
 

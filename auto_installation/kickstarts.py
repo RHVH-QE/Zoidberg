@@ -9,7 +9,7 @@ from pykickstart.parser import Script
 from pykickstart.constants import KS_SCRIPT_PRE, KS_SCRIPT_POST
 
 from constants import KS_FILES_DIR, KS_FILES_AUTO_DIR,\
-    HOSTS, POST_SCRIPT_01, PRE_SCRIPT_01, TEST_LEVEL
+    HOSTS, POST_SCRIPT_01, POST_SCRIPT_02, PRE_SCRIPT_01, TEST_LEVEL
 from utils import get_machine_ksl_map, get_ks_machine_map
 
 loger = logging.getLogger('bender')
@@ -74,9 +74,14 @@ class KickStartFiles(object):
             os.system("sed '/liveimg --url=/ c\{}' {} > {}".format(
                 new_live_img, ks_, ks_out))
 
-            post_script = self._generate_ks_script(
-                POST_SCRIPT_01.format(nic_name) + bkr_name,
-                error_on_fail=False)
+            if 'cockpit' not in ks:
+                post_script = self._generate_ks_script(
+                    POST_SCRIPT_01.format(nic_name) + bkr_name,
+                    error_on_fail=False)
+            else:
+                post_script = self._generate_ks_script(
+                    POST_SCRIPT_02.format(nic_name) + bkr_name,
+                    error_on_fail=False)
 
             pre_script = self._generate_ks_script(
                 PRE_SCRIPT_01, script_type=KS_SCRIPT_PRE, error_on_fail=False)
