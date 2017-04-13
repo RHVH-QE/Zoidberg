@@ -98,6 +98,11 @@ checkdata_map['partition'] = {
         'name': 'var',
         'fstype': 'ext4',
         'size': '15360'
+    },
+    'pool_meta': {
+        'lvm': True,
+        'name': 'pool00_tmeta',
+        'size': '1024'
     }
 }
 
