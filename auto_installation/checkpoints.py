@@ -208,7 +208,7 @@ class CheckCheck(CheckYoo):
         patterns = []
         for nic in nics:
             if expected_result == 'yes':
-                patterns.append(re.compile(r'^{}:(connected|connecting)$'.format(nic)))
+                patterns.append(re.compile(r'^{}:(connected|connecting)'.format(nic)))
             else:
                 patterns.append(re.compile(r'^{}:disconnected$'.format(nic)))
 
