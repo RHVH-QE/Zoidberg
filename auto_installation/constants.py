@@ -117,7 +117,7 @@ COCKPIT_TIER_TESTCASE_MAP = {
     'RHEVM-17788': ('ati_cockpit_01.ks', DELL_OP790_01, 'install_check'),
 }
 
-KS_PRESSURE_MAP = {'ati_fc_03.ks': '3'}
+KS_PRESSURE_MAP = {'ati_fc_04.ks': '3'}
 
 KS_KERPARAMS_MAP = {'ati_local_02.ks': 'fips=1'}
 
