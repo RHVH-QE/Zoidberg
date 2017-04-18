@@ -195,7 +195,9 @@ def get_last_result():
     if not os.path.exists(result_file):
         return jsonify(ret_none)
     else:
-        return jsonify(json.load(open(result_file)))
+        res = json.load(open(result_file))
+        res.update({'logpath': log_path})
+        return jsonify(res)
 
 
 @app.route('/api/v1/cockpit/tslevel')
