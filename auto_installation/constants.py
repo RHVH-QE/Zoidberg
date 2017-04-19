@@ -74,7 +74,6 @@ KS_TIER1_TESTCASE_MAP = {
     'RHEVM-17851': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check'),
     'RHEVM-17865': ('ati_fc_01.ks', DELL_PER510_01, 'selinux_check'),
     'RHEVM-17833': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17854': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),
     'RHEVM-17858': ('ati_fc_02.ks', DELL_PER510_01, 'dhcp_network_check'),
     'RHEVM-17860': ('ati_fc_02.ks', DELL_PER510_01, 'bond_check'),
     'RHEVM-17862': ('ati_fc_02.ks', DELL_PER510_01, 'vlan_check'),
