@@ -85,11 +85,12 @@ class ResultsToPolarion(object):
         p2 = re.compile(r'InitiatorName=iqn')
         rets = []
         iqns = []
-        for line in open(res):
-            if p1.search(line):
-                rets.append(eval(line.split("::")[-1]))
-            if p2.search(line):
-                iqns.append(line.split(":")[-1].rstrip("')\n"))
+        if os.path.exists(res):
+            for line in open(res):
+                if p1.search(line):
+                    rets.append(eval(line.split("::")[-1]))
+                if p2.search(line):
+                    iqns.append(line.split(":")[-1].rstrip("')\n"))
 
         retNum = len(rets)
         if retNum != num:
