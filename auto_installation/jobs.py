@@ -84,10 +84,6 @@ class JobRunner(object):
 
     def go(self):
         for m, ksl in self.job_queue.items():
-            # Delete checkpoints log firstly
-            for ks in ksl:
-                self.results_logs.del_existing_logs(ks)
-
             for ks in ksl:
                 self.results_logs.get_actual_logger(ks)
                 log.info("start provisioning on host %s with %s", m, ks)
@@ -138,7 +134,7 @@ class JobRunner(object):
                     log.error(
                         "provisioning on host %s failed with return code %s",
                         m, ret)
-        
+
         self.rd_conn.set("running", "0")
 
 
