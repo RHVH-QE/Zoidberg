@@ -22,9 +22,9 @@ class RhvhTask(object):
     def simple(self):
         self.c.send_task('tasker.tasks.add', (2, 2))
 
-    def lanuchAuto(self, build_name, pxe, ts_level):
+    def lanuchAuto(self, build_name, pxe, ts_level, target_build):
         self.c.send_task('tasker.rhvh_auto.launch_autotesting',
-                         (build_name, pxe, ts_level))
+                         (build_name, pxe, ts_level, target_build))
 
 
 if __name__ == '__main__':
