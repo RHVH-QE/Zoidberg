@@ -87,7 +87,13 @@ def done_job(em1ip, bkr_name, cockpit=None):
             em1ip, 'root', 'redhat'))
         return "done job"
     else:
-        return
+        print("Remote node ip is {}".format(em1ip))
+
+        rd_conn.publish(bkr_name, 'done,{}'.format(em1ip))
+        rd_conn.publish("{0}-cockpit".format(bkr_name), "{0},{1},{2}".format(
+            em1ip, 'root', 'redhat'))
+        print("prepare cockpit testing")
+        return "cockpit done job"
 
 
 @app.route('/upload/<stage>/<log_name>/<offset>')
