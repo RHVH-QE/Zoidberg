@@ -150,7 +150,6 @@ def get_bkr_machines():
 def auto_job_lanuch():
     if request.method == 'POST':
         msg = request.get_json()
-        print msg
         ts_level = sum([int(i) for i in msg['tslevel']])
         pxe = msg['pxe']
         build = msg['build']
@@ -205,6 +204,30 @@ def get_cockpit_tslevel():
     cockpit_tslevle_fp = os.path.join(PROJECT_ROOT, 'auto_installation',
                                       'test_scen.json')
     return jsonify(json.load(open(cockpit_tslevle_fp)))
+
+
+@app.route('/api/v1/cockpit/lanuch', methods=['POST'])
+def cockpit_job_lanuch():
+    if request.method == 'POST':
+        msg = request.get_json()
+        ts_level = sum([int(i) for i in msg['tslevel']])
+        pxe = msg['pxe']
+        build = msg['build']
+        target_build = msg['target_build']
+
+        cfg = os.path.join(PROJECT_ROOT, 'auto_installation', 'constants.json')
+        cfg_ = None
+
+        with open(cfg) as fp:
+            cfg_ = json.load(fp)
+            cfg_['cb_profile'] = pxe
+            cfg_['test_level'] = ts_level
+            cfg_['target_build'] = target_build
+        with open(cfg, 'w') as fp:
+            json.dump(cfg_, fp)
+        # abort(401)
+        rt.lanuchAuto(build, pxe, ts_level, target_build)
+        return jsonify("cockpit job is launched")
 
 
 if __name__ == '__main__':
