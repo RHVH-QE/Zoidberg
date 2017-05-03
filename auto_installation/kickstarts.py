@@ -80,7 +80,9 @@ class KickStartFiles(object):
                     error_on_fail=False)
             else:
                 post_script = self._generate_ks_script(
-                    POST_SCRIPT_02.format(nic_name), error_on_fail=False)
+                    POST_SCRIPT_02.format(nic_name) +
+                    "{}/cockpit".format(bkr_name),
+                    error_on_fail=False)
 
             pre_script = self._generate_ks_script(
                 PRE_SCRIPT_01, script_type=KS_SCRIPT_PRE, error_on_fail=False)

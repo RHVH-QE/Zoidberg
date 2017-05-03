@@ -164,8 +164,7 @@ curl -s http://%s:%s/done/$EM1IP/""" % (CURRENT_IP_PORT[0], CURRENT_IP_PORT[1])
 # this ks will triger cockpit test
 POST_SCRIPT_02 = """
 EM1IP=$(ip -o -4 addr show {} | awk -F '[ /]+' '/global/ {{print $4}}')
-curl -s http://%s:%s/done/$EM1IP/cockpit""" % (CURRENT_IP_PORT[0],
-                                               CURRENT_IP_PORT[1])
+curl -s http://%s:%s/done/$EM1IP/""" % (CURRENT_IP_PORT[0], CURRENT_IP_PORT[1])
 
 PRE_SCRIPT_01 = """set -x
 # Some distros have curl in their minimal install set, others have wget.
