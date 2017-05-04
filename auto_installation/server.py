@@ -93,6 +93,16 @@ def done_job(em1ip, bkr_name, cockpit=None):
         rd_conn.publish("{0}-cockpit".format(bkr_name), "{0},{1},{2}".format(
             em1ip, 'root', 'redhat'))
         print("prepare cockpit testing")
+
+        cockpit_cfg = os.path.join(PROJECT_ROOT, 'auto_installation', 'static',
+                                   'cockpit.json')
+        cockpit_cfg_ = None
+        with open(cockpit_cfg) as fp:
+            cockpit_cfg_ = json.load(fp)
+            cockpit_cfg_['host_ip'] = em1ip
+        with open(cockpit_cfg, 'w') as fp:
+            json.dump(cockpit_cfg_, fp)
+        rt.lanuchCockpitAuto()
         return "cockpit done job"
 
 
@@ -220,9 +230,14 @@ def cockpit_job_lanuch():
         pxe = msg['pxe']
         build = msg['build']
         target_build = msg['target_build']
+        test_profile = msg['cases']
 
         cfg = os.path.join(PROJECT_ROOT, 'auto_installation', 'constants.json')
         cfg_ = None
+
+        cockpit_cfg = os.path.join(PROJECT_ROOT, 'auto_installation', 'static',
+                                   'cockpit.json')
+        cockpit_cfg_ = None
 
         with open(cfg) as fp:
             cfg_ = json.load(fp)
@@ -231,8 +246,15 @@ def cockpit_job_lanuch():
             cfg_['target_build'] = target_build
         with open(cfg, 'w') as fp:
             json.dump(cfg_, fp)
-        # abort(401)
-        rt.lanuchAuto(build, pxe, ts_level, target_build)
+
+        with open(cockpit_cfg) as fp:
+            cockpit_cfg_ = json.load(fp)
+            cockpit_cfg_['test_profile'] = test_profile
+            cockpit_cfg_['host_ip'] = ""
+            cockpit_cfg_['test_build'] = build
+        with open(cockpit_cfg, 'w') as fp:
+            json.dump(cockpit_cfg_, fp)
+        # rt.lanuchAuto(build, pxe, ts_level, target_build)
         return jsonify("cockpit job is launched")
 
 

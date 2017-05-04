@@ -26,6 +26,9 @@ class RhvhTask(object):
         self.c.send_task('tasker.rhvh_auto.launch_autotesting',
                          (build_name, pxe, ts_level, target_build))
 
+    def lanuchCockpitAuto(self):
+        self.c.send_task('tasker.rhvh_auto.launch_cockpit')
+
 
 if __name__ == '__main__':
     rt = RhvhTask()
