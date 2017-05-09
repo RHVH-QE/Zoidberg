@@ -22,7 +22,8 @@ STATIC_URL = ("http://{0}:{1}/"
                   CURRENT_IP_PORT[0], CURRENT_IP_PORT[1])
 
 DELL_PET105_01 = 'dell-pet105-01.qe.lab.eng.nay.redhat.com'
-DELL_PER510_01 = 'dell-per510-01.lab.eng.pek2.redhat.com'
+# DELL_PER510_01 = 'dell-per510-01.lab.eng.pek2.redhat.com'
+DELL_PER510_01 = 'dell-per730-34.lab.eng.pek2.redhat.com'
 DELL_OP790_01 = 'dell-op790-01.qe.lab.eng.nay.redhat.com'
 
 # ANACONDA-TIER1, ANACONDA-TIER2, KS-TIER1, KS-TIER2,ALL
@@ -130,7 +131,9 @@ HOSTS = {
     },
     DELL_PER510_01: {
         "nic": {
-            "macaddress-em2": "78:2b:cb:47:93:5e"
+            # "macaddress-em2": "78:2b:cb:47:93:5e"
+            # dell-per730-34:
+            "macaddress-em1": "24:6e:96:19:bb:70"
         },
         "hostname": "",
         "static_ip": ""
