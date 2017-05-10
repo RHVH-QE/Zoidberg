@@ -26,12 +26,7 @@ text
 reboot
 
 ### Network ###
-#dell-per510-01 config:
-#network --device=em2 --bootproto=dhcp
-#network --hostname=fctest.redhat.com
-
-#dell-per730-34 config:
-network --device=em1 --bootproto=dhcp
+network --device=em2 --bootproto=dhcp
 network --hostname=fctest.redhat.com
 
 ### Partitioning ###

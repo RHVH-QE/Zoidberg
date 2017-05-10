@@ -29,16 +29,9 @@ text
 reboot
 
 ### Network ###
-#dell-per510-01 config:
-#network --device=em2 --bootproto=static --ip=10.73.75.58 --netmask=255.255.252.0 --gateway=10.73.75.254
-#network --device=em1 --bootproto=dhcp
-#network --device=bond0 --bootproto=dhcp --bondslaves=p1p1,p1p2 --bondopts=mode=balance-rr,miimon=100 --vlanid=50
-#network --hostname=fctest.redhat.com
-
-#dell-per730-34 config:
-network --device=em1 --bootproto=static --ip=10.73.131.63 --netmask=255.255.252.0 --gateway=10.73.131.254
-network --device=em2 --bootproto=dhcp
-network --device=bond0 --bootproto=dhcp --bondslaves=em3,em4 --bondopts=mode=balance-rr,miimon=100 --vlanid=50
+network --device=em2 --bootproto=static --ip=10.73.75.58 --netmask=255.255.252.0 --gateway=10.73.75.254
+network --device=em1 --bootproto=dhcp
+network --device=bond0 --bootproto=dhcp --bondslaves=p1p1,p1p2 --bondopts=mode=balance-rr,miimon=100 --vlanid=50
 network --hostname=fctest.redhat.com
 
 ### Partitioning ###
@@ -81,15 +74,15 @@ checkdata_map['selinux'] = 'disabled'
 
 checkdata_map['network'] = {
     'static': {
-        'DEVICE': 'em1',
+        'DEVICE': 'em2',
         'BOOTPROTO': 'static',
-        'IPADDR': '10.73.131.63',
+        'IPADDR': '10.73.75.58',
         'NETMASK': '255.255.252.0',
-        'GATEWAY': '10.73.131.254',
+        'GATEWAY': '10.73.75.254',
         'ONBOOT': 'yes'
     },
     'dhcp': {
-        'DEVICE': 'em2',
+        'DEVICE': 'em1',
         'BOOTPROTO': 'dhcp',
         'ONBOOT': 'yes'
     },
@@ -98,7 +91,7 @@ checkdata_map['network'] = {
         'TYPE': 'Bond',
         'BONDING_OPTS': 'mode=balance-rr miimon=100',
         'ONBOOT': 'yes',
-        'slaves': ['em3', 'em4']
+        'slaves': ['p1p1', 'p1p2']
     },
     'vlan': {
         'DEVICE': 'bond0.50',

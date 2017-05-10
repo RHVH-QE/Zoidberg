@@ -27,14 +27,8 @@ text
 reboot
 
 ### Network ###
-#dell-per510-01 config:
-#network --device=em2 --bootproto=dhcp
-#network --device=bond0 --bootproto=dhcp --bondslaves=p1p1,p1p2 --bondopts=mode=active-backup,primary=p1p1,miimon=100 --vlanid=50
-#network --hostname=fctest.redhat.com
-
-#dell-per730-34 config:
-network --device=em1 --bootproto=dhcp
-network --device=bond0 --bootproto=dhcp --bondslaves=em3,em4 --bondopts=mode=active-backup,primary=em3,miimon=100 --vlanid=50
+network --device=em2 --bootproto=dhcp
+network --device=bond0 --bootproto=dhcp --bondslaves=p1p1,p1p2 --bondopts=mode=active-backup,primary=p1p1,miimon=100 --vlanid=50
 network --hostname=fctest.redhat.com
 
 ### Partitioning ###
@@ -66,9 +60,9 @@ checkdata_map['network'] = {
     'bond': {
         'DEVICE': 'bond0',
         'TYPE': 'Bond',
-        'BONDING_OPTS': 'mode=active-backup primary=em3 miimon=100',
+        'BONDING_OPTS': 'mode=active-backup primary=p1p1 miimon=100',
         'ONBOOT': 'yes',
-        'slaves': ['em3', 'em4']
+        'slaves': ['p1p1', 'p1p2']
     },
     'vlan': {
         'DEVICE': 'bond0.50',
