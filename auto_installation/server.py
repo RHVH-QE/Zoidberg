@@ -191,11 +191,11 @@ def get_last_result():
     ret_none = {
         "sum": {
             "build": "",
-            "error": -1,
+            "error":-1,
             "errorlist": [],
-            "failed": -1,
-            "passed": -1,
-            "total": -1
+            "failed":-1,
+            "passed":-1,
+            "total":-1
         }
     }
     log_path = os.path.dirname(results_logs.current_log_path)
@@ -254,7 +254,7 @@ def cockpit_job_lanuch():
             cockpit_cfg_['test_build'] = build
         with open(cockpit_cfg, 'w') as fp:
             json.dump(cockpit_cfg_, fp)
-        # rt.lanuchAuto(build, pxe, ts_level, target_build)
+        rt.lanuchAuto(build, pxe, ts_level, target_build)
         return jsonify("cockpit job is launched")
 
 
