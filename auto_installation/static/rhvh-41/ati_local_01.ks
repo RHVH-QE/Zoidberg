@@ -142,6 +142,24 @@ checkdata_map['partition'] = {
         'lvm': True,
         'name': 'swap',
         'size': '8000'
+    },
+    '/var/log': {
+        'lvm': True,
+        'name': 'var-log',
+        'fstype': 'ext4',
+        'size': '8192'
+    },
+    '/var/log/audit': {
+        'lvm': True,
+        'name': 'var-log-audit',
+        'fstype': 'ext4',
+        'size': '2048'
+    },
+    '/tmp': {
+        'lvm': True,
+        'name': 'tmp',
+        'fstype': 'ext4',
+        'size': '2048'
     }
 }
 

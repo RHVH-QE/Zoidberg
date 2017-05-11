@@ -103,6 +103,30 @@ checkdata_map['partition'] = {
         'lvm': True,
         'name': 'pool00_tmeta',
         'size': '1024'
+    },
+    '/var/log': {
+        'lvm': True,
+        'name': 'var-log',
+        'fstype': 'ext4',
+        'size': '8192'
+    },
+    '/var/log/audit': {
+        'lvm': True,
+        'name': 'var-log-audit',
+        'fstype': 'ext4',
+        'size': '2048'
+    },
+    '/tmp': {
+        'lvm': True,
+        'name': 'tmp',
+        'fstype': 'ext4',
+        'size': '2048'
+    },
+    '/home': {
+        'lvm': True,
+        'name': 'home',
+        'fstype': 'ext4',
+        'size': '1024'
     }
 }
 

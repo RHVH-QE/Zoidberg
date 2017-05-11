@@ -141,6 +141,7 @@ class CheckYoo(object):
                         break
                 else:
                     log.error("can not match pattern %s in %s", p, cmd)
+                    print "error"
                     return False
             return True
         else:
@@ -208,7 +209,8 @@ class CheckCheck(CheckYoo):
         patterns = []
         for nic in nics:
             if expected_result == 'yes':
-                patterns.append(re.compile(r'^{}:(connected|connecting)'.format(nic)))
+                patterns.append(
+                    re.compile(r'^{}:(connected|connecting)'.format(nic)))
             else:
                 patterns.append(re.compile(r'^{}:disconnected$'.format(nic)))
 
@@ -279,7 +281,7 @@ class CheckCheck(CheckYoo):
         volgroup = partition.get('volgroup')
         if volgroup:
             vgname = volgroup.get('name')
-            lvpre = '/dev/mapper/{}'.format(vgname)
+            lvpre = '/dev/mapper/{}'.format(vgname.replace('-', '--'))
 
         df_patterns = []
         for key in partition:
@@ -294,8 +296,8 @@ class CheckCheck(CheckYoo):
                     pattern = re.compile(
                         r'^{}-rhvh.*{}.*{}'.format(lvpre, fstype, key))
                 else:
-                    pattern = re.compile(
-                        r'^{}-{}.*{}.*{}'.format(lvpre, name, fstype, key))
+                    pattern = re.compile(r'^{}-{}.*{}.*{}'.format(
+                        lvpre, name.replace('-', '--'), fstype, key))
             else:
                 part_device = part.get('device_alias')
                 pattern = re.compile(
@@ -377,7 +379,9 @@ class CheckCheck(CheckYoo):
             label = part.get('label')
             if label:
                 if part.get('lvm'):
-                    device = "/dev/mapper/{}-{}".format(vgname, part.get('name'))
+                    device = "/dev/mapper/{}-{}".format(
+                        vgname.replace('-', '--'),
+                        part.get('name').replace('-', '--'))
                 else:
                     device = part.get('device_wwid')
 
@@ -479,7 +483,7 @@ class CheckCheck(CheckYoo):
 
     def ntp_check(self):
         ntp = self._checkdata_map.get('ntpservers')
-        return self.check_strs_in_file('/etc/ntp.conf', [ntp], timeout=300)
+        return self.check_strs_in_file('/etc/chrony.conf', [ntp], timeout=300)
 
     def keyboard_check(self):
         vckey = self._checkdata_map.get('keyboard').get('vckeymap')
@@ -543,10 +547,11 @@ class CheckCheck(CheckYoo):
             '/etc/iscsi/initiatorname.iscsi', ['iqn'], timeout=300)
 
     def layout_init_check(self):
-        resstr = ("imgbased.imgbase.ExistingImgbaseWithTags: "
-                  "Looks like the system already has imgbase working properly.\r\n"
-                  "However, imgbase was called with --init. If this was intentional, "
-                  "please untag the existing volumes and try again.")
+        resstr = (
+            "imgbased.imgbase.ExistingImgbaseWithTags: "
+            "Looks like the system already has imgbase working properly.\r\n"
+            "However, imgbase was called with --init. If this was intentional, "
+            "please untag the existing volumes and try again.")
         ret = self.run_cmd('imgbase layout --init', timeout=300)
         if not ret[0]:
             if resstr in ret[1]:
