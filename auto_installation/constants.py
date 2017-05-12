@@ -46,10 +46,12 @@ ANACONDA_TIER1_TESTCASE_MAP = {
     'RHEVM-17828': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
     'RHEVM-17799': ('ati_local_01.ks', DELL_PET105_01,
                     'nic_stat_dur_install_check'),
+    'RHEVM-21643': ('ati_local_01.ks', DELL_PET105_01, 'partition_check'),
     'RHEVM-17790': ('ati_fc_01.ks', DELL_PER510_01, 'install_check'),
     'RHEVM-17806': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check'),
     'RHEVM-17816': ('ati_fc_01.ks', DELL_PER510_01, 'bond_vlan_check'),
-    'RHEVM-16972': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check')
+    'RHEVM-16972': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check'),
+    'RHEVM-21642': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check')
 }
 
 ANACONDA_TIER2_TESTCASE_MAP = {
