@@ -4,6 +4,7 @@ import os
 import base64
 import json
 import utils
+import subprocess as sp
 
 from flask import Flask, request, redirect, abort, jsonify
 from flask_cors import CORS
@@ -191,11 +192,11 @@ def get_last_result():
     ret_none = {
         "sum": {
             "build": "",
-            "error":-1,
+            "error": -1,
             "errorlist": [],
-            "failed":-1,
-            "passed":-1,
-            "total":-1
+            "failed": -1,
+            "passed": -1,
+            "total": -1
         }
     }
     log_path = os.path.dirname(results_logs.current_log_path)
@@ -256,6 +257,21 @@ def cockpit_job_lanuch():
             json.dump(cockpit_cfg_, fp)
         rt.lanuchAuto(build, pxe, ts_level, target_build)
         return jsonify("cockpit job is launched")
+
+
+@app.route('/api/v1/git/branch', methods=['GET'])
+def git_branch():
+    ret = sp.check_output(
+        "cd %s && git branch | grep '*'" % PROJECT_ROOT, shell=True)
+    return jsonify(ret.strip())
+
+
+@app.route('/api/v1/git/branchs', methods=['GET'])
+def git_branchs():
+    ret = sp.check_output("cd %s && git branch" % PROJECT_ROOT, shell=True)
+    ret = ret.split('\n')
+    ret = map(lambda x: x.strip(), ret)
+    return jsonify(ret[:-1])
 
 
 if __name__ == '__main__':
