@@ -670,7 +670,7 @@ TYPE="Bond"\
                 gateway = ret[1].split()[2]
                 bond_ifcfg_str = """\
 BONDING_OPTS="mode=active-backup miimon=100 primary={primary}"
-BOOTPROTO="dhcp"
+BOOTPROTO="static"
 DEVICE="{device}"
 IPV6INIT="no"
 IPV6_AUTOCONF="no"
@@ -729,7 +729,7 @@ VLAN="yes"\
                 prefix = "24"
                 gateway = "192.168.%s.1" % vlan_id
                 vlan_ifcfg_str = """\
-BOOTPROTO="dhcp"
+BOOTPROTO="static"
 DEVICE="{device}"
 IPV6INIT="no"
 IPV6_AUTOCONF="no"
@@ -786,7 +786,7 @@ VLAN="yes"\
                 gateway = "192.168.%s.1" % vlan_id
 
                 bv_ifcfg_str = """\
-BOOTPROTO="dhcp"
+BOOTPROTO="static"
 DEVICE="{device}"
 IPV6INIT="no"
 IPV6_AUTOCONF="no"
