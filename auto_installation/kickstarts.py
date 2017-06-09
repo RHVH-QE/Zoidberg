@@ -8,7 +8,7 @@ import logging
 from pykickstart.parser import Script
 from pykickstart.constants import KS_SCRIPT_PRE, KS_SCRIPT_POST
 
-from constants import KS_FILES_DIR, KS_FILES_AUTO_DIR,\
+from constants import KS_FILES_DIR, KS_FILES_AUTO_DIR, \
     HOSTS, POST_SCRIPT_01, POST_SCRIPT_02, PRE_SCRIPT_01, TEST_LEVEL
 from utils import get_machine_ksl_map, get_ks_machine_map
 

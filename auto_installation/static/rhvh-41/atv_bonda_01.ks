@@ -1,3 +1,6 @@
+#
+# KS for vdsm bond anaconda test on dell-per515-01
+#
 ### Language ###
 lang en_US.UTF-8
 
@@ -13,10 +16,11 @@ keyboard --vckeymap=us --xlayouts='us'
 
 ### User ###
 rootpw --plaintext redhat
-auth --enableshadow --passalgo=sha512
+auth --enableshadow --passalgo=md5
 
 ### Misc ###
 services --enabled=sshd
+selinux --enforcing
 
 ### Installation mode ###
 install
@@ -26,11 +30,10 @@ text
 reboot
 
 ### Network ###
-network --device=em2 --bootproto=dhcp
-network --hostname=fctest.redhat.com
+network --device=bond0 --bootproto=dhcp --bondslaves=em1,em2 --bondopts=mode=active-backup,primary=em1,miimon=100
 
 ### Partitioning ###
-ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244
+ignoredisk --only-use=/dev/disk/by-id/scsi-360a9800050334c33424b41762d726954
 zerombr
 clearpart --all
 bootloader --location=mbr
@@ -40,25 +43,7 @@ autopart --type=thinp
 
 ### Post deal ###
 %post --erroronfail
-compose_check_data(){
-python << ES
-import pickle
-import os
-
-REMOTE_TMP_FILE_DIR = '/boot/autotest'
-CHECKDATA_MAP_PKL = 'checkdata_map.pkl'
-REMOTE_CHECKDATA_MAP_PKL = os.path.join(REMOTE_TMP_FILE_DIR, CHECKDATA_MAP_PKL)
-
-os.mkdir(REMOTE_TMP_FILE_DIR)
-
-checkdata_map = {}
-
-fp = open(REMOTE_CHECKDATA_MAP_PKL, 'wb')
-pickle.dump(checkdata_map, fp)
-fp.close()
-ES
-}
 
 imgbase layout --init
-compose_check_data
 %end
+

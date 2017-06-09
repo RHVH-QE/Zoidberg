@@ -2,12 +2,15 @@ import time
 import logging
 import attr
 from threading import Thread
-
+import subprocess
 from .kickstarts import KickStartFiles
 from .beaker import Beaker, inst_watcher
-from .constants import CURRENT_IP_PORT, ARGS_TPL, HOSTS, CB_PROFILE, KS_KERPARAMS_MAP
+from .constants import CURRENT_IP_PORT, ARGS_TPL, HOSTS, CB_PROFILE
+from .const_install import KS_KERPARAMS_MAP
 from .cobbler import Cobbler
-from .checkpoints import CheckCheck
+from .check_install import CheckInstall
+from .check_upgrade import CheckUpgrade
+from .check_vdsm import CheckVdsm
 
 log = logging.getLogger("bender")
 
@@ -17,6 +20,7 @@ class JobRunner(object):
     build_url = attr.ib()
     rd_conn = attr.ib()
     results_logs = attr.ib()
+    target_build = attr.ib()
     # ks_filter = attr.ib(default='must')
     debug = attr.ib(default=False)
 
@@ -71,6 +75,13 @@ class JobRunner(object):
                 kernel_options=kargs)
         return ret
 
+    def _set_repos(self):
+        if self.target_build:
+            version = self.target_build.split("-host-")[-1]
+            tower_cmd = 'tower-cli job launch --job-template="rhvh_upgrade_select" ' \
+                        '--extra-vars="version: {}"'.format(version)
+            subprocess.Popen(tower_cmd, shell=True)
+
     @property
     def ksins(self):
         k = KickStartFiles()
@@ -83,6 +94,7 @@ class JobRunner(object):
         return self.ksins.get_job_queue()
 
     def go(self):
+        self._set_repos()
         for m, ksl in self.job_queue.items():
             for ks in ksl:
                 self.results_logs.get_actual_logger(ks)
@@ -120,13 +132,26 @@ class JobRunner(object):
 
                         self.results_logs.logger_name = 'checkpoints'
                         self.results_logs.get_actual_logger(ks)
-                        ck = CheckCheck()
+
+                        if ks.find("ati") == 0:
+                            ck = CheckInstall()
+                        elif ks.find("atu") == 0:
+                            ck = CheckUpgrade()
+                            ck.source_build = self.build_url.split('/')[-1].split('.x86_64.')[0]
+                            ck.target_build = self.target_build
+                        elif ks.find("atv") == 0:
+                            ck = CheckVdsm()
+                            ck.build = self.build_url.split('/')[-1].split('.x86_64.')[0]
+                        else:
+                            log.error("ks file name %s isn't started with ati/atu/atv.", ks)
+                            continue
 
                         log.info("ip is %s", ret)
-                        ck.host_string, ck._host_user, ck.host_pass = (
+                        ck.host_string, ck.host_user, ck.host_pass = (
                             ret, 'root', 'redhat')
                         ck.beaker_name = m
                         ck.ksfile = ks
+
                         log.info(ck.go_check())
 
                         # TODO wati for cockpit new results format
@@ -138,6 +163,6 @@ class JobRunner(object):
         self.rd_conn.set("running", "0")
 
 
-def job_runner(img_url, rd_conn, results_logs):
-    ins = JobRunner(img_url, rd_conn, results_logs)
+def job_runner(img_url, rd_conn, results_logs, target_build=None):
+    ins = JobRunner(img_url, rd_conn, results_logs, target_build)
     return Thread(target=ins.go)

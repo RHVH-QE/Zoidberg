@@ -13,7 +13,7 @@ keyboard --vckeymap=us --xlayouts='us'
 
 ### User ###
 rootpw --plaintext redhat
-auth --enableshadow --passalgo=md5
+auth --enableshadow --passalgo=sha512
 
 ### Misc ###
 services --enabled=sshd

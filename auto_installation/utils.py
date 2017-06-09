@@ -5,11 +5,16 @@ import redis
 import time
 import subprocess as sp
 from constants import PROJECT_ROOT, \
+    TEST_LEVEL, \
     ANACONDA_TIER1, ANACONDA_TIER2, KS_TIER1, KS_TIER2, \
-    TEST_LEVEL, COCKPIT_TIER, \
-    ANACONDA_TIER1_TESTCASE_MAP, ANACONDA_TIER2_TESTCASE_MAP, \
+    UPGRADE_TIER1, VDSM_TIER, \
+    COCKPIT_TIER, DEBUG_TIER, \
+    DEBUG_TIER_TESTCASE_MAP, COCKPIT_TIER_TESTCASE_MAP
+from const_install import ANACONDA_TIER1_TESTCASE_MAP, ANACONDA_TIER2_TESTCASE_MAP, \
     KS_TIER1_TESTCASE_MAP, KS_TIER2_TESTCASE_MAP, \
-    KS_PRESSURE_MAP, DEBUG_TIER, DEBUG_TIER_TESTCASE_MAP, COCKPIT_TIER_TESTCASE_MAP
+    KS_PRESSURE_MAP
+from const_upgrade import UPGRADE_TIER1_TESTCASE_MAP
+from const_vdsm import VDSM_TIER_TESTCASE_MAP
 
 log = logging.getLogger('bender')
 
@@ -148,6 +153,10 @@ def get_testcase_map():
         testcase_map.update(DEBUG_TIER_TESTCASE_MAP)
     if TEST_LEVEL & COCKPIT_TIER:
         testcase_map.update(COCKPIT_TIER_TESTCASE_MAP)
+    if TEST_LEVEL & UPGRADE_TIER1:
+        testcase_map.update(UPGRADE_TIER1_TESTCASE_MAP)
+    if TEST_LEVEL & VDSM_TIER:
+        testcase_map.update(VDSM_TIER_TESTCASE_MAP)
 
     if not testcase_map:
         raise ValueError('Invaild TEST_LEVEL')

@@ -6,8 +6,8 @@ try:
     from pylarion.test_run import TestRun
 except ImportError:
     print("pylarion must be installed")
-from constants import TR_ID, TR_PROJECT_ID, TR_TPL, \
-    KS_PRESSURE_MAP
+from constants import TR_ID, TR_PROJECT_ID, TR_TPL
+from const_install import KS_PRESSURE_MAP
 import re
 import json
 from utils import get_testcase_map

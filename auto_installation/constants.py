@@ -24,6 +24,7 @@ STATIC_URL = ("http://{0}:{1}/"
 DELL_PET105_01 = 'dell-pet105-01.qe.lab.eng.nay.redhat.com'
 DELL_PER510_01 = 'dell-per510-01.lab.eng.pek2.redhat.com'
 DELL_OP790_01 = 'dell-op790-01.qe.lab.eng.nay.redhat.com'
+DELL_PER515_01 = 'dell-per515-01.lab.eng.pek2.redhat.com'
 
 # ANACONDA-TIER1, ANACONDA-TIER2, KS-TIER1, KS-TIER2,ALL
 ANACONDA_TIER1 = 0x01
@@ -32,95 +33,20 @@ KS_TIER1 = 0x04
 KS_TIER2 = 0x08
 DEBUG_TIER = 0x10
 COCKPIT_TIER = 0x20
+UPGRADE_TIER1 = 0x40
+VDSM_TIER = 0x80
 
 TEST_LEVEL = CFGS['test_level']
-# TEST_LEVEL = ANACONDA_TIER2
-
-# one kickstart file can only be run on a single machine
-ANACONDA_TIER1_TESTCASE_MAP = {
-    'RHEVM-17788': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
-    'RHEVM-17800': ('ati_local_01.ks', DELL_PET105_01, 'static_network_check'),
-    'RHEVM-17801': ('ati_local_01.ks', DELL_PET105_01, 'hostname_check'),
-    'RHEVM-17807': ('ati_local_01.ks', DELL_PET105_01, 'partition_check'),
-    'RHEVM-17826': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
-    'RHEVM-17828': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
-    'RHEVM-17799': ('ati_local_01.ks', DELL_PET105_01,
-                    'nic_stat_dur_install_check'),
-    'RHEVM-21643': ('ati_local_01.ks', DELL_PET105_01, 'partition_check'),
-    'RHEVM-17790': ('ati_fc_01.ks', DELL_PER510_01, 'install_check'),
-    'RHEVM-17806': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17816': ('ati_fc_01.ks', DELL_PER510_01, 'bond_vlan_check'),
-    'RHEVM-16972': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-21642': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check')
-}
-
-ANACONDA_TIER2_TESTCASE_MAP = {
-    'RHEVM-17798': ('ati_local_01.ks', DELL_PET105_01, 'lang_check'),
-    'RHEVM-17802': ('ati_local_01.ks', DELL_PET105_01, 'ntp_check'),
-    'RHEVM-17803': ('ati_local_01.ks', DELL_PET105_01, 'keyboard_check'),
-    'RHEVM-17805': ('ati_local_01.ks', DELL_PET105_01,
-                    'security_policy_check'),
-    'RHEVM-17808': ('ati_local_01.ks', DELL_PET105_01, 'kdump_check'),
-    'RHEVM-17811': ('ati_local_01.ks', DELL_PET105_01, 'users_check'),
-    'RHEVM-18210': ('ati_local_01.ks', DELL_PET105_01, 'layout_init_check'),
-    'RHEVM-17804': ('ati_local_02.ks', DELL_PET105_01, 'keyboard_check'),
-    'RHEVM-17823': ('ati_local_02.ks', DELL_PET105_01, 'fips_check'),
-    'RHEVM-17818': ('ati_fc_04.ks', DELL_PER510_01, 'install_check'),
-    'RHEVM-17819': ('ati_fc_04.ks', DELL_PER510_01, 'install_check'),
-    'RHEVM-17824': ('ati_fc_04.ks', DELL_PER510_01, 'iqn_check'),
-    'RHEVM-17815': ('ati_fc_03.ks', DELL_PER510_01, 'vlan_check'),
-}
-
-KS_TIER1_TESTCASE_MAP = {
-    'RHEVM-17831': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17851': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17865': ('ati_fc_01.ks', DELL_PER510_01, 'selinux_check'),
-    'RHEVM-17833': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17858': ('ati_fc_02.ks', DELL_PER510_01, 'dhcp_network_check'),
-    'RHEVM-17860': ('ati_fc_02.ks', DELL_PER510_01, 'bond_check'),
-    'RHEVM-17862': ('ati_fc_02.ks', DELL_PER510_01, 'vlan_check'),
-    'RHEVM-17863': ('ati_fc_02.ks', DELL_PER510_01, 'bond_vlan_check'),
-    'RHEVM-17864': ('ati_fc_02.ks', DELL_PER510_01, 'firewall_check'),
-    'RHEVM-17869': ('ati_fc_02.ks', DELL_PER510_01, 'sshd_check'),
-    'RHEVM-17874': ('ati_fc_02.ks', DELL_PER510_01, 'grubby_check'),
-    'RHEVM-17865': ('ati_fc_03.ks', DELL_PER510_01, 'selinux_check'),
-    'RHEVM-17854': ('ati_fc_03.ks', DELL_PER510_01, 'partition_check'),
-}
-
-KS_TIER2_TESTCASE_MAP = {
-    'RHEVM-17830': ('ati_fc_02.ks', DELL_PER510_01, 'bootloader_check'),
-    'RHEVM-17843': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17844': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17845': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17846': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17853': ('ati_fc_02.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17857': ('ati_fc_02.ks', DELL_PER510_01, 'install_check'),
-    'RHEVM-17868': ('ati_fc_02.ks', DELL_PER510_01, 'install_check'),
-    'RHEVM-17866': ('ati_fc_02.ks', DELL_PER510_01, 'selinux_check'),
-    'RHEVM-17859': ('ati_fc_02.ks', DELL_PER510_01, 'static_network_check'),
-    'RHEVM-17872': ('ati_fc_02.ks', DELL_PER510_01, 'ntp_check'),
-    'RHEVM-17873': ('ati_fc_02.ks', DELL_PER510_01, 'users_check'),
-    'RHEVM-17867': ('ati_local_02.ks', DELL_PET105_01, 'selinux_check'),
-    'RHEVM-17847': ('ati_local_02.ks', DELL_PET105_01, 'partition_check'),
-    'RHEVM-17861': ('ati_local_02.ks', DELL_PET105_01, 'static_network_check'),
-    'RHEVM-17834': ('ati_fc_03.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17835': ('ati_fc_03.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17836': ('ati_fc_03.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17839': ('ati_fc_03.ks', DELL_PER510_01, 'partition_check'),
-    'RHEVM-17848': ('ati_fc_03.ks', DELL_PER510_01, 'partition_check'),
-}
+# TEST_LEVEL = UPGRADE_TIER1
 
 DEBUG_TIER_TESTCASE_MAP = {
     'RHEVM-17788': ('ati_local_01.ks', DELL_PET105_01, 'install_check'),
+    'RHEVM-16972': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check')
 }
 
 COCKPIT_TIER_TESTCASE_MAP = {
     'RHEVM-17788': ('ati_cockpit_01.ks', DELL_OP790_01, 'install_check'),
 }
-
-KS_PRESSURE_MAP = {'ati_fc_04.ks': '3'}
-
-KS_KERPARAMS_MAP = {'ati_local_02.ks': 'fips=1'}
 
 HOSTS = {
     DELL_PET105_01: {
@@ -143,8 +69,16 @@ HOSTS = {
         },
         "hostname": "",
         "static_ip": ""
+    },
+    DELL_PER515_01: {
+        "nic": {
+            "macaddress-em1": "08:9e:01:63:2c:b2"
+        },
+        "hostname": "",
+        "static_ip": ""
     }
 }
+
 
 TR_TPL = '4_1_Node_Auto_ATIKS_{}'
 TR_PROJECT_ID = 'RHEVM3'
@@ -206,6 +140,4 @@ CB_API = "http://10.73.60.74/cobbler_api"
 CB_CREDENTIAL = ('cobbler', 'cobbler')
 CB_PROFILE = CFGS['cb_profile']
 ARGS_TPL = ('inst.ks=http://{srv_ip}:{srv_port}/static/auto/{ks_file} '
-            'inst.stage2=http://10.66.10.22:8090/'
-            'rhvh_ngn/pxedir/RHVH-4.1-20170309.0-RHVH-x86_64-dvd1.iso/stage2 '
             '{addition_params}')

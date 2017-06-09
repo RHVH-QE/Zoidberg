@@ -13,7 +13,7 @@ keyboard --vckeymap=us --xlayouts='us'
 
 ### User ###
 rootpw --plaintext redhat
-auth --enableshadow --passalgo=sha512
+auth --enableshadow --passalgo=md5
 
 ### Misc ###
 services --enabled=sshd
@@ -27,10 +27,10 @@ reboot
 
 ### Network ###
 network --device=em2 --bootproto=dhcp
-network --hostname=fctest.redhat.com
+network --device=bond0 --bootproto=dhcp --bondslaves=p1p1,p1p2 --bondopts=mode=active-backup,primary=p1p1,miimon=100 --vlanid=50
 
 ### Partitioning ###
-ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244
+ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244,/dev/disk/by-id/scsi-36005076300810b3e0000000000000270
 zerombr
 clearpart --all
 bootloader --location=mbr
@@ -40,25 +40,5 @@ autopart --type=thinp
 
 ### Post deal ###
 %post --erroronfail
-compose_check_data(){
-python << ES
-import pickle
-import os
-
-REMOTE_TMP_FILE_DIR = '/boot/autotest'
-CHECKDATA_MAP_PKL = 'checkdata_map.pkl'
-REMOTE_CHECKDATA_MAP_PKL = os.path.join(REMOTE_TMP_FILE_DIR, CHECKDATA_MAP_PKL)
-
-os.mkdir(REMOTE_TMP_FILE_DIR)
-
-checkdata_map = {}
-
-fp = open(REMOTE_CHECKDATA_MAP_PKL, 'wb')
-pickle.dump(checkdata_map, fp)
-fp.close()
-ES
-}
-
 imgbase layout --init
-compose_check_data
 %end

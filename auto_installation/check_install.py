@@ -1,177 +1,25 @@
 import logging
-from fabric.api import settings, run, get
-from fabric.exceptions import NetworkError, CommandTimeout
 from fabric.network import disconnect_all
-
 import re
 import os
 import pickle
-import constants as CONST
-from utils import get_checkpoint_cases_map
+from check_comm import CheckYoo
+from constants import PROJECT_ROOT, DELL_PET105_01, DELL_PER510_01
 
 log = logging.getLogger('bender')
 
 REMOTE_TMP_FILE_DIR = '/boot/autotest'
 CHECKDATA_MAP_PKL = 'checkdata_map.pkl'
 REMOTE_CHECKDATA_MAP_PKL = os.path.join(REMOTE_TMP_FILE_DIR, CHECKDATA_MAP_PKL)
-LOCAL_CHECKDATA_MAP_PKL = os.path.join(CONST.PROJECT_ROOT, 'logs',
-                                       CHECKDATA_MAP_PKL)
+LOCAL_CHECKDATA_MAP_PKL = os.path.join(PROJECT_ROOT, 'logs', CHECKDATA_MAP_PKL)
 
 
-class CheckYoo(object):
+
+class CheckInstall(CheckYoo):
     """"""
 
     def __init__(self):
-        self._host_string = None
-        self._host_user = None
-        self._host_pass = None
-
-    @property
-    def host_string(self):
-        return self._host_string
-
-    @host_string.setter
-    def host_string(self, val):
-        # TODO check val
-        self._host_string = val
-
-    @property
-    def host_user(self):
-        return self._host_user
-
-    @host_user.setter
-    def host_user(self, val):
-        self._host_user = val
-
-    @property
-    def host_pass(self):
-        return self._host_pass
-
-    @host_pass.setter
-    def host_pass(self, val):
-        self._host_pass = val
-
-    def get_remote_file(self, remote_path, local_path):
-        with settings(
-                host_string=self.host_string,
-                user=self.host_user,
-                password=self.host_pass,
-                disable_known_hosts=True,
-                connection_attempts=120):
-            ret = get(remote_path, local_path)
-            if not ret.succeeded:
-                raise ValueError("Can't get {} from remote server:{}.".format(
-                    remote_path, self.host_string))
-
-    def run_cmd(self, cmd, timeout=60):
-        ret = None
-        try:
-            with settings(
-                    host_string=self.host_string,
-                    user=self.host_user,
-                    password=self.host_pass,
-                    disable_known_hosts=True,
-                    connection_attempts=60):
-                ret = run(cmd, quiet=True, timeout=timeout)
-                if ret.succeeded:
-                    return True, ret
-                else:
-                    return False, ret
-        except NetworkError as e:
-            return False, e
-
-        return True, ret
-
-    def check_strs_in_file(self, fp, strs, timeout):
-        log.info("start to check if %s in %s", strs, fp)
-        try:
-            ret = self.run_cmd('cat {}'.format(fp), timeout=timeout)
-            log.info("Got result %s", ret)
-        except CommandTimeout as e:
-            log.error(e)
-            return False
-
-        if ret[0]:
-            for s in strs:
-                if s not in ret[1]:
-                    log.error("can not found %s in %s", s, fp)
-                    return False
-            log.info("ks test %s is pass", fp)
-            return True
-        else:
-            log.error(ret[1])
-            return False
-
-    def check_strs_in_cmd_output(self, cmd, strs, timeout):
-        log.info("start to check if %s in %s output", strs, cmd)
-        try:
-            ret = self.run_cmd(cmd, timeout=timeout)
-            log.info("Got result %s", ret)
-        except CommandTimeout as e:
-            log.error(e)
-            return False
-
-        if ret[0]:
-            for s in strs:
-                if s not in ret[1]:
-                    log.error("can not found %s in %s", s, cmd)
-                    return False
-            log.info("ks test %s is pass", cmd)
-            return True
-        else:
-            log.error(ret[1])
-            return False
-
-    def match_strs_in_cmd_output(self, cmd, patterns, timeout):
-        log.info("start to match if %s in %s output", patterns, cmd)
-        try:
-            ret = self.run_cmd(cmd, timeout=timeout)
-            color = re.compile(r'\x1B\[([0-9]{1,2}((;[0-9]{1,2})*)?)?[m|K]')
-            newret = color.sub('', ret[1])
-            log.info("Got result %s", (ret[0], newret))
-        except CommandTimeout as e:
-            log.error(e)
-            return False
-
-        if ret[0]:
-            lines = newret.split('\n')
-            for p in patterns:
-                for line in lines:
-                    if p.search(line.strip()):
-                        break
-                else:
-                    log.error("can not match pattern %s in %s", p, cmd)
-                    print "error"
-                    return False
-            return True
-        else:
-            log.error("run cmd %s failed", cmd)
-            return False
-
-
-class CheckCheck(CheckYoo):
-    """"""
-
-    def __init__(self):
-        self._beaker_name = None
-        self._ksfile = None
         self._checkdata_map = None
-
-    @property
-    def beaker_name(self):
-        return self._beaker_name
-
-    @beaker_name.setter
-    def beaker_name(self, val):
-        self._beaker_name = val
-
-    @property
-    def ksfile(self):
-        return self._ksfile
-
-    @ksfile.setter
-    def ksfile(self, val):
-        self._ksfile = val
 
     def _set_checkdata_map(self):
         log.info("Start to read %s", REMOTE_CHECKDATA_MAP_PKL)
@@ -189,9 +37,11 @@ class CheckCheck(CheckYoo):
 
             log.info("Change %s to data finished", CHECKDATA_MAP_PKL)
 
-        except Exception:
-            raise
-        return
+        except Exception as e:
+            log.error(e)
+            return False
+
+        return True
 
     def _check_device_ifcfg_value(self, device_data_map):
         patterns = []
@@ -334,7 +184,7 @@ class CheckCheck(CheckYoo):
             ret = self.run_cmd(cmd, timeout=300)
 
             if ret[0]:
-                for line in ret[1].split('\n'):
+                for line in ret[1].split('\r\n'):
                     if re.match(r'\d+$', line):
                         part_real_size = int(line.strip())
                         break
@@ -558,49 +408,20 @@ class CheckCheck(CheckYoo):
                 return True
         return False
 
-    def check(self):
-        cks = {}
-        try:
-            disconnect_all()
-            # set checkdata_map
-            self._set_checkdata_map()
-            # get checkpoint cases map
-            checkpoint_cases_map = get_checkpoint_cases_map(self.ksfile,
-                                                            self.beaker_name)
-
-            # run check
-            log.info("Start to run check points, please wait...")
-
-            for checkpoint, cases in checkpoint_cases_map.items():
-                try:
-                    ck = self.go_check(checkpoint)
-                    if ck:
-                        newck = 'passed'
-                    else:
-                        newck = 'failed'
-                    for case in cases:
-                        cks[case] = newck
-                except Exception as e:
-                    log.error(e)
-        except Exception as e:
-            log.error(e)
-
-        return cks
-
-    def go_check(self, name='check'):
-        func = getattr(self, name.lower(), None)
-        if func:
-            return func()
+    def go_check(self):
+        disconnect_all()
+        if self._set_checkdata_map():
+            cks = self.run_cases()
         else:
-            raise NameError(
-                'The checkpoint function {} is not defined'.format(name))
+            cks = {}
+        return cks
 
 
 if __name__ == '__main__':
     # 10.73.75.219
-    ck = CheckCheck()
-    ck.host_string, ck._host_user, ck.host_pass = ('10.66.148.9', 'root',
+    ck = CheckInstall()
+    ck.host_string, ck.host_user, ck.host_pass = ('10.66.148.9', 'root',
                                                    'redhat')
-    ck.beaker_name = CONST.DELL_PET105_01
+    ck.beaker_name = DELL_PET105_01
     ck.ksfile = 'ati_local_01.ks'
     print ck.go_check()

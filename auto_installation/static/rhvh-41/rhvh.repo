@@ -1,0 +1,88 @@
+#
+# Certificate-Based Repositories
+# Managed by (rhsm) subscription-manager
+#
+# *** This file is auto-generated.  Changes made here will be over-written. ***
+# *** Use "subscription-manager repo-override --help" if you wish to make changes. ***
+#
+# If this file is empty and this system is subscribed consider 
+# a "yum repolist" to refresh available repos
+#
+
+[rhel-7-server-rhvh-4-source-rpms]
+metadata_expire = 86400
+sslclientcert = /etc/pki/entitlement/5858345830546115877.pem
+baseurl = http://10.66.10.22:8090/rhvhupgrade/rhvh/4/source/SRPMS
+ui_repoid_vars = basearch
+sslverify = 1
+name = Red Hat Virtualization Host 7 (Source RPMs)
+sslclientkey = /etc/pki/entitlement/5858345830546115877-key.pem
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+enabled = 1
+sslcacert = /etc/rhsm/ca/redhat-uep.pem
+gpgcheck = 0
+
+[rhel-7-server-rhvh-4-beta-debug-rpms]
+metadata_expire = 86400
+sslclientcert = /etc/pki/entitlement/5858345830546115877.pem
+baseurl = http://10.66.10.22:8090/rhvhupgrade/rhvh/4/debug
+ui_repoid_vars = basearch
+sslverify = 1
+name = Red Hat Virtualization Host 7 Beta (Debug RPMs)
+sslclientkey = /etc/pki/entitlement/5858345830546115877-key.pem
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release,file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
+enabled = 1
+sslcacert = /etc/rhsm/ca/redhat-uep.pem
+gpgcheck = 0
+
+[rhel-7-server-rhvh-4-debug-rpms]
+metadata_expire = 86400
+sslclientcert = /etc/pki/entitlement/5858345830546115877.pem
+baseurl = http://10.66.10.22:8090/rhvhupgrade/rhvh/4/debug
+ui_repoid_vars = basearch
+sslverify = 1
+name = Red Hat Virtualization Host 7 (Debug RPMs)
+sslclientkey = /etc/pki/entitlement/5858345830546115877-key.pem
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+enabled = 1
+sslcacert = /etc/rhsm/ca/redhat-uep.pem
+gpgcheck = 0
+
+[rhel-7-server-rhvh-4-beta-source-rpms]
+metadata_expire = 86400
+sslclientcert = /etc/pki/entitlement/5858345830546115877.pem
+baseurl = http://10.66.10.22:8090/rhvhupgrade/rhvh/4/source/SRPMS
+ui_repoid_vars = basearch
+sslverify = 1
+name = Red Hat Virtualization Host 7 Beta (Source RPMs)
+sslclientkey = /etc/pki/entitlement/5858345830546115877-key.pem
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release,file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
+enabled = 1
+sslcacert = /etc/rhsm/ca/redhat-uep.pem
+gpgcheck = 0
+
+[rhel-7-server-rhvh-4-rpms]
+metadata_expire = 86400
+sslclientcert = /etc/pki/entitlement/5858345830546115877.pem
+baseurl = http://10.66.10.22:8090/rhvhupgrade/rhvh/4/os/Packages/
+ui_repoid_vars = basearch
+sslverify = 1
+name = Red Hat Virtualization Host 7 (RPMs)
+sslclientkey = /etc/pki/entitlement/5858345830546115877-key.pem
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+enabled = 1
+sslcacert = /etc/rhsm/ca/redhat-uep.pem
+gpgcheck = 0
+
+[rhel-7-server-rhvh-4-beta-rpms]
+metadata_expire = 86400
+sslclientcert = /etc/pki/entitlement/5858345830546115877.pem
+baseurl = http://10.66.10.22:8090/rhvhupgrade/rhvh/4/os/Packages/
+ui_repoid_vars = basearch
+sslverify = 1
+name = Red Hat Virtualization Host 7 Beta (RPMs)
+sslclientkey = /etc/pki/entitlement/5858345830546115877-key.pem
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release,file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
+enabled = 1
+sslcacert = /etc/rhsm/ca/redhat-uep.pem
+gpgcheck = 0

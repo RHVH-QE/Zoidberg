@@ -8,7 +8,7 @@ class RhvhTask(object):
         timezone="Asia/Shanghai",
         include=[
             'tasker.tasks', 'tasker.rhvm_upgrade', 'tasker.rhvh_auto',
-            'tasker.rhvh_bug_query_report'
+            'tasker.rhvh_bug_query_report', 'tasker.rhvh_upgrade'
         ],
         result_backend='redis://:redhat@10.73.73.23:6379/12',
         broker_url='pyamqp://rhvher:rhvher@10.73.73.23/celery'))
@@ -29,7 +29,10 @@ class RhvhTask(object):
     def lanuchCockpitAuto(self):
         self.c.send_task('tasker.rhvh_auto.launch_cockpit')
 
+    def lanuchUpgrade(self, tasks):
+        self.c.send_task('tasker.rhvh_upgrade.lanuch_upgrade', tasks)
+
 
 if __name__ == '__main__':
     rt = RhvhTask()
-    rt.simple()
+    rt.lanuchUpgrade()

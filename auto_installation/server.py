@@ -55,13 +55,14 @@ def start_job():
             rd_conn.set("running", 1)
             data = request.get_json()
             img_url = data.get('img', None)
+            target_build = data.get('target_build', None)
             if img_url:
                 _img_url = img_url.replace('/var/www/builds',
                                            BUILDS_SERVER_URL)
 
                 results_logs.img_url = _img_url
 
-                t = job_runner(_img_url, rd_conn, results_logs)
+                t = job_runner(_img_url, rd_conn, results_logs, target_build)
                 t.setDaemon(True)
                 t.start()
                 return redirect('/post_result')
@@ -185,6 +186,14 @@ def auto_job_lanuch():
         # abort(401)
         rt.lanuchAuto(build, pxe, ts_level, target_build)
         return jsonify("job is launched")
+
+
+@app.route('/api/v1/upgradejob/lanuch', methods=['POST'])
+def upgrade_job_lanuch():
+    if request.method == 'POST':
+        msg = request.get_json()
+        rt.lanuchUpgrade(msg)
+        return jsonify("upgrade job is launched")
 
 
 @app.route('/api/v1/autojob/last_result')
