@@ -689,16 +689,16 @@ GATEWAY="{gateway}"\
                     gateway=gateway)
             res.update({bond_name: bond_ifcfg_str})
 
-            slave_ifcfg_str = """\
-DEVICE="{slave}"
+            for slave in slaves:
+                slave_ifcfg_str = """\
+DEVICE="{device}"
 MASTER="{bond}"
 NM_CONTROLLED="no"
 ONBOOT="yes"
 SLAVE="yes"\
-            """
-            for slave in slaves:
+                """
                 slave_ifcfg_str = slave_ifcfg_str.format(
-                    slave=slave, bond=bond_name)
+                    device=slave, bond=bond_name)
                 res.update({slave: slave_ifcfg_str})
 
         elif network_mode == "vlan":
@@ -757,14 +757,14 @@ TYPE="Bond"\
             """.format(device=bond_name)
             res.update({bond_name: bond_ifcfg_str})
 
-            slave_ifcfg_str = """\
+            for slave in slaves:
+                slave_ifcfg_str = """\
 DEVICE="{device}"
 MASTER="{bond}"
 NM_CONTROLLED="no"
 ONBOOT="yes"
 SLAVE="yes"\
-            """
-            for slave in slaves:
+                """
                 slave_ifcfg_str = slave_ifcfg_str.format(
                     device=slave, bond=bond_name)
                 res.update({slave: slave_ifcfg_str})
@@ -1222,7 +1222,7 @@ GATEWAY="{gateway}"\
             else:
                 newck = 'failed'
             for case in cases:
-                if re.search("RHEVM-invalid", case):
+                if not re.search("RHEVM-[0-9]+", case):
                     continue
                 cks[case] = newck
         except Exception as e:
