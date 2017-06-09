@@ -1256,7 +1256,7 @@ if __name__ == '__main__':
     log = logging.getLogger('bender')
 
     ck = CheckVdsm()
-    ck.host_string, ck.host_user, ck.host_pass = ('10.73.75.126', 'root',
+    ck.host_string, ck.host_user, ck.host_pass = ('10.73.73.17', 'root',
                                                   'redhat')
     ck.build = 'redhat-virtualization-host-4.1-20170531.0'
     ck.beaker_name = DELL_PER515_01
