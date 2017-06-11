@@ -29,3 +29,12 @@ RHVH_UPDATE_RPM_URL = "http://10.66.10.22:8090/rhvhupgrade/updates/{}"
 KERNEL_SPACE_RPM_URL = ("http://download.eng.pek2.redhat.com/pub/rhel/rel-eng/RHEL-7.3-20161019.0/"
                         "compose/Server/x86_64/os/Packages/"
                         "kmod-oracleasm-2.0.8-17.el7.x86_64.rpm")
+
+FABRIC_TIMEOUT = 300
+YUM_UPDATE_TIMEOUT = 1200
+YUM_INSTALL_TIMEOUT = 1200
+CHK_HOST_ON_RHVM_STAT_MAXCOUNT = 20
+CHK_HOST_ON_RHVM_STAT_INTERVAL = 60
+ENTER_SYSTEM_MAXCOUNT = 10
+ENTER_SYSTEM_INTERVAL = 60
+ENTER_SYSTEM_TIMEOUT = 600

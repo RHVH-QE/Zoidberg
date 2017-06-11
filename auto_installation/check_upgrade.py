@@ -8,7 +8,10 @@ from check_comm import CheckYoo
 from constants import KS_FILES_DIR, DELL_PET105_01, DELL_PER510_01
 from const_upgrade import RHVM_DATA_MAP, \
     RHVH_UPDATE_RPM_NAME, RHVH_UPDATE_RPM_URL, \
-    KERNEL_SPACE_RPM_URL
+    KERNEL_SPACE_RPM_URL, \
+    FABRIC_TIMEOUT, YUM_UPDATE_TIMEOUT, YUM_INSTALL_TIMEOUT, \
+    CHK_HOST_ON_RHVM_STAT_MAXCOUNT, CHK_HOST_ON_RHVM_STAT_INTERVAL, \
+    ENTER_SYSTEM_MAXCOUNT, ENTER_SYSTEM_INTERVAL, ENTER_SYSTEM_TIMEOUT
 from rhvmapi import RhevmAction
 from __builtin__ import False
 
@@ -336,7 +339,7 @@ class CheckUpgrade(CheckYoo):
 
         # Get kernel version:
         cmd = "uname -r"
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             log.error("Get kernel version failed.")
             return False
@@ -346,7 +349,7 @@ class CheckUpgrade(CheckYoo):
         # Check weak-updates:
         cmd = "ls /usr/lib/modules/{}/weak-updates/".format(kernel_ver)
         key = self._kernel_space_rpm.split('-')[1]
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0] or key not in ret[1]:
             log.error('The result of "%s" is %s,  not include %s.', cmd,
                       ret[1], key)
@@ -355,7 +358,7 @@ class CheckUpgrade(CheckYoo):
 
         # Check /var/imgbased/persisted-rpms
         cmd = "ls /var/imgbased/persisted-rpms"
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0] or self._kernel_space_rpm not in ret[1]:
             log.error("The result of %s is %s, not include %s", cmd, ret[1],
                       self._kernel_space_rpm)
@@ -368,7 +371,7 @@ class CheckUpgrade(CheckYoo):
         log.info("Start to check user space rpm.")
 
         cmd = "rpm -qa | grep httpd"
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             log.error(
                 'Check user space rpm httpd faild. The result of "%s" is %s',
@@ -403,9 +406,9 @@ class CheckUpgrade(CheckYoo):
 
     def settings_check(self):
         ck01 = self.check_strs_in_file(
-            self._add_file_name, [self._add_file_content], timeout=300)
+            self._add_file_name, [self._add_file_content], timeout=FABRIC_TIMEOUT)
         ck02 = self.check_strs_in_file(
-            self._update_file_name, [self._update_file_content], timeout=300)
+            self._update_file_name, [self._update_file_content], timeout=FABRIC_TIMEOUT)
 
         return ck01 and ck02
 
@@ -413,7 +416,7 @@ class CheckUpgrade(CheckYoo):
         log.info("Roll back.")
 
         cmd = "imgbase rollback"
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             return False
 
@@ -435,12 +438,12 @@ class CheckUpgrade(CheckYoo):
     def cannot_update_check(self):
         cmd = "yum update"
         return self.check_strs_in_cmd_output(
-            cmd, ["No packages marked for update"], timeout=300)
+            cmd, ["No packages marked for update"], timeout=FABRIC_TIMEOUT)
 
     def cannot_install_check(self):
         cmd = "yum install {}".format(self._update_rpm_path)
         return self.check_strs_in_cmd_output(
-            cmd, ["Nothing to do"], timeout=300)
+            cmd, ["Nothing to do"], timeout=FABRIC_TIMEOUT)
 
     def cmds_check(self):
         ck01 = self._check_lvs()
@@ -453,7 +456,7 @@ class CheckUpgrade(CheckYoo):
                 "grep -v 'Key ID' | " \
                 "grep -v 'update-{}' | " \
                 "wc -l".format(self.target_build.split('-host-')[-1])
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             return False
         if ret[1].strip() != '0':
@@ -476,11 +479,11 @@ class CheckUpgrade(CheckYoo):
         ret1 = self.run_cmd(
             "echo '{}' > {}".format(self._add_file_content,
                                     self._add_file_name),
-            timeout=300)
+            timeout=FABRIC_TIMEOUT)
         ret2 = self.run_cmd(
             "echo '{}' >> {}".format(self._update_file_content,
                                      self._update_file_name),
-            timeout=300)
+            timeout=FABRIC_TIMEOUT)
 
         log.info("Add and update files on host finished.")
         return ret1[0] and ret2[0]
@@ -504,7 +507,7 @@ class CheckUpgrade(CheckYoo):
         # Install kernel space rpm:
         cmd = "yum localinstall -y {} > /root/kernel_space_rpm_install.log".format(
             download_path)
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             log.error(
                 "Install kernel space rpm %s failed, see log /root/kernel_space_rpm_install.log",
@@ -543,7 +546,7 @@ class CheckUpgrade(CheckYoo):
 
         install_log = "/root/httpd.log"
         cmd = "yum install -y httpd > {}".format(install_log)
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             log.error("Install user space rpm httpd failed. Please check %s.",
                       install_log)
@@ -598,7 +601,7 @@ class CheckUpgrade(CheckYoo):
 
         repo_path = "/etc/yum.repos.d"
         cmd = "mv {repo_path}/{repo_file} {repo_path}/{repo_file}.bak".format(repo_path=repo_path, repo_file=repo_file)
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             log.error("Failed to delete repo file %s", repo_file)
             return False
@@ -609,7 +612,7 @@ class CheckUpgrade(CheckYoo):
     def _get_host_cpu_type(self):
         log.info("Get host cpu type...")
         cmd = 'lscpu | grep "Model name"'
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if ret[0]:
             if "AMD" in ret[1]:
                 cpu_type = "AMD Opteron G1"
@@ -655,7 +658,7 @@ class CheckUpgrade(CheckYoo):
         else:
             # get vlan device name:
             cmd = "ls /etc/sysconfig/network-scripts | egrep 'ifcfg-.*\.' | awk -F '-' '{print $2}'"
-            ret = self.run_cmd(cmd, timeout=300)
+            ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
             if not ret[0]:
                 return
             vlan_device = ret[1]
@@ -663,7 +666,7 @@ class CheckUpgrade(CheckYoo):
             # get ip addr:
             cmd = "ip -f inet addr show {} | " \
                   "grep inet | awk '{{print $2}}' | awk -F'/' '{{print $1}}'".format(vlan_device)
-            ret = self.run_cmd(cmd, timeout=300)
+            ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
             if not ret[0]:
                 return
             self._host_ip = ret[1]
@@ -679,7 +682,7 @@ class CheckUpgrade(CheckYoo):
         log.info("Start to add %s route on host...", target_ip)
 
         cmd = "ip route | grep --color=never default | head -1"
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             log.error("Get default pub route failed.")
             return False
@@ -690,14 +693,14 @@ class CheckUpgrade(CheckYoo):
 
         cmd = "ip route add {target_ip} via {gateway} dev {nic}".format(
             target_ip=target_ip, gateway=gateway, nic=nic)
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             log.error("Add %s to route table failed.", target_ip)
             return False
 
         cmd = "echo '{target_ip} via {gateway}' > /etc/sysconfig/network-scripts/route-{nic}".format(
             target_ip=target_ip, gateway=gateway, nic=nic)
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             log.error("Create route-%s file failed.", nic)
             return False
@@ -709,7 +712,7 @@ class CheckUpgrade(CheckYoo):
         log.info("Start to delete the default vlan route...")
 
         cmd = "ip route | grep --color=never default | grep ' 192.'"
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             log.error("Get default vlan route failed.")
             return False
@@ -718,7 +721,7 @@ class CheckUpgrade(CheckYoo):
         vlan_gateway = ret[1].split()[2]
 
         cmd = "ip route del default via {}".format(vlan_gateway)
-        ret = self.run_cmd(cmd, timeout=300)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             log.error("Delete the default vlan route failed.")
             return False
@@ -788,6 +791,7 @@ class CheckUpgrade(CheckYoo):
                 if self._host_name:
                     log.info("Try to remove host %s", self._host_name)
                     self._rhvm.remove_host(self._host_name)
+                    self._rhvm.del_host_events(self._host_name)
 
                 if self._cluster_name:
                     log.info("Try to remove cluster %s", self._cluster_name)
@@ -810,12 +814,12 @@ class CheckUpgrade(CheckYoo):
         log.info("Check host status on rhvm.")
 
         count = 0
-        while (count < 20):
+        while (count < CHK_HOST_ON_RHVM_STAT_MAXCOUNT):
             host_stat = self._rhvm.list_host(self._host_name)['status']
             if host_stat == 'up':
                 break
             count = count + 1
-            time.sleep(30)
+            time.sleep(CHK_HOST_ON_RHVM_STAT_INTERVAL)
         else:
             log.error("Host is not up on rhvm.")
             return False
@@ -831,9 +835,9 @@ class CheckUpgrade(CheckYoo):
 
         disconnect_all()
         count = 0
-        while (count < 10):
-            time.sleep(60)
-            ret = self.run_cmd("imgbase w", timeout=600)
+        while (count < ENTER_SYSTEM_MAXCOUNT):
+            time.sleep(ENTER_SYSTEM_INTERVAL)
+            ret = self.run_cmd("imgbase w", timeout=ENTER_SYSTEM_TIMEOUT)
             if not ret[0]:
                 count = count + 1
             else:
@@ -848,7 +852,7 @@ class CheckUpgrade(CheckYoo):
         )
 
         cmd = "yum -y update > /root/yum_update.log"
-        ret = self.run_cmd(cmd, timeout=1200)
+        ret = self.run_cmd(cmd, timeout=YUM_UPDATE_TIMEOUT)
 
         log.info("Run yum update cmd finished.")
         return ret[0]
@@ -860,7 +864,7 @@ class CheckUpgrade(CheckYoo):
 
         cmd = "yum -y install {} > /root/yum_install.log".format(
             self._update_rpm_path)
-        ret = self.run_cmd(cmd, timeout=1200)
+        ret = self.run_cmd(cmd, timeout=YUM_INSTALL_TIMEOUT)
 
         log.info("Run yum install cmd finished.")
         return ret[0]
@@ -960,7 +964,7 @@ class CheckUpgrade(CheckYoo):
         }
 
         for k, v in cmdmap.items():
-            ret = self.run_cmd(v, timeout=300)
+            ret = self.run_cmd(v, timeout=FABRIC_TIMEOUT)
             if ret[0]:
                 check_infos[k] = ret[1]
                 log.info("***%s***:\n%s", k, ret[1])

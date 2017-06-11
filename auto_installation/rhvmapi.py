@@ -332,7 +332,7 @@ class RhevmAction:
 
         return True
 
-    def _get_host_event(self, host_name, description):
+    def _get_host_events(self, host_name):
         api_url = self.api_url.format(
             rhevm_fqdn=self.rhevm_fqdn, item="events")
 
@@ -341,8 +341,12 @@ class RhevmAction:
 
         if r.status_code != 200:
             log.error("Can not list events of host %s on %s" , host_name, self.rhevm_fqdn)
-            return False
-        events = r.json()
+            return None
+        else:
+            return r.json()
+
+    def _get_host_event_by_des(self, host_name, description):
+        events = self._get_host_events(host_name)
         if events:
             for event in events.get('event'):
                 if description in event.get('description'):
@@ -351,6 +355,25 @@ class RhevmAction:
                 return False
         else:
             return False
+
+    def del_host_events(self, host_name):
+        api_url_base = self.api_url.format(
+            rhevm_fqdn=self.rhevm_fqdn, item="events")
+        events = self._get_host_events(host_name)
+        if events:
+            for event in events.get('event'):
+                event_id = event.get('id')
+                api_url = api_url_base + '/%s' % event_id
+                r = self.req.delete(
+                    api_url,
+                    headers=self.headers,
+                    verify=self.rhevm_cert,
+                    params={"async": "false"})
+                if r.status_code != 200:
+                    log.error(r.text)
+                    raise RuntimeError("Failed to delete events of host %s" % host_name)
+        else:
+            log.info("Host %s events doesn't exist, no need to delete.", host_name)
 
     def upgrade_host(self, host_name):
         api_url_base = self.api_url.format(
@@ -383,7 +406,7 @@ class RhevmAction:
             count = 0
             while (count < 4):
                 sleep(300)
-                if self._get_host_event(host_name, description):
+                if self._get_host_event_by_des(host_name, description):
                     log.info(description)
                     break
                 count = count + 1
@@ -583,4 +606,4 @@ if __name__ == '__main__':
     # rhvm.remove_host("atu_amd")
     # rhvm.upgrade_host("test")
     # rhvm.update_network("test", "vlan", "50")
-    rhvm._get_host_event("dell-per510-01", "Host dell-per510-01 upgrade was completed successfully")
+    rhvm.del_host_events("dell-per510-01")
