@@ -336,7 +336,7 @@ class RhevmAction:
         api_url = self.api_url.format(
             rhevm_fqdn=self.rhevm_fqdn, item="events")
 
-        params = {'search': "event_host={}".format("host_name")}
+        params = {'search': "event_host={}".format(host_name)}
         r = self.req.get(api_url, headers=self.headers, verify=self.rhevm_cert, params=params)
 
         if r.status_code != 200:
@@ -381,7 +381,7 @@ class RhevmAction:
             description = 'Host {} upgrade was completed successfully'.format(
                 host_name)
             count = 0
-            while (count < 3):
+            while (count < 4):
                 sleep(300)
                 if self._get_host_event(host_name, description):
                     log.info(description)
@@ -583,3 +583,4 @@ if __name__ == '__main__':
     # rhvm.remove_host("atu_amd")
     # rhvm.upgrade_host("test")
     # rhvm.update_network("test", "vlan", "50")
+    rhvm._get_host_event("dell-per510-01", "Host dell-per510-01 upgrade was completed successfully")
