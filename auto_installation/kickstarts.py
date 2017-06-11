@@ -9,7 +9,7 @@ from pykickstart.parser import Script
 from pykickstart.constants import KS_SCRIPT_PRE, KS_SCRIPT_POST
 
 from constants import KS_FILES_DIR, KS_FILES_AUTO_DIR, \
-    HOSTS, POST_SCRIPT_01, POST_SCRIPT_02, PRE_SCRIPT_01, TEST_LEVEL
+    HOSTS, POST_SCRIPT_01, POST_SCRIPT_02, PRE_SCRIPT_01, PRE_SCRIPT_02, TEST_LEVEL
 from utils import get_machine_ksl_map, get_ks_machine_map
 
 loger = logging.getLogger('bender')
@@ -85,7 +85,7 @@ class KickStartFiles(object):
                     error_on_fail=False)
 
             pre_script = self._generate_ks_script(
-                PRE_SCRIPT_01, script_type=KS_SCRIPT_PRE, error_on_fail=False)
+                PRE_SCRIPT_01 + PRE_SCRIPT_02, script_type=KS_SCRIPT_PRE, error_on_fail=False)
 
             with open(ks_out, "a") as fp:
                 fp.write(pre_script.__str__())

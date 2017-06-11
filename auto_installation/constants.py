@@ -44,10 +44,6 @@ DEBUG_TIER_TESTCASE_MAP = {
     'RHEVM-16972': ('ati_fc_01.ks', DELL_PER510_01, 'partition_check')
 }
 
-COCKPIT_TIER_TESTCASE_MAP = {
-    'RHEVM-17788': ('ati_cockpit_01.ks', DELL_OP790_01, 'install_check'),
-}
-
 HOSTS = {
     DELL_PET105_01: {
         "nic": {
@@ -130,6 +126,12 @@ fi
 fetch /tmp/anamon http://{srv_ip}:{srv_port}/static/anamon.py
 python /tmp/anamon --server {srv_ip} --port {srv_port} --stage pre
 
+""".format(
+    srv_ip=CURRENT_IP_PORT[0], srv_port=CURRENT_IP_PORT[1])
+
+PRE_SCRIPT_02 = """
+fetch /tmp/clean_disk http://{srv_ip}:{srv_port}/static/clean_disk.py
+python /tmp/clean_disk
 """.format(
     srv_ip=CURRENT_IP_PORT[0], srv_port=CURRENT_IP_PORT[1])
 
