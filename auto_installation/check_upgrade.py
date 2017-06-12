@@ -442,8 +442,11 @@ class CheckUpgrade(CheckYoo):
 
     def cannot_install_check(self):
         cmd = "yum install {}".format(self._update_rpm_path)
-        return self.check_strs_in_cmd_output(
-            cmd, ["Nothing to do"], timeout=FABRIC_TIMEOUT)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0] and "Nothing to do" in ret[1]:
+            return True
+        else:
+            return False
 
     def cmds_check(self):
         ck01 = self._check_lvs()
