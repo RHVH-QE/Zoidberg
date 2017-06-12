@@ -17,7 +17,7 @@ VDSM_TIER_TESTCASE_MAP = {  # sequential cases for each scenario
     "RHEVM-invalid2": ('atv_scsi_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),  # must install host before check
     "RHEVM-18115": ('atv_scsi_01.ks', DELL_PER515_01, 'cs1_create_scsi_sd_check'),
     "RHEVM-18132": ('atv_scsi_01.ks', DELL_PER515_01, 'cv1_create_vm_with_disk_check'),
-    "RHEVM-18134": ('atv_scsi_01.ks', DELL_PER510_01, 'cv2_attach_second_disk_to_vm_check'),
+    "RHEVM-18134": ('atv_scsi_01.ks', DELL_PER515_01, 'cv2_attach_second_disk_to_vm_check'),
     "RHEVM-18117": ('atv_bondi_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
     "RHEVM-18137": ('atv_bondi_02.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
     "RHEVM-18118": ('atv_vlani_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
