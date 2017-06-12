@@ -308,10 +308,10 @@ class CheckUpgrade(CheckYoo):
         return True
 
     def _check_need_to_verify_new_lv(self):
-        src_build_time = self._source_build.split('-')[-1].split('.')[-1]
-        tar_build_time = self._target_build.split('-')[-1].split('.')[-1]
+        src_build_time = self._source_build.split('-')[-1].split('.')[0]
+        tar_build_time = self._target_build.split('-')[-1].split('.')[0]
 
-        if src_build_time >= "20170506" or  tar_build_time < "20170506":
+        if src_build_time >= "20170609" or  tar_build_time < "20170609":
             log.info("No need to check newly added lv.")
             return False
 
