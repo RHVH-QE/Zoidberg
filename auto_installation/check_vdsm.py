@@ -750,6 +750,7 @@ GATEWAY="{gateway}"\
             bv = bond_name + '.' + vlan_id
 
             bond_ifcfg_str = """\
+BONDING_OPTS="mode=active-backup miimon=100"
 DEVICE="{device}"
 NM_CONTROLLED="no"
 ONBOOT="yes"

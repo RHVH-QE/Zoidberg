@@ -1,5 +1,55 @@
 from constants import DELL_PER510_01, DELL_PER515_01
 
+#
+# Cases remained to be automated or could not be automated
+#
+VDSM_NOT_AUTOMATED_MAP = {
+    "RHEVM-18121": (
+        "Create VMs on rhvh from rhvm side successfully after add rhvh to rhvm",
+        "Half automation",
+        "Reason: Half automated since the OS can not be installed automatically"
+    ),
+    "RHEVM-18124": (
+        "rhvh info check in rhvm",
+        "Needs to do"
+        "Not easy to compare the rhevh info"
+    ),
+    "RHEVM-18125": (
+        "Verify engine-iso-uploader works good",
+        "Needs to do"
+        "Needs to answer the password of engine"
+    ),
+    "RHEVM-18126": (
+        "Verify VM migration successful",
+        "Can not"
+        "Needs two server"
+    ),
+    "RHEVM-18129": (
+        "VM boot from PXE",
+        "Can not",
+        "Can not chose PXE boot for vm installation"
+    ),
+    "RHEVM-18133": (
+        "Add one FC direct lun disk to VM",
+        "Still needs to debug",
+        "Still has bug"
+    ),
+    "RHEVM-18134": (
+        "Add one iscsi direct lun disk to VM",
+        "Still needs to debug",
+        "Still has bug"
+    ),
+    "RHEVM-18138": (
+        "The rhvh's firewall ports were enabled by default after adding to rhvm",
+        "Needs to do",
+        "Not easy to compare"
+    ),
+    "RHEVM-19736": (
+        "Imgbase layout check on rhvh with a large number of LUNs attached",
+        "Needs to do",
+        "Needs to create 1000+ lvms"
+    )
+}
 
 VDSM_TIER_TESTCASE_MAP = {  # sequential cases for each scenario
     "RHEVM-18113": ('atv_local_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
@@ -17,7 +67,6 @@ VDSM_TIER_TESTCASE_MAP = {  # sequential cases for each scenario
     "RHEVM-invalid2": ('atv_scsi_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),  # must install host before check
     "RHEVM-18115": ('atv_scsi_01.ks', DELL_PER515_01, 'cs1_create_scsi_sd_check'),
     "RHEVM-18132": ('atv_scsi_01.ks', DELL_PER515_01, 'cv1_create_vm_with_disk_check'),
-    "RHEVM-18134": ('atv_scsi_01.ks', DELL_PER515_01, 'cv2_attach_second_disk_to_vm_check'),
     "RHEVM-18117": ('atv_bondi_02.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
     "RHEVM-18137": ('atv_bondi_02.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
     "RHEVM-18118": ('atv_vlani_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
@@ -29,7 +78,6 @@ VDSM_TIER_TESTCASE_MAP = {  # sequential cases for each scenario
     "RHEVM-invalid3": ('atv_fc_01.ks', DELL_PER510_01, 'ca0_create_new_host_check'),  # must install host before check
     "RHEVM-18116": ('atv_fc_01.ks', DELL_PER510_01, 'cf1_create_fc_sd_check'),
     "RHEVM-18131": ('atv_fc_01.ks', DELL_PER510_01, 'cv1_create_vm_with_disk_check'),
-    "RHEVM-18133": ('atv_fc_01.ks', DELL_PER510_01, 'cv2_attach_second_disk_to_vm_check'),
 }
 
 #
