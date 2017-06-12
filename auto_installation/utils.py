@@ -196,7 +196,7 @@ def get_ks_machine_map():
         if ks in ks_mashine_map:
             if machine != ks_mashine_map.get(ks):
                 raise ValueError(
-                    'One kickstart file cannot be run on two machines.')
+                    'One kickstart file %s cannot be run on two machines.' % ks)
         else:
             ks_mashine_map[ks] = machine
 
