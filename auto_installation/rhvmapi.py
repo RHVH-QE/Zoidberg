@@ -292,7 +292,7 @@ class RhevmAction:
                 if host.get(key) == value:
                     return host
         else:
-            return
+            return None
 
     def _update_available_check(self, host_id):
         rhvm_version = self.rhevm_fqdn.split('-')[0]
@@ -312,7 +312,7 @@ class RhevmAction:
             if r.status_code != 200:
                 raise RuntimeError("Failed to execute upgradecheck.")
 
-        count_max = 6
+        count_max = 8
         sleep_time = 300
         if rhvm_version == "rhvm41":
             count_max = 10
