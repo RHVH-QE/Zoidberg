@@ -227,14 +227,14 @@ class CheckUpgrade(CheckYoo):
             if in_old:
                 if in_diff:
                     log.error(
-                        "%s already exists in old layer, it shouldn't be changed in new layer.", k
-                    )
+                        "%s already exists in old layer, it shouldn't be changed in new layer.",
+                        k)
                     return False
             else:
                 if not in_diff:
                     log.error(
-                        "%s doesn't exist in old layer, it should be added in new layer.", k
-                    )
+                        "%s doesn't exist in old layer, it should be added in new layer.",
+                        k)
                     return False
                 else:
                     size = in_diff[0].split()[-1]
@@ -249,7 +249,8 @@ class CheckUpgrade(CheckYoo):
     def _check_lvs(self):
         old_lvs = [
             x.strip()
-            for x in self._check_infos.get("old").get("lvs").split("\r\n") if "WARNING" not in x
+            for x in self._check_infos.get("old").get("lvs").split("\r\n")
+            if "WARNING" not in x
         ]
         new_lvs = [
             x.strip()
@@ -257,7 +258,8 @@ class CheckUpgrade(CheckYoo):
         ]
 
         diff = list(set(old_lvs) - set(new_lvs))
-        if diff:
+        if len(diff) >= 2 or (len(diff) == 1 and not re.match(
+                r'\[pool.*_tmeta\]', diff[0])):
             log.error("new lvs doesn't include items in old lvs. diff=%s",
                       diff)
             return False
@@ -281,7 +283,7 @@ class CheckUpgrade(CheckYoo):
         ]
         diff = list(set(new_findmnt) - set(old_findmnt))
         new_ver = self._check_infos.get("new").get("imgbase_w").split()[
-            - 1].replace("-", "--")
+            -1].replace("-", "--")
 
         log.info("Check findmnt:\n  diff=%s", diff)
 
@@ -295,14 +297,19 @@ class CheckUpgrade(CheckYoo):
 
             if in_old:
                 if key == new_ver:
-                    log.error("New layer %s shouldn't present in old findmnt.", new_ver)
+                    log.error("New layer %s shouldn't present in old findmnt.",
+                              new_ver)
                     return False
                 if in_diff:
-                    log.error("Mount point %s already exists in old layer, it shouldn't be changed in new layer.", key)
+                    log.error(
+                        "Mount point %s already exists in old layer, it shouldn't be changed in new layer.",
+                        key)
                     return False
             else:
                 if not in_diff:
-                    log.error("Mount point %s hasn't been created in new layer.", key)
+                    log.error(
+                        "Mount point %s hasn't been created in new layer.",
+                        key)
                     return False
 
         return True
@@ -311,7 +318,7 @@ class CheckUpgrade(CheckYoo):
         src_build_time = self.source_build.split('-')[-1].split('.')[0]
         tar_build_time = self.target_build.split('-')[-1].split('.')[0]
 
-        if src_build_time >= "20170609" or  tar_build_time < "20170609":
+        if src_build_time >= "20170609" or tar_build_time < "20170609":
             log.info("No need to check newly added lv.")
             return False
 
@@ -406,9 +413,11 @@ class CheckUpgrade(CheckYoo):
 
     def settings_check(self):
         ck01 = self.check_strs_in_file(
-            self._add_file_name, [self._add_file_content], timeout=FABRIC_TIMEOUT)
+            self._add_file_name, [self._add_file_content],
+            timeout=FABRIC_TIMEOUT)
         ck02 = self.check_strs_in_file(
-            self._update_file_name, [self._update_file_content], timeout=FABRIC_TIMEOUT)
+            self._update_file_name, [self._update_file_content],
+            timeout=FABRIC_TIMEOUT)
 
         return ck01 and ck02
 
@@ -603,7 +612,8 @@ class CheckUpgrade(CheckYoo):
         log.info("Delete repo fiel %s on host...", repo_file)
 
         repo_path = "/etc/yum.repos.d"
-        cmd = "mv {repo_path}/{repo_file} {repo_path}/{repo_file}.bak".format(repo_path=repo_path, repo_file=repo_file)
+        cmd = "mv {repo_path}/{repo_file} {repo_path}/{repo_file}.bak".format(
+            repo_path=repo_path, repo_file=repo_file)
         ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             log.error("Failed to delete repo file %s", repo_file)
