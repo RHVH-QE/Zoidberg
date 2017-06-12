@@ -308,8 +308,8 @@ class CheckUpgrade(CheckYoo):
         return True
 
     def _check_need_to_verify_new_lv(self):
-        src_build_time = self._source_build.split('-')[-1].split('.')[0]
-        tar_build_time = self._target_build.split('-')[-1].split('.')[0]
+        src_build_time = self.source_build.split('-')[-1].split('.')[0]
+        tar_build_time = self.target_build.split('-')[-1].split('.')[0]
 
         if src_build_time >= "20170609" or  tar_build_time < "20170609":
             log.info("No need to check newly added lv.")
@@ -818,8 +818,8 @@ class CheckUpgrade(CheckYoo):
 
         count = 0
         while (count < CHK_HOST_ON_RHVM_STAT_MAXCOUNT):
-            host_stat = self._rhvm.list_host(self._host_name)['status']
-            if host_stat == 'up':
+            host = self._rhvm.list_host(key="name", value=self._host_name)
+            if host and host.get('status') == 'up':
                 break
             count = count + 1
             time.sleep(CHK_HOST_ON_RHVM_STAT_INTERVAL)
