@@ -172,7 +172,7 @@ class JobRunner(object):
     def generate_final_results(self):
         try:
             log_path = self.results_logs.current_log_path
-            build_name = self.results_logs.parse_img_url
+            build_name = self.results_logs.parse_img_url()
             if build_name not in log_path:
                 return
             final_path = os.path.join(log_path.split(build_name)[0], build_name)
