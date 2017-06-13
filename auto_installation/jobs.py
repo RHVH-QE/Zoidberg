@@ -3,6 +3,7 @@ import logging
 import attr
 from threading import Thread
 import subprocess
+import os
 from .kickstarts import KickStartFiles
 from .beaker import Beaker, inst_watcher
 from .constants import CURRENT_IP_PORT, ARGS_TPL, HOSTS, CB_PROFILE
@@ -11,6 +12,7 @@ from .cobbler import Cobbler
 from .check_install import CheckInstall
 from .check_upgrade import CheckUpgrade
 from .check_vdsm import CheckVdsm
+from reports import ResultsToPolarion
 
 log = logging.getLogger("bender")
 
@@ -23,6 +25,7 @@ class JobRunner(object):
     target_build = attr.ib()
     # ks_filter = attr.ib(default='must')
     debug = attr.ib(default=False)
+    test_flag = attr.ib(default='install')
 
     def _wait_for_installation(self, p):
         while True:
@@ -134,12 +137,15 @@ class JobRunner(object):
                         self.results_logs.get_actual_logger(ks)
 
                         if ks.find("ati") == 0:
+                            self.test_flag = "install"
                             ck = CheckInstall()
                         elif ks.find("atu") == 0:
+                            self.test_flag = "upgrade"
                             ck = CheckUpgrade()
                             ck.source_build = self.build_url.split('/')[-1].split('.x86_64.')[0]
                             ck.target_build = self.target_build
                         elif ks.find("atv") == 0:
+                            self.test_flag = "vdsm"
                             ck = CheckVdsm()
                             ck.build = self.build_url.split('/')[-1].split('.x86_64.')[0]
                         else:
@@ -160,8 +166,20 @@ class JobRunner(object):
                         "provisioning on host %s failed with return code %s",
                         m, ret)
 
+        self.generate_final_results()
         self.rd_conn.set("running", "0")
 
+    def generate_final_results(self):
+        try:
+            log_path = self.results_logs.current_log_path
+            build_name = self.results_logs.parse_img_url
+            if build_name not in log_path:
+                return
+            final_path = os.path.join(log_path.split(build_name)[0], build_name)
+            report = ResultsToPolarion(final_path, '-l', self.test_flag, self.target_build)
+            report.run()
+        except Exception as e:
+            log.error(e)
 
 def job_runner(img_url, rd_conn, results_logs, target_build=None):
     ins = JobRunner(img_url, rd_conn, results_logs, target_build)

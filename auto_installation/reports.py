@@ -27,19 +27,22 @@ class ResultsToPolarion(object):
     /home/dracher/Zoidberg/logs/2017-03-08/redhat-virtualization-host-4.1-20170208.0
     """
 
-    def __init__(self, path, action):
+    def __init__(self, path, action, test_flag="install", target_build=None):
         self.action = action
         self.path = path.rstrip('/')
+        self.source_build = self.path.split('/')[-1]
+        self.target_build = target_build
+        self.test_flag = test_flag
         self.jfilename = "final_results.json"
 
     @staticmethod
     def get_current_date():
         return time.strftime("%m%d%H%M", time.localtime())
 
-    def create_testrun(self, build, level='Must'):
+    def create_testrun(self, title, level='Must'):
         ret = TestRun.create(TR_PROJECT_ID,
                              TR_ID.format(
-                                 build.replace(".", "_"),
+                                 title.replace(".", "_"),
                                  self.get_current_date()),
                              TR_TPL.format(level))
         return ret
@@ -110,18 +113,36 @@ class ResultsToPolarion(object):
                             break
         return newret
 
+    def _gen_title(self):
+        src_ver = self.source_build.split('-')[-2].replace('.', '_')
+        src_build_name = self.source_build.replace('redhat-virtualization-host', 'rhvh')
+
+        title = None
+        if self.test_flag == "install":
+            title = src_ver + "_Node_Install_AutoTest_" + src_build_name
+        elif self.test_flag == "upgrade":
+            if not self.target_build:
+                print "The test_flag is upgrade, but there is no target build info."
+            else:
+                tar_ver = self.target_build.split('-')[-2].replace('.', '_')
+                tar_build_name = self.target_build.replace('redhat-virtualization-host', 'rhvh')
+                title = tar_ver + "_Node_Upgrade_AutoTest_from_" + src_build_name + "_to_" + tar_build_name
+        elif self.test_flag == "vdsm":
+            title = src_ver + "_Node_Vdsm_AutoTest_" + src_build_name
+
+        return title
+
     def _gen_results_jfile(self):
-        build = self.path.split('/')[-1]
         root_path = self.path
 
-        final_results = {build: {}}
+        final_results = {self.source_build: {}}
         actual_run_cases = []
         pass_num = 0
         failed_num = 0
         for a, b, c in os.walk(root_path):
             for ks in b:
                 ret = self._parse_checkpoints(os.path.join(a, ks, 'checkpoints'))
-                final_results[build][ks] = ret
+                final_results[self.source_build][ks] = ret
                 actual_run_cases.extend(list(ret.keys()))
                 values = list(ret.values())
                 pass_num = pass_num + values.count('passed')
@@ -130,7 +151,7 @@ class ResultsToPolarion(object):
 
         need_run_cases = list(get_testcase_map().keys())
         final_results['sum'] = {}
-        final_results['sum']['build'] = build
+        final_results['sum']['title'] = self._gen_title()
         final_results['sum']['total'] = len(need_run_cases)
         final_results['sum']['passed'] = pass_num
         final_results['sum']['failed'] = failed_num
@@ -160,23 +181,23 @@ class ResultsToPolarion(object):
         print "Begin to transport results to polarion..."
 
         final_results = json.load(open(jfile))
-        build = final_results.get('sum').get('build')
         ks_list = []
-        for k in final_results.get(build):
-            ks_list.append(k.encode())
+        for ks in final_results.get(self.source_build):
+            ks_list.append(ks.encode())
         ks_list.sort()
 
-        tr = self.create_testrun(build)
-        tr.group_id = build
-        tr.description = 'automatic installation use {} with {}'.format(
-            build, ks_list)
+        title = final_results.get("sum").get("title")
+
+        tr = self.create_testrun(title)
+        tr.group_id = self.source_build
+        tr.description = '{} with {}'.format(title, ks_list)
         tr.status = 'finished'
         tr.update()
 
         print tr.uri
         print tr.test_run_id
 
-        rets = final_results.get(build).values()
+        rets = final_results.get(self.source_build).values()
         for ret in rets:
             for k, v in ret.items():
                 self.export_to_polarion(tr, k, v)
@@ -218,9 +239,13 @@ if __name__ == '__main__':
         action='store_true',
         help='generate final summary in json format and upload results to polarion')
     parser.add_argument('results_path', help="path to results log directory")
+    parser.add_argument('--t', dest="target_build", help="target build name when upgrading")
+    parser.add_argument('--f', dest="test_flag", help="the value should be install, upgrade, or vdsm")
     args = parser.parse_args()
 
     res_path = args.results_path
+    tar_build = args.target_build
+    test_flag = args.test_flag
     if args.p:
         action = '-p'
     if args.l:
@@ -228,5 +253,5 @@ if __name__ == '__main__':
     if args.b:
         action = '-b'
 
-    r = ResultsToPolarion(res_path, action)
+    r = ResultsToPolarion(res_path, action, test_flag, tar_build)
     r.run()

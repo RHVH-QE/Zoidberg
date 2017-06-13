@@ -77,7 +77,7 @@ HOSTS = {
 
 TR_TPL = '4_1_Node_Auto_ATIKS_{}'
 TR_PROJECT_ID = 'RHEVM3'
-TR_ID = '4_1_Node_Install_AutoTest_{}_{}'
+TR_ID = '{}_{}'
 
 # Kickstart related stuff
 
