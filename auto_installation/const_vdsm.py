@@ -53,7 +53,7 @@ VDSM_NOT_AUTOMATED_MAP = {
 
 VDSM_TIER_TESTCASE_MAP = {  # sequential cases for each scenario
     "RHEVM-18113": ('atv_local_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
-    "RHEVM-18114": ('atv_local_01.ks', DELL_PER515_01, 'cl1_add_local_sd_check'),
+    "RHEVM-18114": ('atv_local_01.ks', DELL_PER515_01, 'cl1_create_local_sd_check'),
     "RHEVM-18197": ('atv_local_01.ks', DELL_PER515_01, 'cl2_include_rhgs_pkg_check'),
     "RHEVM-18136": ('atv_local_01.ks', DELL_PER515_01, 'cl3_fcoe_service_check'),
     "RHEVM-invalid1": ('atv_nfs_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),  # must install host before check
@@ -72,7 +72,7 @@ VDSM_TIER_TESTCASE_MAP = {  # sequential cases for each scenario
     "RHEVM-18118": ('atv_vlani_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
     "RHEVM-18135": ('atv_vlani_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
     "RHEVM-18119": ('atv_bvi_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
-    "RHEVM-18156": ('atv_bonda_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
+    # "RHEVM-18156": ('atv_bonda_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
     "RHEVM-18160": ('atv_vlana_02.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
     "RHEVM-18157": ('atv_bva_02.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
     "RHEVM-invalid3": ('atv_fc_01.ks', DELL_PER510_01, 'ca0_create_new_host_check'),  # must install host before check
