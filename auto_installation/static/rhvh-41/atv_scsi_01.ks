@@ -30,7 +30,7 @@ text
 reboot
 
 ### Network ###
-network --device=em1 --bootproto=dhcp
+network --device=em2 --bootproto=dhcp
 
 ### Partitioning ###
 ignoredisk --only-use=/dev/disk/by-id/scsi-360a9800050334c33424b41762d726954

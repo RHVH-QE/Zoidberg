@@ -30,7 +30,7 @@ text
 reboot
 
 ### Network ###
-network --device=em1 --bootproto=dhcp
+network --device=em2 --bootproto=dhcp
 network --device=bond0 --bootproto=dhcp --bondslaves=p2p1,p2p2 --bondopts=mode=active-backup,primary=p2p1,miimon=100 --vlanid=50
 
 ### Partitioning ###

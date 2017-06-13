@@ -30,7 +30,7 @@ text
 reboot
 
 ### Network ###
-network --device=bond0 --bootproto=static --ip=10.73.73.17 --netmask=255.255.252.0 --gateway=10.73.75.254 --bondslaves=em1,em2 --bondopts=mode=active-backup,primary=em1,miimon=100
+network --device=bond0 --bootproto=static --ip=10.73.73.17 --netmask=255.255.252.0 --gateway=10.73.75.254 --bondslaves=em1,em2 --bondopts=mode=active-backup,primary=em2,miimon=100
 
 ### Partitioning ###
 ignoredisk --only-use=/dev/disk/by-id/scsi-360a9800050334c33424b41762d726954

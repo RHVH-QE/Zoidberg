@@ -30,7 +30,7 @@ text
 reboot
 
 ### Network ###
-network --device=em1 --bootproto=dhcp
+network --device=em2 --bootproto=dhcp
 network --device=p2p1 --bootproto=static --ip=192.168.50.48 --netmask=255.255.255.0 --gateway=192.168.50.1 --vlanid=50
 
 ### Partitioning ###
