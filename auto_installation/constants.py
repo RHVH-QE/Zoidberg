@@ -17,6 +17,8 @@ BUILDS_SERVER_URL = "http://10.66.10.22:8090"
 
 CURRENT_IP_PORT = ('10.73.73.23', '5000')
 
+LOG_URL = "http://10.73.73.23:7788"
+
 STATIC_URL = ("http://{0}:{1}/"
               "static/ngn-auto-installation-kickstarts/%s").format(
                   CURRENT_IP_PORT[0], CURRENT_IP_PORT[1])

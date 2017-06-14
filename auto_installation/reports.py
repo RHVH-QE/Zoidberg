@@ -6,11 +6,12 @@ try:
     from pylarion.test_run import TestRun
 except ImportError:
     print("pylarion must be installed")
-from constants import TR_ID, TR_PROJECT_ID, TR_TPL
+from constants import TR_ID, TR_PROJECT_ID, TR_TPL, LOG_URL
 from const_install import KS_PRESSURE_MAP
 import re
 import json
 from utils import get_testcase_map
+from collections import OrderedDict
 
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -132,15 +133,20 @@ class ResultsToPolarion(object):
 
         return title
 
+    def _gen_log_url(self):
+        log_url = LOG_URL + self.path.split('logs')[-1]
+        return log_url
+
     def _gen_results_jfile(self):
         root_path = self.path
 
-        final_results = {self.source_build: {}}
+        final_results = {}
+        final_results[self.source_build] = OrderedDict()
         actual_run_cases = []
         pass_num = 0
         failed_num = 0
         for a, b, c in os.walk(root_path):
-            for ks in b:
+            for ks in sorted(b):
                 ret = self._parse_checkpoints(os.path.join(a, ks, 'checkpoints'))
                 final_results[self.source_build][ks] = ret
                 actual_run_cases.extend(list(ret.keys()))
@@ -150,8 +156,9 @@ class ResultsToPolarion(object):
             break
 
         need_run_cases = list(get_testcase_map().keys())
-        final_results['sum'] = {}
+        final_results['sum'] = OrderedDict()
         final_results['sum']['title'] = self._gen_title()
+        final_results['sum']['log_url'] = self._gen_log_url()
         final_results['sum']['total'] = len(need_run_cases)
         final_results['sum']['passed'] = pass_num
         final_results['sum']['failed'] = failed_num
@@ -166,7 +173,7 @@ class ResultsToPolarion(object):
             with open(final_results_jfile, 'w') as json_file:
                 json_file.write(
                     json.dumps(
-                        final_results, sort_keys=True, indent=4))
+                        final_results, indent=4))
 
             return final_results_jfile
         except Exception as e:
