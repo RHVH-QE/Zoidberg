@@ -26,7 +26,6 @@ class CheckVdsm(CheckYoo):
     """"""
     def __init__(self):
         self._build = None  # redhat-virtualization-host-4.1-20170531.0
-        self._scen = None  # bondi/fc/nfs etc
         self._vlanid = None  # 50
         self._rhvm = None  # instance of RhevmAction
         self._rhvm_fqdn = None  # rhvm41-vlan50-1.lab.eng.pek2.redhat.com
@@ -59,9 +58,6 @@ class CheckVdsm(CheckYoo):
     ##########################################
     # Before checking, creating dc, cluster
     ##########################################
-    def _get_test_scen(self):
-        self._scen = self.ksfile.split('_')[1]
-
     def _get_host_version(self):
         BUILD_4_0 = "-4.0-"
         BUILD_4_1 = "-4.1-"
@@ -103,9 +99,10 @@ class CheckVdsm(CheckYoo):
         log.info("Testing on rhvm %s" % self._rhvm_fqdn)
 
     def _get_dc_info(self):
-        dc_name = datacenter_name_tpl.replace('tpl', self._scen)
+        scen = self.ksfile.split('_')[1]
+        dc_name = datacenter_name_tpl.replace('tpl', scen)
         is_local = False
-        if self._scen == 'local':
+        if re.search('local', self.ksfile):
             is_local = True
         self._dc_info = {"dc_name": dc_name, "is_local": is_local}
 
@@ -123,7 +120,8 @@ class CheckVdsm(CheckYoo):
         AMD_CPU = "AMD"
         INTEL_CPU = "Intel"
 
-        cluster_name = cluster_name_tpl.replace('tpl', self._scen)
+        scen = self.ksfile.split('_')[1]
+        cluster_name = cluster_name_tpl.replace('tpl', scen)
         self._cluster_info.update({"cluster_name": cluster_name})
 
         cmd = 'lscpu | grep "Model name"'
@@ -164,7 +162,7 @@ class CheckVdsm(CheckYoo):
         if re.search("vlan|bv", self.ksfile):
             cmd = "ls /etc/sysconfig/network-scripts | egrep 'ifcfg-.*\.' | awk -F '-' '{print $2}'"
         else:
-            cmd = "ls /etc/sysconfig/network-scripts | egrep 'ifcfg-bond[0-9]' | awk -F '-' '{print $2}'"
+            cmd = "ls /etc/sysconfig/network-scripts | egrep 'ifcfg-bond[0-9]$' | awk -F '-' '{print $2}'"
         # Get the device
         ret = self.run_cmd(cmd, timeout=300)
         if not ret[0]:
@@ -197,7 +195,8 @@ class CheckVdsm(CheckYoo):
 
         self._host_info.update({"host_ip": host_ip})
 
-        host_name = host_name_tpl.replace('tpl', self._scen)
+        scen = self.ksfile.split('_')[1]
+        host_name = host_name_tpl.replace('tpl', scen)
         self._host_info.update({"host_name": host_name})
 
         host_pass = self._get_host_pass()
@@ -255,7 +254,7 @@ class CheckVdsm(CheckYoo):
             if self._vlanid:
                 self._update_network_vlan_tag()
 
-            if self._scen == "vlani":
+            if re.search("vlani", self.ksfile):
                 # Change the default ovitgmgmt name
                 mgmt_name = "atvmgmt"
                 self._update_network_name(mgmt_name)
@@ -302,8 +301,9 @@ class CheckVdsm(CheckYoo):
         return True
 
     def _get_sd_info(self):
-        sd_name = sd_name_tpl.replace('tpl', self._scen)
-        isd_name = isd_name_tpl.replace('tpl', self._scen)
+        scen = self.ksfile.split('_')[1]
+        sd_name = sd_name_tpl.replace('tpl', scen)
+        isd_name = isd_name_tpl.replace('tpl', scen)
         self._sd_info.update({"sd_name": sd_name})
         self._sd_info.update({"isd_name": isd_name})
         if re.search("local", self.ksfile):
@@ -891,7 +891,8 @@ GATEWAY="{gateway}"\
             raise RuntimeError(ret[1])
 
     def _get_vm_info(self):
-        vm_name = vm_name_tpl.replace('tpl', self._scen)
+        scen = self.ksfile.split('_')[1]
+        vm_name = vm_name_tpl.replace('tpl', scen)
         self._vm_info.update({"vm_name": vm_name})
 
     def _create_vm(self):
@@ -903,7 +904,8 @@ GATEWAY="{gateway}"\
         time.sleep(30)
 
     def _get_disk_info(self):
-        main_disk_name = disk_name_tpl.replace('tpl', self._scen)
+        scen = self.ksfile.split('_')[1]
+        main_disk_name = disk_name_tpl.replace('tpl', scen)
         main_disk_type = self._sd_info["storage_type"]
         self._disk_info.update({"main_disk":
                                     {"disk_name": main_disk_name,
@@ -913,7 +915,7 @@ GATEWAY="{gateway}"\
             disk_size = "30589934592"
             self._disk_info["main_disk"].update({"disk_size": disk_size})
         else:
-            second_disk_name = second_disk_name_tpl.replace('tpl', self._scen)
+            second_disk_name = second_disk_name_tpl.replace('tpl', scen)
             second_disk_type = self._sd_info["storage_type"]
             self._disk_info.update({"second_disk":
                                         {"disk_name": second_disk_name,
@@ -1132,7 +1134,6 @@ GATEWAY="{gateway}"\
     #################################################
     def _setup_before_check(self):
         log.info("Setup before check...")
-        self._get_test_scen()
 
         try:
             self._get_rhvm()
@@ -1154,7 +1155,6 @@ GATEWAY="{gateway}"\
     def _teardown_after_check(self):
         log.info("Teardown after check...")
         try:
-            scen = self._scen
             dc_name = self._dc_info.get("dc_name", None)
             cluster_name = self._cluster_info.get("cluster_name", None)
             host_name = self._host_info.get("host_name", None)
@@ -1164,7 +1164,7 @@ GATEWAY="{gateway}"\
                 log.info("Removing vm %s..." % vm_name)
                 self._rhvm.remove_vm(vm_name)
 
-            if scen == "local":
+            if re.search("local", self.ksfile):
                 if host_name and self._rhvm.list_host(host_name):
                     log.info("Maintenance host...")
                     self._rhvm.deactive_host(host_name)
