@@ -74,18 +74,18 @@ class KickStartFiles(object):
             os.system("sed '/liveimg --url=/ c\{}' {} > {}".format(
                 new_live_img, ks_, ks_out))
 
-            if 'cockpit' not in ks:
+            if 'atv_bonda' not in ks:
                 post_script = self._generate_ks_script(
                     POST_SCRIPT_01.format(nic_name) + bkr_name,
                     error_on_fail=False)
             else:
                 post_script = self._generate_ks_script(
-                    POST_SCRIPT_02.format(nic_name) +
-                    "{}/cockpit".format(bkr_name),
-                    error_on_fail=False)
+                    POST_SCRIPT_02 + bkr_name, error_on_fail=False)
 
             pre_script = self._generate_ks_script(
-                PRE_SCRIPT_01 + PRE_SCRIPT_02, script_type=KS_SCRIPT_PRE, error_on_fail=False)
+                PRE_SCRIPT_01 + PRE_SCRIPT_02,
+                script_type=KS_SCRIPT_PRE,
+                error_on_fail=False)
 
             with open(ks_out, "a") as fp:
                 fp.write(pre_script.__str__())
