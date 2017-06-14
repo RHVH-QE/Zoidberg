@@ -140,7 +140,7 @@ class ResultsToPolarion(object):
     def _gen_results_jfile(self):
         root_path = self.path
 
-        final_results = {}
+        final_results = OrderedDict()
         final_results[self.source_build] = OrderedDict()
         actual_run_cases = []
         pass_num = 0
