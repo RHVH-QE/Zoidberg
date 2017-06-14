@@ -209,12 +209,6 @@ def get_last_result():
         }
     }
     log_path = os.path.dirname(results_logs.current_log_path)
-    try:
-        ResultsToPolarion(log_path, '-l').run()
-    except IOError as e:
-        print(e)
-        return jsonify(ret_none)
-
     result_file = os.path.join(log_path, 'final_results.json')
 
     if not os.path.exists(result_file):
