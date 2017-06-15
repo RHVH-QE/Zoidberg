@@ -83,7 +83,7 @@ class CleanDisks(object):
                 output = commands.getstatusoutput(cmd)[1]
                 print "%s\n%s" % (cmd, output)
 
-    def _dd_disks(self, flag="all"):
+    def _dd_disks(self, clear_part_flag=True):
         self._get_sfdisk()
         self._get_lsblk()
 
@@ -91,16 +91,15 @@ class CleanDisks(object):
             dev, typ = part.split()
             if dev in self._sfdisk:
                 if typ in ["disk", "mpath"]:
-                    if flag in ["mbr", "all"]:
-                        self._zero_mbr(dev)
+                    self._zero_mbr(dev)
                 else:
-                    if flag in ["part", "all"]:
+                    if clear_part_flag:
                         self._clear_part(dev)
 
     def clean_in_pre(self):
         self._remove_vgs()
         self._remove_pvs()
-        self._dd_disks(flag="mbr")
+        self._dd_disks(clear_part_flag=False)
 
     def clean_in_post(self):
         self._dd_disks()

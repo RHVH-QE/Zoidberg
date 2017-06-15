@@ -283,7 +283,7 @@ class CheckUpgrade(CheckYoo):
         ]
         diff = list(set(new_findmnt) - set(old_findmnt))
         new_ver = self._check_infos.get("new").get("imgbase_w").split()[
-            -1].replace("-", "--")
+            - 1].replace("-", "--")
 
         log.info("Check findmnt:\n  diff=%s", diff)
 
@@ -669,23 +669,18 @@ class CheckUpgrade(CheckYoo):
         if not is_vlan:
             self._host_ip = self.host_string
         else:
-            # get vlan device name:
-            cmd = "ls /etc/sysconfig/network-scripts | egrep 'ifcfg-.*\.' | awk -F '-' '{print $2}'"
-            ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
-            if not ret[0]:
-                return
-            vlan_device = ret[1]
-
-            # get ip addr:
-            cmd = "ip -f inet addr show {} | " \
-                  "grep inet | awk '{{print $2}}' | awk -F'/' '{{print $1}}'".format(vlan_device)
+            cmd = "ip -f inet addr show | grep 'inet 192' | awk '{print $2}'| awk -F '/' '{print $1}'"
             ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
             if not ret[0]:
                 return
             self._host_ip = ret[1]
 
             # get vlan id:
-            self._host_vlanid = vlan_device.split('.')[-1]
+            cmd = "grep VLAN_ID /etc/sysconfig/network-scripts/* | awk -F ':' '{print $2}' |awk -F '=' '{print $2}'"
+            ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+            if not ret[0]:
+                return
+            self._host_vlanid = ret[1]
 
         log.info("Get host ip finished.")
 
