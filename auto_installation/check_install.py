@@ -47,7 +47,7 @@ class CheckInstall(CheckYoo):
         patterns = []
         for key, value in device_data_map.items():
             if key.isupper():
-                patterns.append(re.compile(r'^{}="?{}"?$'.format(key, value)))
+                patterns.append(r'^{}="?{}"?$'.format(key, value))
 
         ifcfg_file = "/etc/sysconfig/network-scripts/ifcfg-{}".format(
             device_data_map.get('DEVICE'))
@@ -60,22 +60,22 @@ class CheckInstall(CheckYoo):
         for nic in nics:
             if expected_result == 'yes':
                 patterns.append(
-                    re.compile(r'^{}:(connected|connecting)'.format(nic)))
+                    r'^{}:(connected|connecting)'.format(nic))
             else:
-                patterns.append(re.compile(r'^{}:disconnected$'.format(nic)))
+                patterns.append(r'^{}:disconnected$'.format(nic))
 
         cmd = 'nmcli -t -f DEVICE,STATE dev'
 
         return self.match_strs_in_cmd_output(cmd, patterns, timeout=300)
 
     def _check_device_ipv4_address(self, nic, ipv4):
-        patterns = [re.compile(r'^inet\s+{}'.format(ipv4))]
+        patterns = [r'^inet\s+{}'.format(ipv4)]
         cmd = 'ip -f inet addr show {}'.format(nic)
 
         return self.match_strs_in_cmd_output(cmd, patterns, timeout=300)
 
     def _check_device_ipv6_address(self, nic, ipv6):
-        patterns = [re.compile(r'^inet6\s+{}'.format(ipv6))]
+        patterns = [r'^inet6\s+{}'.format(ipv6)]
         cmd = 'ip -f inet6 addr show {}'.format(nic)
 
         return self.match_strs_in_cmd_output(cmd, patterns, timeout=300)
@@ -84,10 +84,10 @@ class CheckInstall(CheckYoo):
         patterns = []
         for slave in slaves:
             if expected_result == 'yes':
-                patterns.append(re.compile(r'^Slave.*{}$'.format(slave)))
+                patterns.append(r'^Slave.*{}$'.format(slave))
             else:
                 patterns.append(
-                    re.compile(r'^((?!Slave.*{}).)*$'.format(slave)))
+                    r'^((?!Slave.*{}).)*$'.format(slave))
 
         cmd = 'cat /proc/net/bonding/{}'.format(bond)
 
@@ -143,15 +143,13 @@ class CheckInstall(CheckYoo):
             if part.get('lvm'):
                 name = part.get('name')
                 if key == '/':
-                    pattern = re.compile(
-                        r'^{}-rhvh.*{}.*{}'.format(lvpre, fstype, key))
+                    pattern = r'^{}-rhvh.*{}.*{}'.format(lvpre, fstype, key)
                 else:
-                    pattern = re.compile(r'^{}-{}.*{}.*{}'.format(
-                        lvpre, name.replace('-', '--'), fstype, key))
+                    pattern = r'^{}-{}.*{}.*{}'.format(
+                        lvpre, name.replace('-', '--'), fstype, key)
             else:
                 part_device = part.get('device_alias')
-                pattern = re.compile(
-                    r'^{}.*{}.*{}'.format(part_device, fstype, key))
+                pattern = r'^{}.*{}.*{}'.format(part_device, fstype, key)
 
             df_patterns.append(pattern)
 
@@ -244,7 +242,7 @@ class CheckInstall(CheckYoo):
         return True
 
     def install_check(self):
-        patterns = [re.compile(r'^Status: OK')]
+        patterns = [r'^Status: OK']
         return self.match_strs_in_cmd_output(
             'nodectl check', patterns, timeout=300)
 
@@ -423,5 +421,5 @@ if __name__ == '__main__':
     ck.host_string, ck.host_user, ck.host_pass = ('10.66.148.9', 'root',
                                                    'redhat')
     ck.beaker_name = DELL_PET105_01
-    ck.ksfile = 'ati_local_01.ks'
+    ck.ksfile = 'ati_local_02.ks'
     print ck.go_check()

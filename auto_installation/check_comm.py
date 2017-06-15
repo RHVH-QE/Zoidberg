@@ -157,7 +157,7 @@ class CheckYoo(object):
             lines = newret.split('\r\n')
             for p in patterns:
                 for line in lines:
-                    if p.search(line.strip()):
+                    if re.search(p, line.strip()):
                         break
                 else:
                     log.error("can not match pattern %s in %s", p, cmd)

@@ -142,12 +142,12 @@ class JobRunner(object):
                         elif ks.find("atu") == 0:
                             self.test_flag = "upgrade"
                             ck = CheckUpgrade()
-                            ck.source_build = self.build_url.split('/')[-1].split('.x86_64.')[0]
+                            ck.source_build = self.build_url.split('/')[-2]
                             ck.target_build = self.target_build
                         elif ks.find("atv") == 0:
                             self.test_flag = "vdsm"
                             ck = CheckVdsm()
-                            ck.build = self.build_url.split('/')[-1].split('.x86_64.')[0]
+                            ck.build = self.build_url.split('/')[-2]
                         else:
                             log.error("ks file name %s isn't started with ati/atu/atv.", ks)
                             continue
