@@ -10,6 +10,7 @@ from flask import Flask, request, redirect, abort, jsonify
 from flask_cors import CORS
 
 from .utils import init_redis, setup_funcs, get_lastline_of_file
+from .util_result_index import walk_the_logs
 from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL, CB_PROFILE, HOSTS, TEST_LEVEL, PROJECT_ROOT
 from .jobs import job_runner
 from .cobbler import Cobbler
@@ -275,6 +276,11 @@ def git_branchs():
     ret = ret.split('\n')
     ret = map(lambda x: x.strip(), ret)
     return jsonify(ret[:-1])
+
+
+@app.route('/api/v1/logs/summary', methods=['GET'])
+def logs_summary():
+    return jsonify(walk_the_logs())
 
 
 if __name__ == '__main__':
