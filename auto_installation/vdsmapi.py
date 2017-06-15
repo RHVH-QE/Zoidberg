@@ -415,6 +415,22 @@ class RhevmAction:
         else:
             return
 
+    def remove_storage_domain(self, sd_name, host_name, destroy=True):
+        api_url_base = self.api_url.format(
+            rhevm_fqdn=self.rhevm_fqdn,
+            item="storagedomains")
+
+        sd_id = self.list_storage_domain(sd_name)['id']
+        api_url = api_url_base + '/{}'.format(sd_id)
+
+        params = {'destroy': destroy, 'host': host_name}
+        r = self.req.delete(
+            api_url, headers=self.headers, verify=self.rhevm_cert, params=params)
+
+        if r.status_code != 200:
+            raise RuntimeError("Failed to remove storage domain "
+                               "%s as\n%s" % (sd_name, r.text))
+
     ##########################################
     # Network related functions
     # https://rhvm41-vlan50-1.lab.eng.pek2.redhat.com/ovirt-engine/apidoc/#services-network

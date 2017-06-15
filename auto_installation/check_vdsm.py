@@ -1158,34 +1158,30 @@ GATEWAY="{gateway}"\
             dc_name = self._dc_info.get("dc_name", None)
             cluster_name = self._cluster_info.get("cluster_name", None)
             host_name = self._host_info.get("host_name", None)
+            isd_name = self._sd_info.get("isd_name", None)
             vm_name = self._vm_info.get("vm_name", None)
 
             if vm_name and self._rhvm.list_vm(vm_name):
                 log.info("Removing vm %s..." % vm_name)
                 self._rhvm.remove_vm(vm_name)
 
-            if re.search("local", self.ksfile):
-                if host_name and self._rhvm.list_host(host_name):
-                    log.info("Maintenance host...")
-                    self._rhvm.deactive_host(host_name)
-                    time.sleep(60)
+            if host_name and self._rhvm.list_host(host_name):
+                log.info("Maintenance host...")
+                self._rhvm.deactive_host(host_name)
+                time.sleep(60)
 
-                if dc_name and self._rhvm.list_datacenter(dc_name):
-                    log.info("Force removing datacenter...")
-                    self._rhvm.remove_datacenter(dc_name, force=True)
+            if isd_name and self._rhvm.list_storage_domain(isd_name):
+                log.info("Removing iso domain...")
+                self._rhvm.remove_storage_domain(isd_name, host_name)
+                time.sleep(5)
 
-                if host_name and self._rhvm.list_host(host_name):
-                    log.info("Removing host...")
-                    self._rhvm.remove_host(host_name)
-            else:
-                if host_name and self._rhvm.list_host(host_name):
-                    log.info("Removing host...")
-                    self._rhvm.remove_host(host_name)
-                    time.sleep(60)
+            if dc_name and self._rhvm.list_datacenter(dc_name):
+                log.info("Force removing datacenter...")
+                self._rhvm.remove_datacenter(dc_name, force=True)
 
-                if dc_name and self._rhvm.list_datacenter(dc_name):
-                    log.info("Force removing datacenter...")
-                    self._rhvm.remove_datacenter(dc_name, force=True)
+            if host_name and self._rhvm.list_host(host_name):
+                log.info("Removing host...")
+                self._rhvm.remove_host(host_name)
 
             if cluster_name and self._rhvm.list_cluster(cluster_name):
                 log.info("Removing cluster...")
