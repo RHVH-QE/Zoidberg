@@ -676,7 +676,7 @@ class CheckUpgrade(CheckYoo):
             self._host_ip = ret[1]
 
             # get vlan id:
-            cmd = "grep VLAN_ID /etc/sysconfig/network-scripts/* | awk -F ':' '{print $2}' |awk -F '=' '{print $2}'"
+            cmd = """grep VLAN_ID /etc/sysconfig/network-scripts/* | awk -F '=' '{print $2}' | awk -F '"' '{print $2}'"""
             ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
             if not ret[0]:
                 return
@@ -1023,7 +1023,7 @@ if __name__ == '__main__':
     log = logging.getLogger('bender')
 
     ck = CheckUpgrade()
-    ck.host_string, ck.host_user, ck.host_pass = ('10.66.148.9', 'root',
+    ck.host_string, ck.host_user, ck.host_pass = ('10.73.75.35', 'root',
                                                   'redhat')
     ck.source_build = 'redhat-virtualization-host-4.1-20170421.0'
     ck.target_build = 'redhat-virtualization-host-4.1-20170522.0'
