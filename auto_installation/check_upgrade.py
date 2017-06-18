@@ -6,7 +6,7 @@ import re
 from fabric.network import disconnect_all
 from check_comm import CheckYoo
 from constants import KS_FILES_DIR, DELL_PET105_01, DELL_PER510_01
-from const_upgrade import RHVM_DATA_MAP, \
+from const_upgrade import CHECK_NEW_LVS, RHVM_DATA_MAP, \
     RHVH_UPDATE_RPM_NAME, RHVH_UPDATE_RPM_URL, \
     KERNEL_SPACE_RPM_URL, \
     FABRIC_TIMEOUT, YUM_UPDATE_TIMEOUT, YUM_INSTALL_TIMEOUT, \
@@ -209,7 +209,7 @@ class CheckUpgrade(CheckYoo):
         return True
 
     def _check_lv_new(self, old_lvs, new_lvs):
-        if not self._check_need_to_verify_new_lv:
+        if not CHECK_NEW_LVS:
             return True
 
         log.info("Check newly add lv...")
@@ -288,7 +288,7 @@ class CheckUpgrade(CheckYoo):
         log.info("Check findmnt:\n  diff=%s", diff)
 
         new_mnt = [new_ver]
-        if self._check_need_to_verify_new_lv:
+        if CHECK_NEW_LVS:
             new_mnt = new_mnt + ['/home', '/tmp', '/var/log', '/var/log/audit']
 
         for key in new_mnt:
@@ -437,10 +437,12 @@ class CheckUpgrade(CheckYoo):
             return False
         if not self._check_host_status_on_rhvm():
             return False
-        if not self._check_kernel_space_rpm():
-            return False
-        if not self._check_user_space_rpm():
-            return False
+
+        if "-4.0-" not in self.source_build:
+            if not self._check_kernel_space_rpm():
+                return False
+            if not self._check_user_space_rpm():
+                return False
 
         return True
 
@@ -477,9 +479,13 @@ class CheckUpgrade(CheckYoo):
         return True
 
     def knl_space_rpm_check(self):
+        if "-4.0-" in self.source_build:
+            raise RuntimeError("The source build is 4.0, no need to check kernel space rpm.")
         return self._check_kernel_space_rpm()
 
     def usr_space_rpm_check(self):
+        if "-4.0-" in self.source_build:
+            raise RuntimeError("The source build is 4.0, no need to check user space rpm.")
         return self._check_user_space_rpm()
 
     ##########################################
@@ -568,6 +574,9 @@ class CheckUpgrade(CheckYoo):
         return self._check_user_space_rpm()
 
     def _install_rpms(self):
+        if "-4.0-" in self.source_build:
+            return True
+
         log.info("Start to install rpms...")
         if not self._put_repo_to_host(repo_file="rhel73.repo"):
             return False

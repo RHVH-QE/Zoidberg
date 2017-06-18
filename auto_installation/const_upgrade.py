@@ -23,6 +23,8 @@ RHVM_DATA_MAP = {
     "4.1_rhvm_fqdn": "rhvm41-vdsm-auto.lab.eng.pek2.redhat.com",
 }
 
+CHECK_NEW_LVS = True
+
 RHVH_UPDATE_RPM_NAME = "redhat-virtualization-host-image-update-{}.el7_3.noarch.rpm"
 RHVH_UPDATE_RPM_URL = "http://10.66.10.22:8090/rhvhupgrade/updates/{}"
 
