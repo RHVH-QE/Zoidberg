@@ -5,6 +5,7 @@ import re
 class CleanDisks(object):
     '''
     '''
+
     def __init__(self):
         self._vg_list = None
         self._pv_list = None
@@ -84,17 +85,15 @@ class CleanDisks(object):
                 print "%s\n%s" % (cmd, output)
 
     def _dd_disks(self, clear_part_flag=True):
-        self._get_sfdisk()
         self._get_lsblk()
 
         for part in self._lsblk:
             dev, typ = part.split()
-            if dev in self._sfdisk:
-                if typ in ["disk", "mpath"]:
-                    self._zero_mbr(dev)
-                else:
-                    if clear_part_flag:
-                        self._clear_part(dev)
+            if typ in ["disk", "mpath"]:
+                self._zero_mbr(dev)
+            else:
+                if clear_part_flag:
+                    self._clear_part(dev)
 
     def clean_in_pre(self):
         self._remove_vgs()
@@ -103,6 +102,7 @@ class CleanDisks(object):
 
     def clean_in_post(self):
         self._dd_disks()
+
 
 if __name__ == '__main__':
     clean = CleanDisks()
