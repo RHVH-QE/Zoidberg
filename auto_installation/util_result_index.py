@@ -1,6 +1,7 @@
 import os
 import json
 from constants import PROJECT_ROOT
+from utils import init_redis
 
 LOGS_DIR = os.path.join(PROJECT_ROOT, 'logs') + '/'
 
@@ -30,5 +31,11 @@ def walk_the_logs():
     return summary
 
 
+def cache_logs_summary():
+    conn = init_redis()
+    logs = json.dumps(walk_the_logs())
+    conn.set("logs_summary", logs)
+
+
 if __name__ == "__main__":
-    pass
+    cache_logs_summary()

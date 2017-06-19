@@ -12,6 +12,7 @@ from .cobbler import Cobbler
 from .check_install import CheckInstall
 from .check_upgrade import CheckUpgrade
 from .check_vdsm import CheckVdsm
+from .util_result_index import cache_logs_summary
 from reports import ResultsToPolarion
 
 log = logging.getLogger("bender")
@@ -149,12 +150,15 @@ class JobRunner(object):
                             ck = CheckVdsm()
                             ck.build = self.build_url.split('/')[-2]
                         else:
-                            log.error("ks file name %s isn't started with ati/atu/atv.", ks)
+                            log.error(
+                                "ks file name %s isn't started with ati/atu/atv.",
+                                ks)
                             continue
 
                         log.info("ip is %s", ret)
-                        ck.host_string, ck.host_user, ck.host_pass = (
-                            ret, 'root', 'redhat')
+                        ck.host_string, ck.host_user, ck.host_pass = (ret,
+                                                                      'root',
+                                                                      'redhat')
                         ck.beaker_name = m
                         ck.ksfile = ks
 
@@ -167,6 +171,7 @@ class JobRunner(object):
                         m, ret)
 
         self.generate_final_results()
+        cache_logs_summary()
         self.rd_conn.set("running", "0")
 
     def generate_final_results(self):
@@ -175,11 +180,14 @@ class JobRunner(object):
             build_name = self.results_logs.parse_img_url()
             if build_name not in log_path:
                 return
-            final_path = os.path.join(log_path.split(build_name)[0], build_name)
-            report = ResultsToPolarion(final_path, '-l', self.test_flag, self.target_build)
+            final_path = os.path.join(
+                log_path.split(build_name)[0], build_name)
+            report = ResultsToPolarion(final_path, '-l', self.test_flag,
+                                       self.target_build)
             report.run()
         except Exception as e:
             log.error(e)
+
 
 def job_runner(img_url, rd_conn, results_logs, target_build=None):
     ins = JobRunner(img_url, rd_conn, results_logs, target_build)

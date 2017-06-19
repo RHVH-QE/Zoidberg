@@ -10,7 +10,7 @@ from flask import Flask, request, redirect, abort, jsonify
 from flask_cors import CORS
 
 from .utils import init_redis, setup_funcs, get_lastline_of_file
-from .util_result_index import walk_the_logs
+from .util_result_index import cache_logs_summary
 from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL, CB_PROFILE, HOSTS, TEST_LEVEL, PROJECT_ROOT
 from .jobs import job_runner
 from .cobbler import Cobbler
@@ -280,7 +280,13 @@ def git_branchs():
 
 @app.route('/api/v1/logs/summary', methods=['GET'])
 def logs_summary():
-    return jsonify(walk_the_logs())
+    """_="""
+    res = rd_conn.get('logs_summary')
+    if not res:
+        print("no cache found, generate new cache")
+        cache_logs_summary()
+    res = json.loads(rd_conn.get('logs_summary'))
+    return jsonify(res)
 
 
 if __name__ == '__main__':
