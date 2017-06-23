@@ -474,6 +474,7 @@ class CheckUpgrade(CheckYoo):
         if not ret[0]:
             return False
         if ret[1].strip() != '0':
+            log.error("The result of signed check is %s, not 0", ret[1])
             return False
 
         return True
