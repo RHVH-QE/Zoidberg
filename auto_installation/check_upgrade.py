@@ -467,9 +467,9 @@ class CheckUpgrade(CheckYoo):
 
     def signed_check(self):
         cmd = "rpm -qa --qf '%{{name}}-%{{version}}-%{{release}}.%{{arch}} (%{{SIGPGP:pgpsig}})\n' | " \
-                "grep -v 'Key ID' | " \
-                "grep -v 'update-{}' | " \
-                "wc -l".format(self.target_build.split('-host-')[-1])
+            "grep -v 'Key ID' | " \
+            "grep -v 'update-{}' | " \
+            "wc -l".format(self.target_build.split('-host-')[-1])
         ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             return False
@@ -481,12 +481,14 @@ class CheckUpgrade(CheckYoo):
 
     def knl_space_rpm_check(self):
         if "-4.0-" in self.source_build:
-            raise RuntimeError("The source build is 4.0, no need to check kernel space rpm.")
+            raise RuntimeError(
+                "The source build is 4.0, no need to check kernel space rpm.")
         return self._check_kernel_space_rpm()
 
     def usr_space_rpm_check(self):
         if "-4.0-" in self.source_build:
-            raise RuntimeError("The source build is 4.0, no need to check user space rpm.")
+            raise RuntimeError(
+                "The source build is 4.0, no need to check user space rpm.")
         return self._check_user_space_rpm()
 
     ##########################################
@@ -547,7 +549,7 @@ class CheckUpgrade(CheckYoo):
                                               install_log)
         ret = self.run_cmd(cmd, timeout=600)
         if not ret[0]:
-            log.error("Install kernel space rpm %s failed, see log {}",
+            log.error("Install kernel space rpm %s failed, see log %s",
                       self._kernel_space_rpm, install_log)
         log.info("Install kernel space rpm %s succeeded.",
                  self._kernel_space_rpm)
