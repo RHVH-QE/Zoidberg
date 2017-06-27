@@ -45,14 +45,14 @@ class CheckVdsm(CheckYoo):
     def build(self, val):
         self._build = val
 
-    def action(text):
+    def checkpoint(text):
         def decorator(func):
             @functools.wraps(func)
-            def checkpoint(*args, **kw):
+            def ckp(*args, **kw):
                 log.info(text)
-                func(*args, **kw)
-                return func
-            return checkpoint
+                ret = func(*args, **kw)
+                return ret
+            return ckp
         return decorator
 
     ##########################################
@@ -1230,10 +1230,9 @@ GATEWAY="{gateway}"\
     def go_check(self):
         disconnect_all()
 
-        if not self._setup_before_check():
-            return {}
+        is_setup_success = self._setup_before_check()
 
-        cks = self.run_cases()
+        cks = self.run_cases() if is_setup_success else {}
 
         self._teardown_after_check()
 
