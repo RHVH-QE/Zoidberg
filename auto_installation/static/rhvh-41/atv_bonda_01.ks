@@ -30,7 +30,8 @@ text
 reboot
 
 ### Network ###
-network --device=bond0 --bootproto=dhcp --bondslaves=em1,em2 --bondopts=mode=active-backup,primary=em2,miimon=100
+network --device=em2 --bootproto=dhcp
+network --device=bond0 --bootproto=dhcp --bondslaves=p3p1,p3p2 --bondopts=mode=active-backup,primary=p3p1,miimon=100
 
 ### Partitioning ###
 ignoredisk --only-use=/dev/disk/by-id/scsi-360a9800050334c33424b41762d726954

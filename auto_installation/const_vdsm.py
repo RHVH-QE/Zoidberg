@@ -125,9 +125,9 @@ MACHINE_INFO = {
 
         # For test_bond/test_vlan/test_bv
         "bond": {"name": "bond0",
-                 "slaves": ["em2", "em1"],
-                 "em1": "08:9e:01:63:2c:b2",
-                 "em2": "08:9e:01:63:2c:b3"},
+                 "slaves": ["p3p1", "p3p2"],
+                 "p3p1": "00:1b:21:a6:3d:7a",
+                 "p3p2": "00:1b:21:a6:3d:7b"},
 
         "vlan": {"id": "50",
                  "nics": ["p2p1", "p2p2"],
@@ -161,112 +161,5 @@ MACHINE_INFO = {
                 "36005076300810b3e0000000000000024",
                 "36005076300810b3e0000000000000270"]
         }
-    },
-
-    "hp-dl385g8-03.lab.eng.pek2.redhat.com": {
-        "ip": "10.73.73.35",
-        "password": "redhat",
-        "primary_nic": "eno1",
-
-        # For test_local
-        "local": {"data_path": "/home/data"},
-
-        # For test_fc
-        "fc": {
-            "boot_lun": ["36005076300810b3e0000000000000267"],
-            "avl_luns": ["36005076300810b3e0000000000000268", "36005076300810b3e0000000000000269"]
-        }
-    },
-
-    "hp-dl385g8-11.lab.eng.pek2.redhat.com": {
-        "ip": "10.73.73.15",
-        "password": "redhat",
-        "primary_nic": "eno1",
-
-        # For test_local
-        "local": {"data_path": "/home/data"},
-
-        # For test_fc
-        "fc": {
-            "boot_lun": ["36005076300810b3e0000000000000025"],
-            "avl_luns": ["36005076300810b3e0000000000000026", "36005076300810b3e0000000000000027"]
-        }
-    },
-
-    "ibm-x3650m5-04.lab.eng.pek2.redhat.com": {
-        "ip": "10.73.130.225",
-        "password": "redhat",
-        "primary_nic": "eno1",
-
-        # For test_local
-        "local": {"data_path": "/home/data"},
-
-        # For test_bond/test_vlan/test_bv
-        "bond": {"name": "bond0",
-                 "slaves": ["eno1", "eno2"],
-                 "eno1": "08:94:ef:21:c0:4d",
-                 "eno2": "08:94:ef:21:c0:4e"},
-        "vlan": {"id": "50",
-                 "nics": ["eno3", "eno4"],
-                 "eno3": "08:94:ef:21:c0:4f",
-                 "eno4": "08:94:ef:21:c0:50"},
-
-        "bv": {"bond_name": "bond1",
-               "vlan_id": "50",
-               "slaves": ["eno3", "eno4"],
-               "eno3": "08:94:ef:21:c0:4f",
-               "eno4": "08:94:ef:21:c0:50"}
-    },
-
-    "dell-per730-35.lab.eng.pek2.redhat.com": {
-        "ip": "10.73.131.65",
-        "password": "redhat",
-        "primary_nic": "em1",
-
-        # For test_local
-        "local": {"data_path": "/home/data"},
-
-        # For test_bond/test_vlan/test_bv
-        "bond": {"name": "bond0",
-                 "slaves": ["em1", "em2"],
-                 "em1": "24:6e:96:19:b9:a4",
-                 "em2": "24:6e:96:19:b9:a5"},
-
-        "vlan": {"id": "50",
-                 "nics": ["p7p1", "p7p2"],
-                 "p7p1": "a0:36:9f:9d:3b:fe",
-                 "p7p2": "a0:36:9f:9d:3b:ff"},
-
-        "bv": {"bond_name": "bond1",
-               "vlan_id": "50",
-               "slaves": ["eno3", "eno4"],
-               "eno3": "08:94:ef:21:c0:4f",
-               "eno4": "08:94:ef:21:c0:50"}
-    },
-
-    "dell-per730-34.lab.eng.pek2.redhat.com": {
-        "ip": "",
-        "password": "redhat",
-        "primary_nic": "em1",
-
-        # For test_local
-        "local": {"data_path": "/home/data"},
-
-        # For test_bond/test_vlan/test_bv
-        "bond": {"name": "bond0",
-                 "slaves": ["em1", "em2"],
-                 "em1": "24:6e:96:19:bb:70",
-                 "em2": "24:6e:96:19:bb:71"},
-
-        "vlan": {"id": "50",
-                 "nics": ["em3", "em4"],
-                 "em3": "24:6e:96:19:bb:72",
-                 "em4": "24:6e:96:19:bb:73"},
-
-        "bv": {"bond_name": "bond1",
-               "vlan_id": "50",
-               "slaves": ["em3", "em4"],
-               "em3": "24:6e:96:19:bb:72",
-               "em4": "24:6e:96:19:bb:73"}
     }
 }
