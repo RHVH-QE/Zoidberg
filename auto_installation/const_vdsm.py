@@ -71,7 +71,7 @@ VDSM_TIER_TESTCASE_MAP = {  # sequential cases for each scenario
     "RHEVM-18115": ('atv_scsi_01.ks', DELL_PER515_01, 'cs1_create_scsi_sd_check'),
     "RHEVM-18132": ('atv_scsi_01.ks', DELL_PER515_01, 'cv1_create_vm_with_disk_check'),
     "RHEVM-18119": ('atv_bvi_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
-    "RHEVM-18156": ('atv_bonda_01.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
+    "RHEVM-18156": ('atv_bonda_02.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
     "RHEVM-18160": ('atv_vlana_02.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
     "RHEVM-18157": ('atv_bva_02.ks', DELL_PER515_01, 'ca0_create_new_host_check'),
     "RHEVM-invalid2": ('atv_fc_01.ks', DELL_PER510_01, 'ca0_create_new_host_check'),  # must install host before check
@@ -125,24 +125,22 @@ MACHINE_INFO = {
 
         # For test_bond/test_vlan/test_bv
         "bond": {"name": "bond0",
-                 "slaves": ["p3p1", "p3p2"],
-                 "p3p1": "00:1b:21:a6:3d:7a",
-                 "p3p2": "00:1b:21:a6:3d:7b"},
+                 "slaves": ["em1", "em2"],
+                 "em1": "08:9e:01:63:2c:b2",
+                 "em2": "08:9e:01:63:2c:b3"},
 
         "vlan": {"id": "50",
                  "nics": ["p2p1", "p2p2"],
                  "static_ip": "192.168.50.48",
                  "p2p1": "00:1b:21:a6:64:6c",
-                 "p2p2": "00:1b:21:a6:64:6d",
-                 "p3p1": "00:1b:21:a6:3d:7a"},
+                 "p2p2": "00:1b:21:a6:64:6d"},
 
         "bv": {"bond_name": "bond1",
                "vlan_id": "50",
                "slaves": ["p2p1", "p2p2"],
                "static_ip": "192.168.50.48",
                "p2p1": "00:1b:21:a6:64:6c",
-               "p2p2": "00:1b:21:a6:64:6d",
-               "p3p1": "00:1b:21:a6:3d:7a"}
+               "p2p2": "00:1b:21:a6:64:6d"}
     },
 
     "dell-per510-01.lab.eng.pek2.redhat.com": {
