@@ -6,6 +6,7 @@ from time import sleep
 
 log = logging.getLogger('bender')
 
+
 class RhevmAction:
     """a rhevm rest-client warpper class
    currently can registe a rhvh to rhevm
@@ -312,7 +313,7 @@ class RhevmAction:
             if r.status_code != 200:
                 raise RuntimeError("Failed to execute upgradecheck.")
 
-        count_max = 8
+        count_max = 13
         sleep_time = 300
         if rhvm_version == "rhvm41":
             count_max = 10
@@ -337,10 +338,12 @@ class RhevmAction:
             rhevm_fqdn=self.rhevm_fqdn, item="events")
 
         params = {'search': "event_host={}".format(host_name)}
-        r = self.req.get(api_url, headers=self.headers, verify=self.rhevm_cert, params=params)
+        r = self.req.get(api_url, headers=self.headers,
+                         verify=self.rhevm_cert, params=params)
 
         if r.status_code != 200:
-            log.error("Can not list events of host %s on %s" , host_name, self.rhevm_fqdn)
+            log.error("Can not list events of host %s on %s",
+                      host_name, self.rhevm_fqdn)
             return None
         else:
             return r.json()
@@ -371,7 +374,8 @@ class RhevmAction:
                     params={"async": "false"})
                 if r.status_code != 200:
                     log.error(r.text)
-                    raise RuntimeError("Failed to delete events of host %s" % host_name)
+                    raise RuntimeError(
+                        "Failed to delete events of host %s" % host_name)
         else:
             log.info("Host %s events doesn't exist, no need to delete.", host_name)
 
