@@ -42,7 +42,7 @@ part swap --fstype=swap --ondisk=/dev/disk/by-id/scsi-36005076300810b3e000000000
 part /data --fstype=xfs --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000022 --size=5000 --grow --maxsize=10000
 part pv.01 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000022 --size=1 --grow
 part pv.02 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000023 --size=1 --grow
-volgroup rhvh pv.01 pv.02
+volgroup rhvh pv.01 pv.02 --reserved-percent=5
 logvol none --name=pool --vgname=rhvh --thinpool --size=200000 --grow
 logvol / --fstype=ext4 --name=root --vgname=rhvh --thin --poolname=pool --size=100000 --grow
 logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --size=15360

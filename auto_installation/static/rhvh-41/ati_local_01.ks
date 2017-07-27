@@ -44,7 +44,7 @@ clearpart --all
 bootloader --location=mbr
 part /boot --fstype=ext4 --size=1024
 part pv.01 --size=20000 --grow
-volgroup rhvh pv.01
+volgroup rhvh pv.01 --reserved-percent=5
 logvol swap --fstype=swap --name=swap --vgname=rhvh --size=8000
 logvol none --name=pool --vgname=rhvh --thinpool --size=200000 --grow
 logvol / --fstype=ext4 --name=root --vgname=rhvh --thin --poolname=pool --size=130000

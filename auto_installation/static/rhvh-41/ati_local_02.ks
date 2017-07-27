@@ -27,7 +27,7 @@ text
 reboot
 
 ### Network ###
-network --device=enp2s0 --bootproto=dhcp --ipv6=2620:52:0:4294:222:19ff:fe27:54c7/64
+network --device=enp2s0 --bootproto=static --ip=10.66.148.9 --netmask=255.255.252.0 --gateway=10.66.151.254 --ipv6=2620:52:0:4294:222:19ff:fe27:54c7/64
 network --hostname=localtest.redhat.com
 
 ### Partitioning ###
@@ -68,6 +68,10 @@ checkdata_map['selinux'] = 'permissive'
 checkdata_map['network'] = {
     'static': {
         'DEVICE': 'enp2s0',
+        'BOOTPROTO': 'static',
+        'IPADDR': '10.66.148.9',
+        'NETMASK': '255.255.252.0',
+        'GATEWAY': '10.66.151.254',
         'IPV6ADDR': '2620:52:0:4294:222:19ff:fe27:54c7/64'
     }
 }
