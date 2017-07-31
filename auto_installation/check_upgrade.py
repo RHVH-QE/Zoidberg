@@ -7,7 +7,7 @@ from fabric.network import disconnect_all
 from check_comm import CheckYoo
 from constants import KS_FILES_DIR, DELL_PET105_01, DELL_PER510_01
 from const_upgrade import CHECK_NEW_LVS, RHVM_DATA_MAP, \
-    RHVH_UPDATE_RPM_NAME, RHVH_UPDATE_RPM_URL, \
+    RHVH_UPDATE_RPM_URL, \
     KERNEL_SPACE_RPM_URL, \
     FABRIC_TIMEOUT, YUM_UPDATE_TIMEOUT, YUM_INSTALL_TIMEOUT, \
     CHK_HOST_ON_RHVM_STAT_MAXCOUNT, CHK_HOST_ON_RHVM_STAT_INTERVAL, \
@@ -592,10 +592,30 @@ class CheckUpgrade(CheckYoo):
 
         return True
 
+    def _get_update_rpm_name_from_http(self):
+        ver = self.target_build.split("-host-")[-1]
+        update_rpm_name = None
+        try:
+            r = requests.get(RHVH_UPDATE_RPM_URL, verify=False)
+            if r.status_code == 200:
+                for line in r.text.split('\n'):
+                    if line.find(ver) >= 0:
+                        update_rpm_name = line.split('"')[1].strip()
+                        break
+            else:
+                log.error(r.text)
+        except Exception as e:
+            log.error(e)
+
+        return update_rpm_name
+
     def _fetch_update_rpm_to_host(self):
-        update_rpm_name = RHVH_UPDATE_RPM_NAME.format(
-            self.target_build.split("-host-")[-1])
-        url = RHVH_UPDATE_RPM_URL.format(update_rpm_name)
+        update_rpm_name = self._get_update_rpm_name_from_http()
+        if not update_rpm_name:
+            log.error("Can't get the update rpm name.")
+            return False
+
+        url = RHVH_UPDATE_RPM_URL + update_rpm_name
         self._update_rpm_path = '/root/' + update_rpm_name
 
         log.info("Fetch %s to %s", url, self._update_rpm_path)
