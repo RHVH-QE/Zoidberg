@@ -216,8 +216,8 @@ class CheckUpgrade(CheckYoo):
         new_lv = {
             "home": "1024.00m",
             "tmp": "2048.00m",
-            "var-log": "8192.00m",
-            "var-log-audit": "2048.00m"
+            "var_log": "8192.00m",
+            "var_log_audit": "2048.00m"
         }
         diff = list(set(new_lvs) - set(old_lvs))
 
