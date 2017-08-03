@@ -145,13 +145,13 @@ checkdata_map['partition'] = {
     },
     '/var/log': {
         'lvm': True,
-        'name': 'var-log',
+        'name': 'var_log',
         'fstype': 'ext4',
         'size': '8192'
     },
     '/var/log/audit': {
         'lvm': True,
-        'name': 'var-log-audit',
+        'name': 'var_log_audit',
         'fstype': 'ext4',
         'size': '2048'
     },
