@@ -222,8 +222,8 @@ class CheckUpgrade(CheckYoo):
         diff = list(set(new_lvs) - set(old_lvs))
 
         for k, v in new_lv.items():
-            in_old = [x for x in old_lvs if re.match(r'{}'.format(k), x)]
-            in_diff = [x for x in diff if re.match(r'{}'.format(k), x)]
+            in_old = [x for x in old_lvs if re.match(r'{} '.format(k), x)]
+            in_diff = [x for x in diff if re.match(r'{} '.format(k), x)]
             if in_old:
                 if in_diff:
                     log.error(
