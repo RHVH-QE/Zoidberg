@@ -159,7 +159,7 @@ checkdata_map['partition'] = {
         'lvm': True,
         'name': 'tmp',
         'fstype': 'ext4',
-        'size': '2048'
+        'size': '1024'
     }
 }
 
