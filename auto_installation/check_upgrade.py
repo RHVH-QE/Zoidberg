@@ -215,7 +215,7 @@ class CheckUpgrade(CheckYoo):
         log.info("Check newly add lv...")
         new_lv = {
             "home": "1024.00m",
-            "tmp": "2048.00m",
+            "tmp": "1024.00m",
             "var_log": "8192.00m",
             "var_log_audit": "2048.00m"
         }
@@ -318,7 +318,7 @@ class CheckUpgrade(CheckYoo):
         src_build_time = self.source_build.split('-')[-1].split('.')[0]
         tar_build_time = self.target_build.split('-')[-1].split('.')[0]
 
-        if src_build_time >= "20170609" or tar_build_time < "20170609":
+        if src_build_time > "20170616" or tar_build_time <= "20170616":
             log.info("No need to check newly added lv.")
             return False
 
