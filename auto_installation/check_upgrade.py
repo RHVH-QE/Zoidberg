@@ -31,7 +31,7 @@ class CheckUpgrade(CheckYoo):
         self._update_file_name = "/etc/my.cnf"
         self._update_file_content = "# test"
         self._kernel_space_rpm = None
-        self._user_space_rpm_check_results = None
+        self._user_space_rpms_set = None
         self._default_gateway = None
         self._default_nic = None
         self._rhvm = None
@@ -386,10 +386,12 @@ class CheckUpgrade(CheckYoo):
             return False
         log.info('The result of "%s" is %s', cmd, ret[1])
 
-        if not self._user_space_rpm_check_results:
-            self._user_space_rpm_check_results = ret[1]
+        user_space_rpms_set = set(ret[1].splitlines())
+
+        if not self._user_space_rpms_set:
+            self._user_space_rpms_set = user_space_rpms_set
         else:
-            if self._user_space_rpm_check_results != ret[1]:
+            if self._user_space_rpms_set ^ user_space_rpms_set:
                 log.error("User space rpm httpd is not persisted.")
                 return False
 
