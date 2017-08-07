@@ -18,8 +18,8 @@ host_name_tpl = "atv_tpl_host"
 sd_name_tpl = "atv_tpl_sd"
 isd_name_tpl = "atv_tpl_isd"
 vm_name_tpl = "atv_tpl_vm"
-disk_name_tpl = "atv_tpl_disk"
-second_disk_name_tpl = "atv_tpl_disk2"
+disk0_name_tpl = "atv_tpl_disk0"
+disk1_name_tpl = "atv_tpl_disk1"
 
 
 class CheckVdsm(CheckYoo):
@@ -905,23 +905,23 @@ GATEWAY="{gateway}"\
 
     def _get_disk_info(self):
         scen = self.ksfile.split('_')[1]
-        main_disk_name = disk_name_tpl.replace('tpl', scen)
-        main_disk_type = self._sd_info["storage_type"]
-        self._disk_info.update({"main_disk":
-                                    {"disk_name": main_disk_name,
-                                     "disk_type": main_disk_type}
+        disk0_name = disk0_name_tpl.replace('tpl', scen)
+        disk0_type = self._sd_info["storage_type"]
+        self._disk_info.update({"disk0":
+                                    {"disk_name": disk0_name,
+                                     "disk_type": disk0_type}
                                })
-        if main_disk_type == "localfs" or main_disk_type == "nfs":
+        if disk0_type == "localfs" or disk0_type == "nfs":
             disk_size = "30589934592"
             self._disk_info["main_disk"].update({"disk_size": disk_size})
         else:
-            second_disk_name = second_disk_name_tpl.replace('tpl', scen)
-            second_disk_type = self._sd_info["storage_type"]
-            self._disk_info.update({"second_disk":
-                                        {"disk_name": second_disk_name,
-                                         "disk_type": second_disk_type}
+            disk1_name = disk1_name_tpl.replace('tpl', scen)
+            disk1_type = self._sd_info["storage_type"]
+            self._disk_info.update({"disk1":
+                                        {"disk_name": disk1_name,
+                                         "disk_type": disk1_type}
                                     })
-            if main_disk_type == "fcp":
+            if disk0_type == "fcp":
                 lun_addr = ""
                 lun_port = ""
                 lun_target = ""
@@ -933,19 +933,19 @@ GATEWAY="{gateway}"\
                 lun_port = MACHINE_INFO[self.beaker_name]["scsi"]["lun_port"]
                 lun_target = MACHINE_INFO[self.beaker_name]["scsi"]["lun_target"]
                 second_lun_id = MACHINE_INFO[self.beaker_name]["scsi"]["avl_luns"][2]
-            self._disk_info["main_disk"].update({"lun_id": lun_id})
-            self._disk_info["main_disk"].update({"lun_addr": lun_addr})
-            self._disk_info["main_disk"].update({"lun_port": lun_port})
-            self._disk_info["main_disk"].update({"lun_target": lun_target})
-            self._disk_info["second_disk"].update({"lun_id": second_lun_id})
-            self._disk_info["second_disk"].update({"lun_addr": lun_addr})
-            self._disk_info["second_disk"].update({"lun_port": lun_port})
-            self._disk_info["second_disk"].update({"lun_target": lun_target})
+            self._disk_info["disk0"].update({"lun_id": lun_id})
+            self._disk_info["disk0"].update({"lun_addr": lun_addr})
+            self._disk_info["disk0"].update({"lun_port": lun_port})
+            self._disk_info["disk0"].update({"lun_target": lun_target})
+            self._disk_info["disk1"].update({"lun_id": second_lun_id})
+            self._disk_info["disk1"].update({"lun_addr": lun_addr})
+            self._disk_info["disk1"].update({"lun_port": lun_port})
+            self._disk_info["disk1"].update({"lun_target": lun_target})
 
     def _create_float_disk(self, flag):
         """
         Create a float disk for vm using
-        :param flag: "main_disk" or "second disk"
+        :param flag: "disk0" or "disk1"
         :return:
         """
         log.info("Creating a float disk for VM")
@@ -975,9 +975,10 @@ GATEWAY="{gateway}"\
 
     def _attach_disk_to_vm(self, flag):
         log.info("Attaching the float disk to VM")
+        bootable = True if flag == "disk0" else False
         vm_name = self._vm_info["vm_name"]
         disk_name = self._disk_info[flag]["disk_name"]
-        self._rhvm.attach_disk_to_vm(disk_name, vm_name)
+        self._rhvm.attach_disk_to_vm(disk_name, vm_name, bootable=bootable)
         time.sleep(30)
 
     ##########################################
@@ -990,10 +991,10 @@ GATEWAY="{gateway}"\
             self._create_vm()
 
             # Create the float disk
-            self._create_float_disk("main_disk")
+            self._create_float_disk("disk0")
 
             # Attach the disk to vm
-            self._attach_disk_to_vm("main_disk")
+            self._attach_disk_to_vm("disk0")
         except Exception as e:
             log.exception(e)
             return False
@@ -1006,10 +1007,10 @@ GATEWAY="{gateway}"\
         log.info("Checking the second disk can be added to vm...")
         try:
             # Create the float disk
-            self._create_float_disk("second_disk")
+            self._create_float_disk("disk1")
 
             # Attach the disk to vm
-            self._attach_disk_to_vm("second_disk")
+            self._attach_disk_to_vm("disk1")
         except Exception as e:
             log.exception(e)
             return False

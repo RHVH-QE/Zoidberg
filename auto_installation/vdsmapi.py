@@ -564,7 +564,7 @@ class RhevmAction:
             raise RuntimeError("Failed to create float lun disk "
                                "%s as\n%s" % (disk_name, r.text))
 
-    def attach_disk_to_vm(self, disk_name, vm_name):
+    def attach_disk_to_vm(self, disk_name, vm_name, bootable=False):
         api_url_base = self.api_url.format(
             rhevm_fqdn=self.rhevm_fqdn, item="vms")
 
@@ -575,14 +575,14 @@ class RhevmAction:
 
         attach_disk_post_body = '''
         <disk_attachment>
-          <bootable>true</bootable>
+          <bootable>{bootable}</bootable>
           <interface>ide</interface>
           <active>true</active>
           <disk id="{disk_id}"/>
         </disk_attachment>
         '''
 
-        body = attach_disk_post_body.format(disk_id=disk_id)
+        body = attach_disk_post_body.format(disk_id=disk_id, bootable=bootable)
 
         r = self.req.post(
             api_url,
