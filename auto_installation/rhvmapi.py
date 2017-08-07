@@ -393,14 +393,18 @@ class RhevmAction:
                                    host_name)
             # try to trigger upgrade
             api_url = api_url_base + '/%s' % host_id + '/upgrade'
-            r = self.req.post(
-                api_url,
-                headers=self.headers,
-                verify=self.rhevm_cert,
-                data="<action/>",
-                params={"async": "false"})
-
-            if r.status_code != 200:
+            count = 0
+            while (count < 3):
+                r = self.req.post(
+                    api_url,
+                    headers=self.headers,
+                    verify=self.rhevm_cert,
+                    data="<action/>",
+                    params={"async": "false"})
+                if r.status_code == 200:
+                    break
+                count = count + 1
+            else:
                 raise RuntimeError("Failed to execute upgrade on host %s" %
                                    host_name)
 
