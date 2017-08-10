@@ -35,7 +35,7 @@ class CheckVdsm(CheckYoo):
         self._sd_info = {}  # {"storage_type": "localfs", "data_path": "/home/data"}
         self._network_info = {}  # {"network_type": bond, "slaves": [nic1, nic2]}
         self._vm_info = {}  # {"vm_name": vm_name}
-        self._disk_info = {}  # {"main_disk": {"disk_name": main_disk_name, "disk_type": main_disk_type}}
+        self._disk_info = {}  # {"disk0": {"disk_name": disk0_name, "disk_type": disk0_type}}
 
     @property
     def build(self):
@@ -913,7 +913,7 @@ GATEWAY="{gateway}"\
                                })
         if disk0_type == "localfs" or disk0_type == "nfs":
             disk_size = "30589934592"
-            self._disk_info["main_disk"].update({"disk_size": disk_size})
+            self._disk_info["disk0"].update({"disk_size": disk_size})
         else:
             disk1_name = disk1_name_tpl.replace('tpl', scen)
             disk1_type = self._sd_info["storage_type"]
