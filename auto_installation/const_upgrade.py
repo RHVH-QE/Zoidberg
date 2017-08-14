@@ -9,7 +9,7 @@ UPGRADE_TIER1_TESTCASE_MAP = {
     "RHEVM-18082": ('atu_yum_update.ks', DELL_PET105_01, 'basic_upgrade_check'),
     "RHEVM-18093": ('atu_yum_update.ks', DELL_PET105_01, 'cmds_check'),
     "RHEVM-18104": ('atu_yum_update.ks', DELL_PET105_01, 'signed_check'),
-    "RHEVM-18211": ('atu_yum_update.ks', DELL_PET105_01, 'knl_space_rpm_check'),
+    #"RHEVM-18211": ('atu_yum_update.ks', DELL_PET105_01, 'knl_space_rpm_check'),
     "RHEVM-18212": ('atu_yum_update.ks', DELL_PET105_01, 'usr_space_rpm_check'),
     "RHEVM-21647": ('atu_yum_update.ks', DELL_PET105_01, 'cmds_check'),
     "RHEVM-18069": ('atu_yum_install.ks', DELL_PER510_01, 'basic_upgrade_check'),

@@ -441,8 +441,11 @@ class CheckUpgrade(CheckYoo):
             return False
 
         if "-4.0-" not in self.source_build:
+            '''
+            # incompatible with 7.4, just cancel
             if not self._check_kernel_space_rpm():
                 return False
+            '''
             if not self._check_user_space_rpm():
                 return False
 
@@ -585,8 +588,11 @@ class CheckUpgrade(CheckYoo):
         log.info("Start to install rpms...")
         if not self._put_repo_to_host(repo_file="rhel73.repo"):
             return False
+        '''
+        # the kernel rpm is incompatible with 7.4, just cancel the case
         if not self._install_kernel_space_rpm_via_repo():
             return False
+        '''
         if not self._install_user_space_rpm():
             return False
         if not self._del_repo_on_host(repo_file="rhel73.repo"):
