@@ -27,8 +27,9 @@ ANACONDA_TIER2_TESTCASE_MAP = {
     'RHEVM-17808': ('ati_local_01.ks', DELL_PET105_01, 'kdump_check'),
     'RHEVM-17811': ('ati_local_01.ks', DELL_PET105_01, 'users_check'),
     'RHEVM-18210': ('ati_local_01.ks', DELL_PET105_01, 'layout_init_check'),
+    'RHEVM-17823': ('ati_local_01.ks', DELL_PET105_01, 'fips_check'),
     'RHEVM-17804': ('ati_local_02.ks', DELL_PET105_01, 'keyboard_check'),
-    'RHEVM-17823': ('ati_local_02.ks', DELL_PET105_01, 'fips_check'),
+    #'RHEVM-17823': ('ati_local_02.ks', DELL_PET105_01, 'fips_check'),
     'RHEVM-17818': ('ati_fc_04.ks', DELL_PER510_01, 'install_check'),
     'RHEVM-17819': ('ati_fc_04.ks', DELL_PER510_01, 'install_check'),
     'RHEVM-17824': ('ati_fc_04.ks', DELL_PER510_01, 'iqn_check'),
@@ -76,4 +77,4 @@ KS_TIER2_TESTCASE_MAP = {
 
 KS_PRESSURE_MAP = {'ati_fc_04.ks': '3'}
 
-KS_KERPARAMS_MAP = {'ati_local_02.ks': 'fips=1'}
+KS_KERPARAMS_MAP = {'ati_local_01.ks': 'fips=1'}

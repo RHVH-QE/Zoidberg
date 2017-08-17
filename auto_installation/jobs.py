@@ -6,7 +6,7 @@ import subprocess
 import os
 from .kickstarts import KickStartFiles
 from .beaker import Beaker, inst_watcher
-from .constants import CURRENT_IP_PORT, ARGS_TPL, HOSTS, CB_PROFILE
+from .constants import CURRENT_IP_PORT, ARGS_TPL, HOSTS, CB_PROFILE, COVERAGE_TEST
 from .const_install import KS_KERPARAMS_MAP
 from .cobbler import Cobbler
 from .check_install import CheckInstall
@@ -14,6 +14,7 @@ from .check_upgrade import CheckUpgrade
 from .check_vdsm import CheckVdsm
 from .util_result_index import cache_logs_summary
 from reports import ResultsToPolarion
+from coverage_stat import upload_coverage_raw_res_from_host, generate_final_coverage_result
 
 log = logging.getLogger("bender")
 
@@ -164,13 +165,20 @@ class JobRunner(object):
 
                         log.info(ck.go_check())
 
-                        # TODO wati for cockpit new results format
+                        if ks.find("ati") == 0 and COVERAGE_TEST:
+                            upload_coverage_raw_res_from_host(ck)
+
+                            # TODO wati for cockpit new results format
                 else:
                     log.error(
                         "provisioning on host %s failed with return code %s",
                         m, ret)
 
         self.generate_final_results()
+
+        if ks.find("ati") == 0 and COVERAGE_TEST:
+            generate_final_coverage_result(ck, self.build_url.split('/')[-2])
+
         cache_logs_summary()
         self.rd_conn.set("running", "0")
 

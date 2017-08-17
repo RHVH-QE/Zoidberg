@@ -59,6 +59,19 @@ fp.close()
 ES
 }
 
-imgbase layout --init
+coverage_check(){
+cd /tmp
+curl -o coveragepy-master.zip http://10.73.73.23:7788/coveragepy-master.zip
+unzip coveragepy-master.zip
+cd coveragepy-master
+python setup.py install
+cd /usr/lib/python2.7/site-packages/
+coverage run -p -m --branch --source=imgbased imgbased layout --init
+mkdir /boot/coverage
+cp .coverage* /boot/coverage
+}
+
+coverage_check
+#imgbase layout --init
 compose_check_data
 %end
