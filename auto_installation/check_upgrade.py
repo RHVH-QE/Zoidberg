@@ -111,13 +111,16 @@ class CheckUpgrade(CheckYoo):
 
         log.info("Check imgbase w:\n  old_imgbase_w=%s\n  new_imgbase_w=%s",
                  old_ver, new_ver)
-
+        # The ver number in `imgbase w` sometimes is different from the one in the build name
+        # So, do not check whether the ver number is in the build name.
+        '''
         if old_ver not in self.source_build:
             log.error("The old rhvh build is not the desired one.")
             return False
         if new_ver not in self.target_build:
             log.error("The new rhvh build is not the desired one.")
             return False
+        '''
         if new_ver <= old_ver:
             log.error(
                 "The new rhvh build version is not newer than the old one.")
