@@ -7,12 +7,12 @@ import subprocess as sp
 from constants import PROJECT_ROOT, \
     TEST_LEVEL, \
     ANACONDA_TIER1, ANACONDA_TIER2, KS_TIER1, KS_TIER2, \
-    UPGRADE_TIER1, VDSM_TIER, \
+    UPGRADE_TIER1, UPGRADE_TIER2, VDSM_TIER, \
     DEBUG_TIER, DEBUG_TIER_TESTCASE_MAP
 from const_install import ANACONDA_TIER1_TESTCASE_MAP, ANACONDA_TIER2_TESTCASE_MAP, \
     KS_TIER1_TESTCASE_MAP, KS_TIER2_TESTCASE_MAP, \
     KS_PRESSURE_MAP
-from const_upgrade import UPGRADE_TIER1_TESTCASE_MAP
+from const_upgrade import UPGRADE_TIER1_TESTCASE_MAP, UPGRADE_TIER2_TESTCASE_MAP
 from const_vdsm import VDSM_TIER_TESTCASE_MAP
 
 log = logging.getLogger('bender')
@@ -152,6 +152,8 @@ def get_testcase_map():
         testcase_map.update(DEBUG_TIER_TESTCASE_MAP)
     if TEST_LEVEL & UPGRADE_TIER1:
         testcase_map.update(UPGRADE_TIER1_TESTCASE_MAP)
+    if TEST_LEVEL & UPGRADE_TIER2:
+        testcase_map.update(UPGRADE_TIER2_TESTCASE_MAP)
     if TEST_LEVEL & VDSM_TIER:
         testcase_map.update(VDSM_TIER_TESTCASE_MAP)
 

@@ -298,20 +298,21 @@ class RhevmAction:
     def _update_available_check(self, host_id):
         rhvm_version = self.rhevm_fqdn.split('-')[0]
 
-        if rhvm_version == "rhvm41":
-            api_url_base = self.api_url.format(
-                rhevm_fqdn=self.rhevm_fqdn, item="hosts")
-            api_url = api_url_base + '/%s' % host_id + '/upgradecheck'
-
-            r = self.req.post(
-                api_url,
-                data="<action/>",
-                headers=self.headers,
-                verify=self.rhevm_cert,
-                params={"async": "false"})
-
-            if r.status_code != 200:
-                raise RuntimeError("Failed to execute upgradecheck.")
+        # if rhvm_version == "rhvm41":
+        #     api_url_base = self.api_url.format(
+        #         rhevm_fqdn=self.rhevm_fqdn, item="hosts")
+        #     api_url = api_url_base + '/%s' % host_id + '/upgradecheck'
+        #
+        #     r = self.req.post(
+        #         api_url,
+        #         data="<action/>",
+        #         headers=self.headers,
+        #         verify=self.rhevm_cert,
+        #         params={"async": "false"})
+        #
+        #     if r.status_code != 200:
+        #         log.info("r.status_code is %d", r.status_code)
+        #         raise RuntimeError("Failed to execute upgradecheck.")
 
         count_max = 13
         sleep_time = 300
@@ -422,6 +423,19 @@ class RhevmAction:
                 raise RuntimeError("Upgrade host %s failed." % host_name)
         else:
             raise RuntimeError("Can't find host with name %s" % host_name)
+
+    def check_update_available(self, host_name):
+        host = self.list_host(key="name", value=host_name)
+
+        if host:
+            host_id = host.get('id')
+
+            # check host update available
+            if not self._update_available_check(host_id):
+                return False
+            else:
+                return True
+
 
     ######################################
     # Storage related functions
