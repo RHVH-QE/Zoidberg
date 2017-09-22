@@ -2,7 +2,7 @@
 lang en_US.UTF-8
 
 ### Timezone ###
-timezone Asia/Shanghai
+timezone Asia/Shanghai --utc --ntpservers=clock02.util.phx2.redhat.com
 
 ### Keyboard ###
 keyboard --vckeymap=ge --xlayouts='ge'
