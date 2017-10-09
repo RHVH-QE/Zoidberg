@@ -85,10 +85,10 @@ RHVM_INFO = {
 # Info for NFS to be used in test_nfs
 #
 NFS_INFO = {
-    "ip": "10.66.8.173",
-    "password": "l1admin",
-    "data_path": ["/home/dguo/Public/vdsm/data"],
-    "iso_path": ["/home/dguo/Public/vdsm/iso"]
+    "ip": "10.66.148.11",
+    "password": "redhat",
+    "data_path": ["/home/jiawu/vdsm_auto/data"],
+    "iso_path": ["/home/jiawu/vdsm_auto/iso"]
 }
 
 #
