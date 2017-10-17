@@ -30,6 +30,8 @@ class CheckUpgrade(CheckYoo):
         self._add_file_content = "test"
         self._update_file_name = "/etc/my.cnf"
         self._update_file_content = "# test"
+        self._add_var_file_name = "/var/upgrade_test_var"
+        self._update_var_log_file_name = "/var/log/maillog"
         self._kernel_space_rpm = None
         self._user_space_rpms_set = None
         self._default_gateway = None
@@ -400,6 +402,233 @@ class CheckUpgrade(CheckYoo):
 
         return True
 
+    def _check_iptables_status(self):
+        log.info("Start to check iptables status.")
+
+        cmd = "systemctl status iptables | grep 'Active: active' --color=never"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check iptables status failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+
+        if "Active: active" in ret[1]:
+            log.info('iptables is active.')
+            return True
+        else:
+            log.info('iptables is not active.')
+            return False
+
+    def _check_firewalld_status(self):
+        log.info("Start to check firewalld status.")
+
+        cmd = "systemctl status firewalld | grep 'Active: active' --color=never"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        log.info('The result of "%s" is %s', cmd, ret[1])
+
+        if "Active: active" in ret[1]:
+            log.info('firewalld is active.')
+            return False
+        else:
+            log.info('firewalld is not active.')
+            return True
+
+    def _start_ntpd(self):
+        log.info("Start ntpd and enable ntpd...")
+        cmd = "systemctl start ntpd.service"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Start ntpd failed.")
+            return False
+        log.info("Start ntpd successful.")
+        ret01 = True
+
+        cmd = "systemctl enable ntpd.service"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Enable ntpd failed.")
+            return False
+        log.info("Enable ntpd successful.")
+        ret02 = True
+
+        return ret01 and ret02
+
+    def _check_ntpd_status(self):
+        log.info("Start to check ntpd status.")
+
+        cmd = "systemctl status ntpd | grep 'Active: active' --color=never"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        if "Active: active" not in ret[1]:
+            if not self._start_ntpd():
+                return False
+            ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+            log.info('The result of "%s" is %s', cmd, ret[1])
+            if "Active: active" not in ret01[1]:
+                log.info('ntpd is not active.')
+                ret_01 = False
+            else:
+                log.info('ntpd is active.')
+                ret_01 = True
+        else:
+            log.info('ntpd is active.')
+            ret_01 = True
+
+        cmd = "rpm -qa | egrep 'ntp-|chrony-' --color=never"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check rpm ntp and chrony failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        if "ntp-" in ret[1] and "chrony-" in ret[1]:
+            ret_02 = True
+        else:
+            ret_02 = False
+
+        return ret_01 and ret_02
+
+    def _check_sysstat(self):
+        log.info("Start to check sysstat collect data.")
+
+        cmd = "ls /var/log/sa"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check sysstat collect data failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+
+        if "No such file or directory" not in ret[1] and "sa" in ret[1]:
+            log.info('sysstat can collect data')
+            return True
+        else:
+            log.info('sysstat can not collect data')
+            return False
+
+    def _check_ovirt_imageio_daemon_status(self):
+        log.info("Start to check ovirt-imageio-daemon status.")
+
+        cmd = "systemctl status ovirt-imageio-daemon.service | grep 'Active: active' --color=never"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check ovirt-imageio-daemon status failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        if "Active: active" in ret[1]:
+            log.info('ovirt-imageio-daemon is active.')
+            ret01 = True
+        else:
+            log.info('ovirt-imageio-daemon is not active.')
+            ret01 = False
+
+        cmd = "ls -ld /var/log/ovirt-imageio-daemon/"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check ovirt-imageio-daemon owership failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        if "vdsm" in ret[1] and "kvm" in ret[1]:
+            ret02 = True
+        else:
+            ret02 = False
+
+        return ret01 and ret02
+
+    def _check_boot_dmesg_log(self):
+        log.info("Start to check /var/log/boot.log and /var/log/dmesg.")
+
+        cmd = "egrep -i 'error|fail' /var/log/boot.log --color=never"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        if ret[1].strip(' ') != '':
+            log.info('There are error or fail info in /var/log/boot.log')
+            ret01 = False
+        else:
+            ret01 = True
+
+        cmd = "egrep -i 'error|fail' /var/log/dmesg --color=never"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        if ret[1].strip(' ') != '':
+            log.info('There are error or fail info in /var/log/dmesg')
+            ret02 = False
+        else:
+            ret02 = True
+
+        return ret01 and ret02
+
+    def _check_separate_volumes(self):
+        log.info("Start to check /var /var/log /var/log/audit /tmp /home on separate volumes .")
+
+        cmd = "findmnt -D | egrep '/var|/var/log|/var/log/audit|/home|/tmp' --color=never"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check separate volumes failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+
+        volumes_num = len(ret[1].splitlines())
+        tar_build_time = self.target_build.split('-')[-1].split('.')[0]
+
+        # For the build after rhvh-4.1.2, there should be /var, /var/log, /var/log/audit, /tmp, /home
+        if tar_build_time >= "20170706":
+            if volumes_num == 5:
+                log.info('Check the %d special separate volumes right.', volumes_num)
+                return True
+            else:
+                log.info('Check the %d special separate volumes failed.', volumes_num)
+                return False
+        # For the build before rhvh-4.1.2, there should be only one /var
+        else:
+            if volumes_num == 1 and "/var" in ret[1]:
+                log.info('Check /var is separate volume.')
+                return True
+            else:
+                log.info('Check /var is not separate volume..')
+                return False
+
+    def _reinstall_rpms(self):
+        log.info("Start to reinstall rpms...")
+
+        if not self._put_repo_to_host(repo_file="rhel73.repo"):
+            return False
+        if not self._mv_rpm_packages_on_host(packages_path = "/var/rpms-bak", packages_bak_path = "/var/imgbased/persisted-rpms", packages_files="*"):
+            return False
+
+        if not self._install_user_space_rpm():
+            return False
+        # if not self._del_repo_on_host(repo_file="rhel73.repo"):
+        #     return False
+
+        return True
+
+    def _reinstall_rpms_check(self):
+        log.info("Start to check reinstall rpms...")
+
+        # There should be no user space rpm as initial after upgrade, due to moved packages and repo
+        if self._check_user_space_rpm():
+            log.error('There is user space rpm! Should be no user space rpm.')
+            return False
+        if not self._reinstall_rpms():
+            return False
+
+        if not self._check_user_space_rpm():
+            return False
+
+        return True
+
+
     def basic_upgrade_check(self):
         # To check imgbase w, imgbase layout, cockpit connection
         ck01 = self._check_imgbase_w()
@@ -499,6 +728,96 @@ class CheckUpgrade(CheckYoo):
                 "The source build is 4.0, no need to check user space rpm.")
         return self._check_user_space_rpm()
 
+    def avc_denied_check(self):
+        log.info("Start to check avc denied errors.")
+
+        cmd = "grep 'avc:  denied' /var/log/audit/audit.log"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check avc denied errors failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+
+        if ret[1].strip(' ') != '':
+            log.error("The result of avc denied check is %s, not null", ret[1])
+            return False
+
+        log.info("The result of '%s' is null", cmd)
+
+        return True
+
+    def iptables_status_check(self):
+        ck01 = self._check_iptables_status()
+        ck02 = self._check_firewalld_status()
+
+        return ck01 and ck02
+
+    def ntpd_status_check(self):
+        return self._check_ntpd_status()
+
+    def sysstat_check(self):
+        return self._check_sysstat()
+
+    def ovirt_imageio_daemon_check(self):
+        return self._check_ovirt_imageio_daemon_status()
+
+    def boot_dmesg_log_check(self):
+        return self._check_boot_dmesg_log()
+
+    def separate_volumes_check(self):
+        return self._check_separate_volumes()
+
+    def etc_var_file_update_check(self):
+        ck01 = self.check_strs_in_file(
+            self._add_file_name, [self._add_file_content],
+            timeout=FABRIC_TIMEOUT)
+        ck02 = self.check_strs_in_file(
+            self._update_file_name, [self._update_file_content],
+            timeout=FABRIC_TIMEOUT)
+        ck03 = self.check_strs_in_file(
+            self._add_var_file_name, [self._add_file_content],
+            timeout=FABRIC_TIMEOUT)
+        ck04 = self.check_strs_in_file(
+            self._update_var_log_file_name, [self._update_file_content],
+            timeout=FABRIC_TIMEOUT)
+
+        return ck01 and ck02 and ck03 and ck04
+
+    def reinstall_rpm_check(self):
+        if "-4.0-" in self.source_build:
+            return True
+
+        return self._reinstall_rpms_check()
+
+    def update_again_unavailable_check(self):
+        log.info("Start to check update again unavailable.")
+        if "-4.0-" in self.source_build:
+            return True
+
+        if not self._rhvm.check_update_available(self._host_name):
+            log.info("Can not update rhvh again after upgrade.")
+            return True
+        else:
+            log.info("Can update again, should be not!")
+            return False
+
+    def no_space_update_check(self):
+        if "-4.0-" in self.source_build:
+            raise RuntimeError(
+                "The source build is 4.0, no need to check.")
+
+        log.info("Start to check can not upgrade if no space left.")
+        cmd = "yum update -y"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+
+        if "Disk Requirements" in ret[1] or "No space left on device" in ret[1]:
+            return True
+        else:
+            log.info('The output is %s', ret[1])
+            log.error("Upgrade incorrect when no enough space left.")
+            return False
+
     ##########################################
     # upgrade process
     ##########################################
@@ -513,9 +832,17 @@ class CheckUpgrade(CheckYoo):
             "echo '{}' >> {}".format(self._update_file_content,
                                      self._update_file_name),
             timeout=FABRIC_TIMEOUT)
+        ret3 = self.run_cmd(
+            "echo '{}' > {}".format(self._add_file_content,
+                                    self._add_var_file_name),
+            timeout=FABRIC_TIMEOUT)
+        ret4 = self.run_cmd(
+            "echo '{}' >> {}".format(self._update_file_content,
+                                     self._update_var_log_file_name),
+            timeout=FABRIC_TIMEOUT)
 
         log.info("Add and update files on host finished.")
-        return ret1[0] and ret2[0]
+        return ret1[0] and ret2[0] and ret3[0] and ret4[0]
 
     def __install_kernel_space_rpm_via_curl(self):
         self._kernel_space_rpm = KERNEL_SPACE_RPM_URL.split('/')[-1]
@@ -603,6 +930,26 @@ class CheckUpgrade(CheckYoo):
 
         return True
 
+    def _fill_up_space(self):
+        log.info("Start to fill up space...")
+
+        cmd = "dd if=/dev/urandom of=/test.img bs=1M count=4200"
+        ret = self.run_cmd(cmd, timeout=ENTER_SYSTEM_TIMEOUT)
+
+        log.info("Already fill up space, %s...", ret[1])
+        return True
+
+    def _delete_rpms_repo_packages(self):
+        if "-4.0-" in self.source_build:
+            return True
+
+        log.info("Start to delete rpms repo and package...")
+
+        if not self._del_repo_on_host(repo_file="rhel73.repo"):
+            return False
+
+        return True
+
     def _get_update_rpm_name_from_http(self):
         ver = self.target_build.split("-host-")[-1]
         update_rpm_name = None
@@ -663,6 +1010,35 @@ class CheckUpgrade(CheckYoo):
             return False
 
         log.info("Delete repo file %s finished.", repo_file)
+        return True
+
+    def _mv_rpm_packages_on_host(self, packages_path = "/var/imgbased/persisted-rpms", packages_bak_path = "/var/rpms-bak", packages_files="*"):
+        log.info("mv rpm packages %s on host...", packages_files)
+
+        cmd = "mkdir {packages_bak_path}".format(
+            packages_bak_path=packages_bak_path)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+
+        cmd = "mv {packages_path}/{packages_files} {packages_bak_path}".format(
+            packages_path=packages_path, packages_files=packages_files, packages_bak_path=packages_bak_path)
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to mv rpm packages file %s", packages_files)
+            return False
+
+        log.info("Mv rpm packages file %s finished.", packages_files)
+        return True
+
+    def _set_locale_on_host(self):
+        log.info("Set host to a locale that uses commas for decimals...")
+
+        cmd = "export LC_ALL=fr_FR"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to set host to a locale")
+            return False
+
+        log.info("Set host to a locale finished.")
         return True
 
     def _get_host_cpu_type(self):
@@ -966,6 +1342,12 @@ class CheckUpgrade(CheckYoo):
             return False
         if not self._check_cockpit_connection():
             return False
+        if not self._install_rpms():
+            return False
+        if not self._mv_rpm_packages_on_host():
+            return False
+        if not self._set_locale_on_host():
+            return False
         if not self._yum_install():
             return False
         if not self._enter_system()[0]:
@@ -993,6 +1375,19 @@ class CheckUpgrade(CheckYoo):
             return False
 
         log.info("Upgrade rhvh via rhvm finished.")
+        return True
+
+    def _yum_update_lack_space_process(self):
+        log.info("Start to upgrade rhvh via yum update when no enough space left...")
+
+        if not self._add_update_files():
+            return False
+        if not self._put_repo_to_host():
+            return False
+        if not self._fill_up_space():
+            return False
+
+        log.info("Fill up space before upgrading rhvh via yum update finished.")
         return True
 
     def _collect_infos(self, flag):
@@ -1038,6 +1433,8 @@ class CheckUpgrade(CheckYoo):
                 ret = self._yum_install_process()
             elif "rhvm_upgrade" in self.ksfile:
                 ret = self._rhvm_upgrade_process()
+            elif "lack_space" in self.ksfile:
+                ret = self._yum_update_lack_space_process()
 
             if not ret:
                 raise RuntimeError("Failed to run upgrade.")
@@ -1068,8 +1465,8 @@ if __name__ == '__main__':
     ck = CheckUpgrade()
     ck.host_string, ck.host_user, ck.host_pass = ('10.73.75.35', 'root',
                                                   'redhat')
-    ck.source_build = 'redhat-virtualization-host-4.1-20170421.0'
-    ck.target_build = 'redhat-virtualization-host-4.1-20170522.0'
+    ck.source_build = 'redhat-virtualization-host-4.1-20170816.2'
+    ck.target_build = 'redhat-virtualization-host-4.1-20170914.1'
     ck.beaker_name = DELL_PER510_01
     ck.ksfile = 'atu_rhvm_upgrade.ks'
 

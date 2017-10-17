@@ -311,6 +311,7 @@ class RhevmAction:
                 params={"async": "false"})
 
             if r.status_code != 200:
+                log.info("r.status_code is %d", r.status_code)
                 raise RuntimeError("Failed to execute upgradecheck.")
 
         count_max = 13
@@ -422,6 +423,19 @@ class RhevmAction:
                 raise RuntimeError("Upgrade host %s failed." % host_name)
         else:
             raise RuntimeError("Can't find host with name %s" % host_name)
+
+    def check_update_available(self, host_name):
+        host = self.list_host(key="name", value=host_name)
+
+        if host:
+            host_id = host.get('id')
+
+            # check host update available
+            if not self._update_available_check(host_id):
+                return False
+            else:
+                return True
+
 
     ######################################
     # Storage related functions
