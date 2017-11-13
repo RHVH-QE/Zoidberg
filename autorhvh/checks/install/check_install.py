@@ -53,11 +53,11 @@ class CheckInstall(CheckComm):
         expected_data_name = "expected_" + temp
 
         module = importlib.import_module(module_name)
-        cls = getattr(module, class_name, None)
-        method = getattr(cls, method_name, None)
+        clss = getattr(module, class_name, None)
+        method = getattr(clss, method_name, None)
         expected_data = getattr(self._expected_data, expected_data_name)
 
-        return cls(self.remotecmd, expected_data).method()
+        return clss(self.remotecmd, expected_data).method()
 
     def go_check(self):
         self.remotecmd.disconnect()
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     from checks.remotecmd import RemoteCmd
     ck.remotecmd = RemoteCmd('10.66.148.9', 'root', 'redhat')
 
-    from casesinfo import CasesMap
+    from casesinfo.casesmap import CasesMap
     import casesinfo.common as COMM
     test_level = COMM.DEBUG_TIER
     ck.casesmap = CasesMap(test_level)
