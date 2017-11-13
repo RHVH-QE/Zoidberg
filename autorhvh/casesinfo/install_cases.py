@@ -1,0 +1,76 @@
+from common import DELL_PET105_01, DELL_PER510_01
+
+# one kickstart file can only be run on a single machine
+INSTALL_TIER1_TESTCASE_MAP = {
+    'RHEVM-17788': ('ati_local_01.ks', DELL_PET105_01, 'GeneralCheck.node_check'),
+    'RHEVM-17800': ('ati_local_01.ks', DELL_PET105_01, 'NetworkCheck.static_network_check'),
+    'RHEVM-17801': ('ati_local_01.ks', DELL_PET105_01, 'NetworkCheck.hostname_check'),
+    'RHEVM-17807': ('ati_local_01.ks', DELL_PET105_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17826': ('ati_local_01.ks', DELL_PET105_01, 'GeneralCheck.node_check'),
+    'RHEVM-17828': ('ati_local_01.ks', DELL_PET105_01, 'GeneralCheck.node_check'),
+    'RHEVM-17799': ('ati_local_01.ks', DELL_PET105_01,
+                    'NetworkCheck.nic_stat_dur_install_check'),
+    'RHEVM-21643': ('ati_local_01.ks', DELL_PET105_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17790': ('ati_fc_01.ks', DELL_PER510_01, 'GeneralCheck.node_check'),
+    'RHEVM-17806': ('ati_fc_01.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17816': ('ati_fc_01.ks', DELL_PER510_01, 'NetworkCheck.bond_vlan_check'),
+    'RHEVM-16972': ('ati_fc_01.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    'RHEVM-21642': ('ati_fc_01.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    # ks tier1:
+    'RHEVM-17831': ('ati_fc_01.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17851': ('ati_fc_01.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17833': ('ati_fc_02.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17858': ('ati_fc_02.ks', DELL_PER510_01, 'NetworkCheck.dhcp_network_check'),
+    #'RHEVM-17860': ('ati_fc_02.ks', DELL_PER510_01, 'bond_check'),
+    #'RHEVM-17862': ('ati_fc_02.ks', DELL_PER510_01, 'vlan_check'),
+    #'RHEVM-17863': ('ati_fc_02.ks', DELL_PER510_01, 'bond_vlan_check'),
+    'RHEVM-17864': ('ati_fc_02.ks', DELL_PER510_01, 'FirewallCheck.firewall_check'),
+    'RHEVM-17869': ('ati_fc_02.ks', DELL_PER510_01, 'ServicesCheck.sshd_check'),
+    'RHEVM-17874': ('ati_fc_02.ks', DELL_PER510_01, 'GrubbyCheck.grubby_check'),
+    'RHEVM-17865': ('ati_fc_03.ks', DELL_PER510_01, 'SelinuxCheck.selinux_check'),
+    'RHEVM-17854': ('ati_fc_03.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+}
+
+INSTALL_TIER2_TESTCASE_MAP = {
+    'RHEVM-17798': ('ati_local_01.ks', DELL_PET105_01, 'LangCheck.lang_check'),
+    'RHEVM-17802': ('ati_local_01.ks', DELL_PET105_01, 'TimezoneCheck.ntp_check'),
+    'RHEVM-17803': ('ati_local_01.ks', DELL_PET105_01, 'KeyboardCheck.keyboard_check'),
+    'RHEVM-17805': ('ati_local_01.ks', DELL_PET105_01,
+                    'SecurityCheck.security_policy_check'),
+    'RHEVM-17808': ('ati_local_01.ks', DELL_PET105_01, 'KdumpCheck.kdump_check'),
+    'RHEVM-17811': ('ati_local_01.ks', DELL_PET105_01, 'UserCheck.user_check'),
+    'RHEVM-18210': ('ati_local_01.ks', DELL_PET105_01, 'GeneralCheck.layout_init_check'),
+    'RHEVM-17823': ('ati_local_01.ks', DELL_PET105_01, 'GeneralCheck.fips_check'),
+    'RHEVM-17804': ('ati_local_02.ks', DELL_PET105_01, 'KeyboardCheck.keyboard_check'),
+    #'RHEVM-17823': ('ati_local_02.ks', DELL_PET105_01, 'fips_check'),
+    'RHEVM-17818': ('ati_fc_04.ks', DELL_PER510_01, 'GeneralCheck.node_check'),
+    'RHEVM-17819': ('ati_fc_04.ks', DELL_PER510_01, 'GeneralCheck.node_check'),
+    'RHEVM-17824': ('ati_fc_04.ks', DELL_PER510_01, 'GeneralCheck.iqn_check'),
+    'RHEVM-17815': ('ati_fc_03.ks', DELL_PER510_01, 'NetworkCheck.vlan_check'),
+    # ks tier2:
+    'RHEVM-17830': ('ati_fc_02.ks', DELL_PER510_01, 'PartitionCheck.bootloader_check'),
+    'RHEVM-17843': ('ati_fc_02.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17844': ('ati_fc_02.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17845': ('ati_fc_02.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17846': ('ati_fc_02.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17853': ('ati_fc_02.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17857': ('ati_fc_02.ks', DELL_PER510_01, 'GeneralCheck.node_check'),
+    'RHEVM-17868': ('ati_fc_02.ks', DELL_PER510_01, 'GeneralCheck.node_check'),
+    'RHEVM-17866': ('ati_fc_02.ks', DELL_PER510_01, 'SelinuxCheck.selinux_check'),
+    #'RHEVM-17859': ('ati_fc_02.ks', DELL_PER510_01, 'static_network_check'),
+    'RHEVM-17872': ('ati_fc_02.ks', DELL_PER510_01, 'TimezoneCheck.ntp_check'),
+    'RHEVM-17873': ('ati_fc_02.ks', DELL_PER510_01, 'UserCheck.user_check'),
+    'RHEVM-17867': ('ati_local_02.ks', DELL_PET105_01, 'SelinuxCheck.selinux_check'),
+    'RHEVM-17847': ('ati_local_02.ks', DELL_PET105_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17859': ('ati_local_02.ks', DELL_PET105_01, 'NetworkChecks.tatic_network_check'),
+    'RHEVM-17861': ('ati_local_02.ks', DELL_PET105_01, 'NetworkCheck.static_network_check'),
+    'RHEVM-17834': ('ati_fc_03.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17835': ('ati_fc_03.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17836': ('ati_fc_03.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17839': ('ati_fc_03.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+    'RHEVM-17848': ('ati_fc_03.ks', DELL_PER510_01, 'PartitionCheck.partition_check'),
+}
+
+KS_PRESSURE_MAP = {'ati_fc_04.ks': '3'}
+
+KS_KERPARAMS_MAP = {'ati_local_01.ks': 'fips=1'}

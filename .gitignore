@@ -5,6 +5,8 @@
 .vscode
 logs
 auto_installation/static/auto/*
+autorhvh/ksfiles/auto
+autorhvh/checks/install/expected_data
 
 
 z.sublime-project
