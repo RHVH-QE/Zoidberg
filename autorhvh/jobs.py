@@ -140,7 +140,7 @@ class JobRunner(object):
                         self.results_logs.get_actual_logger(ks)
 
                         log.info("ip is %s", ret)
-                        ck = self.create_check(ret, ks)
+                        ck = self.create_check(ret, m, ks)
                         if not ck:
                             continue
 
@@ -163,7 +163,7 @@ class JobRunner(object):
         cache_logs_summary()
         self.rd_conn.set("running", "0")
 
-    def create_check(self, host_ip, ks):
+    def create_check(self, host_ip, m, ks):
         if ks.find("ati") == 0:
             self.test_flag = "install"
             ck = CheckInstall()

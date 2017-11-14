@@ -2,7 +2,11 @@ import logging
 import re
 import os
 import sys
-from ..check_comm import CheckComm
+root_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
+from checks.check_comm import CheckComm
+#from ..check_comm import CheckComm
 from expected_data import ExpectedData
 import importlib
 
@@ -33,8 +37,8 @@ class CheckInstall(CheckComm):
                 if os.path.exists(local_file):
                     os.system('rm -f {}'.format(local_file))
 
-            self.get_remote_file(remote_file,
-                                 local_file)
+            self.remotecmd.get_remote_file(remote_file,
+                                           local_file)
 
             self._expected_data = ExpectedData(local_file)
 
@@ -52,12 +56,13 @@ class CheckInstall(CheckComm):
         module_name = temp + '_check'
         expected_data_name = "expected_" + temp
 
-        module = importlib.import_module(module_name)
+        module = importlib.import_module("checks.install." + module_name)
         clss = getattr(module, class_name, None)
-        method = getattr(clss, method_name, None)
         expected_data = getattr(self._expected_data, expected_data_name)
+        obj = clss(self.remotecmd, expected_data)
+        method = getattr(obj, method_name, None)
 
-        return clss(self.remotecmd, expected_data).method()
+        return method()
 
     def go_check(self):
         self.remotecmd.disconnect()
@@ -69,15 +74,25 @@ class CheckInstall(CheckComm):
 
 
 if __name__ == '__main__':
+    def log_cfg_for_unit_test():
+        from utils import ResultsAndLogs
+        logs = ResultsAndLogs()
+        logs.logger_name = "unit_test.log"
+        logs.img_url = "install/test"
+        logs.get_actual_logger("install")
+
+    log_cfg_for_unit_test()
+    log = logging.getLogger('bender')
+
     ck = CheckInstall()
 
-    ck.source_build = 'redhat-virtualization-host-4.1-20170421.0'
-    ck.target_build = NONE
-    ck.beaker_name = 'dell-pet105-01.qe.lab.eng.nay.redhat.com'
-    ck.ksfile = 'ati_local_02.ks'
+    ck.source_build = None
+    ck.target_build = None
+    ck.beaker_name = 'dell-per510-01.lab.eng.pek2.redhat.com'
+    ck.ksfile = 'ati_fc_01.ks'
 
     from checks.remotecmd import RemoteCmd
-    ck.remotecmd = RemoteCmd('10.66.148.9', 'root', 'redhat')
+    ck.remotecmd = RemoteCmd('10.73.75.35', 'root', 'redhat')
 
     from casesinfo.casesmap import CasesMap
     import casesinfo.common as COMM

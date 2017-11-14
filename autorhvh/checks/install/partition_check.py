@@ -1,3 +1,8 @@
+import attr
+import re
+
+
+@attr.s
 class PartitionCheck(object):
     """
     """
@@ -46,7 +51,7 @@ class PartitionCheck(object):
 
         df_patterns = []
         for key in partition:
-            if key in ['pool', 'pool_meta', 'swap', 'volgroup']:
+            if key in ['pool', 'pool_meta', 'swap', 'volgroup', 'bootdevice']:
                 continue
 
             part = partition.get(key)

@@ -29,9 +29,9 @@ class RemoteCmd(object):
         return self._host_pass
 
     def set_env(self):
-        env.host_string = self._host_string
-        env.host_user = self._host_user
-        env.host_pass = self._host_pass
+        env.host_string = self.host_string
+        env.user = self.host_user
+        env.password = self.host_pass
         env.disable_known_hosts = True
         env.connection_attempts = 120
 
@@ -53,6 +53,7 @@ class RemoteCmd(object):
             ret = run(cmd, quiet=True, timeout=timeout)
             if ret.succeeded:
                 log.info('Run cmd "%s" succeeded', cmd)
+                print ret
                 return True, ret
             else:
                 log.error('Run cmd "%s" failed', cmd)
@@ -131,4 +132,5 @@ class RemoteCmd(object):
 
 
 if __name__ == '__main__':
-    pass
+    remotecmd = RemoteCmd('10.73.75.35', 'root', 'redhat')
+    remotecmd.run_cmd("hostname")

@@ -79,7 +79,8 @@ class ResultsToPolarion(object):
 
     def _parse_checkpoints(self, res):
         ks = res.split('/')[-2]
-        ks_pressure_map = self.casesmap.get_other_params.get("KS_PRESSURE_MAP")
+        ks_pressure_map = self.casesmap.gether_other_params().get(
+            "KS_PRESSURE_MAP")
         if ks in ks_pressure_map:
             num = int(ks_pressure_map[ks])
         else:

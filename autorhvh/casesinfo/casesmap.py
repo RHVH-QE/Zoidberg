@@ -119,6 +119,8 @@ class CasesMap(object):
 
 
 if __name__ == '__main__':
-    test_level = COMM.INSTALL_TIER1 | COMM.INSTALL_TIER2
+    test_level = COMM.DEBUG_TIER
     casesmap = CasesMap(test_level)
-    print casesmap.get_checkpoint_cases_map
+    print casesmap.testcase_map
+    print casesmap.get_checkpoint_cases_map('ati_fc_01.ks',
+                                            'dell-per510-01.lab.eng.pek2.redhat.com')

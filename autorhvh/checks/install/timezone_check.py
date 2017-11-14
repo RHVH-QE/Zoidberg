@@ -1,3 +1,7 @@
+import attr
+
+
+@attr.s
 class TimezoneCheck(object):
     """
     """
