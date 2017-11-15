@@ -1,4 +1,4 @@
-from autorhvh import app, setup_funcs, rd_conn
+from auto_rhvh import app, setup_funcs, rd_conn
 from gevent.pywsgi import WSGIServer
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ import sys
 root_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 if root_path not in sys.path:
     sys.path.insert(0, root_path)
-from checks.check_comm import CheckComm
+from checks.helpers import CheckComm
 #from ..check_comm import CheckComm
 from expected_data import ExpectedData
 import importlib
@@ -91,12 +91,11 @@ if __name__ == '__main__':
     ck.beaker_name = 'dell-per510-01.lab.eng.pek2.redhat.com'
     ck.ksfile = 'ati_fc_01.ks'
 
-    from checks.remotecmd import RemoteCmd
+    from checks.helpers import RemoteCmd
     ck.remotecmd = RemoteCmd('10.73.75.35', 'root', 'redhat')
 
-    from casesinfo.casesmap import CasesMap
-    import casesinfo.common as COMM
-    test_level = COMM.DEBUG_TIER
+    from cases_info import CasesMap, DEBUG_TIER
+    test_level = DEBUG_TIER
     ck.casesmap = CasesMap(test_level)
 
     print ck.go_check()

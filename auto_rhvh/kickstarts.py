@@ -10,7 +10,7 @@ from pykickstart.constants import KS_SCRIPT_PRE, KS_SCRIPT_POST
 
 from constants import KS_FILES_DIR, KS_FILES_AUTO_DIR, \
     POST_SCRIPT_01, POST_SCRIPT_02, PRE_SCRIPT_01
-from casesinfo.common import HOSTS
+from cases_info import HOSTS
 
 loger = logging.getLogger('bender')
 

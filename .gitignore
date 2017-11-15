@@ -4,12 +4,15 @@
 *.pyo
 .vscode
 logs
+
 auto_installation/static/auto/*
-autorhvh/ksfiles/auto
-autorhvh/checks/install/expected_data
+auto_installation/constants.json
+
+auto_rhvh/static/auto
+auto_rhvh/checks/install/expected_data
 
 
 z.sublime-project
 z.sublime-workspace
 dump.rdb
-auto_installation/constants.json
+

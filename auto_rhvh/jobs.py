@@ -8,7 +8,7 @@ from .kickstarts import KickStartFiles
 from .beaker import Beaker, inst_watcher
 from .cobbler import Cobbler
 from .constants import CURRENT_IP_PORT, ARGS_TPL, CB_PROFILE, COVERAGE_TEST
-from casesinfo.common import HOSTS
+from cases_info import HOSTS
 from checks import CheckInstall, CheckUpgrade, CheckVdsm, RemoteCmd
 from .util_result_index import cache_logs_summary
 from reports import ResultsToPolarion

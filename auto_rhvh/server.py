@@ -12,13 +12,13 @@ from flask_cors import CORS
 from .utils import init_redis, setup_funcs, get_lastline_of_file
 from .util_result_index import cache_logs_summary
 from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL, CB_PROFILE, TEST_LEVEL, PROJECT_ROOT
-from casesinfo.common import HOSTS
+from cases_info import HOSTS
 from .jobs import job_runner
 from .cobbler import Cobbler
 from .mongodata import MongoQuery
 from .celerytask import RhvhTask
 #from .reports import ResultsToPolarion
-from casesinfo.casesmap import CasesMap
+from cases_info import CasesMap
 
 rd_conn = init_redis()
 IP, PORT = CURRENT_IP_PORT
@@ -101,7 +101,7 @@ def done_job(em1ip, bkr_name, cockpit=None):
             em1ip, 'root', 'redhat'))
         print("prepare cockpit testing")
 
-        cockpit_cfg = os.path.join(PROJECT_ROOT, 'autorhvh', 'cockpit.json')
+        cockpit_cfg = os.path.join(PROJECT_ROOT, 'auto_rhvh', 'cockpit.json')
         cockpit_cfg_ = None
         with open(cockpit_cfg) as fp:
             cockpit_cfg_ = json.load(fp)
@@ -177,7 +177,7 @@ def auto_job_lanuch():
         build = msg['build']
         target_build = msg['target_build']
 
-        cfg = os.path.join(PROJECT_ROOT, 'autorhvh', 'constants.json')
+        cfg = os.path.join(PROJECT_ROOT, 'auto_rhvh', 'constants.json')
         cfg_ = None
 
         with open(cfg) as fp:
@@ -225,7 +225,7 @@ def get_last_result():
 
 @app.route('/api/v1/cockpit/tslevel')
 def get_cockpit_tslevel():
-    cockpit_tslevle_fp = os.path.join(PROJECT_ROOT, 'autorhvh',
+    cockpit_tslevle_fp = os.path.join(PROJECT_ROOT, 'auto_rhvh',
                                       'test_scen.json')
     return jsonify(json.load(open(cockpit_tslevle_fp)))
 
@@ -240,10 +240,10 @@ def cockpit_job_lanuch():
         target_build = msg['target_build']
         test_profile = msg['cases']
 
-        cfg = os.path.join(PROJECT_ROOT, 'autorhvh', 'constants.json')
+        cfg = os.path.join(PROJECT_ROOT, 'auto_rhvh', 'constants.json')
         cfg_ = None
 
-        cockpit_cfg = os.path.join(PROJECT_ROOT, 'autorhvh', 'cockpit.json')
+        cockpit_cfg = os.path.join(PROJECT_ROOT, 'auto_rhvh', 'cockpit.json')
         cockpit_cfg_ = None
 
         with open(cfg) as fp:

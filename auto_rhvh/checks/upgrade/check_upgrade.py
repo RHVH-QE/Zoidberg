@@ -3,9 +3,9 @@ import requests
 import os
 import time
 import re
-from ..check_comm import CheckComm
+from ..helpers import CheckComm
 import consts_upgrade as CONST
-from ..rhvmapi import RhevmAction
+from ..helpers.rhvmapi import RhevmAction
 from __builtin__ import False
 
 log = logging.getLogger('bender')

@@ -4,13 +4,14 @@ import json
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
 
-cfgjson = os.path.join(PROJECT_ROOT, 'autorhvh', 'constants.json')
+cfgjson = os.path.join(PROJECT_ROOT, 'auto_rhvh', 'constants.json')
 CFGS = json.load(open(cfgjson))
 TEST_LEVEL = CFGS['test_level']
 
-KS_FILES_DIR = os.path.join(PROJECT_ROOT, 'autorhvh', 'ksfiles')
+KS_FILES_DIR = os.path.join(PROJECT_ROOT, 'auto_rhvh', 'static', 'ksfiles')
 
-KS_FILES_AUTO_DIR = os.path.join(PROJECT_ROOT, 'autorhvh', 'ksfiles', 'auto')
+KS_FILES_AUTO_DIR = os.path.join(
+    PROJECT_ROOT, 'auto_rhvh', 'static', 'auto')
 
 BUILDS_SERVER_URL = "http://10.66.10.22:8090"
 
@@ -71,7 +72,7 @@ fi
 #fetch /tmp/anamon http://{srv_ip}:{srv_port}/static/anamon.py
 #python /tmp/anamon --server {srv_ip} --port {srv_port} --stage pre
 
-fetch /tmp/clean_disk http://{srv_ip}:{srv_port}/ksfiles/clean_disk.py
+fetch /tmp/clean_disk http://{srv_ip}:{srv_port}/static/ksfiles/clean_disk.py
 python /tmp/clean_disk
 """.format(
     srv_ip=CURRENT_IP_PORT[0], srv_port=CURRENT_IP_PORT[1])
@@ -82,5 +83,5 @@ NOPXE_URL = "http://lab-01.rhts.eng.pek2.redhat.com:8000/nopxe/{0}"
 CB_API = "http://10.73.60.74/cobbler_api"
 CB_CREDENTIAL = ('cobbler', 'cobbler')
 CB_PROFILE = CFGS['cb_profile']
-ARGS_TPL = ('inst.ks=http://{srv_ip}:{srv_port}/ksfiles/auto/{ks_file} '
+ARGS_TPL = ('inst.ks=http://{srv_ip}:{srv_port}/static/auto/{ks_file} '
             '{addition_params}')
