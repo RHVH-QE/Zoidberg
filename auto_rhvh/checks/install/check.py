@@ -2,13 +2,10 @@ import logging
 import re
 import os
 import sys
-root_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-if root_path not in sys.path:
-    sys.path.insert(0, root_path)
-from checks.helpers import CheckComm
-#from ..check_comm import CheckComm
-from expected_data import ExpectedData
 import importlib
+from ..helpers import CheckComm
+from .expected_data import ExpectedData
+
 
 log = logging.getLogger('bender')
 
@@ -56,7 +53,7 @@ class CheckInstall(CheckComm):
         module_name = temp + '_check'
         expected_data_name = "expected_" + temp
 
-        module = importlib.import_module("checks.install." + module_name)
+        module = importlib.import_module("." + module_name, __package__)
         clss = getattr(module, class_name, None)
         expected_data = getattr(self._expected_data, expected_data_name)
         obj = clss(self.remotecmd, expected_data)
@@ -74,28 +71,4 @@ class CheckInstall(CheckComm):
 
 
 if __name__ == '__main__':
-    def log_cfg_for_unit_test():
-        from utils import ResultsAndLogs
-        logs = ResultsAndLogs()
-        logs.logger_name = "unit_test.log"
-        logs.img_url = "install/test"
-        logs.get_actual_logger("install")
-
-    log_cfg_for_unit_test()
-    log = logging.getLogger('bender')
-
-    ck = CheckInstall()
-
-    ck.source_build = None
-    ck.target_build = None
-    ck.beaker_name = 'dell-per510-01.lab.eng.pek2.redhat.com'
-    ck.ksfile = 'ati_fc_01.ks'
-
-    from checks.helpers import RemoteCmd
-    ck.remotecmd = RemoteCmd('10.73.75.35', 'root', 'redhat')
-
-    from cases_info import CasesMap, DEBUG_TIER
-    test_level = DEBUG_TIER
-    ck.casesmap = CasesMap(test_level)
-
-    print ck.go_check()
+    pass

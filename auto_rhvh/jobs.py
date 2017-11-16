@@ -8,11 +8,11 @@ from .kickstarts import KickStartFiles
 from .beaker import Beaker, inst_watcher
 from .cobbler import Cobbler
 from .constants import CURRENT_IP_PORT, ARGS_TPL, CB_PROFILE, COVERAGE_TEST
-from cases_info import HOSTS
-from checks import CheckInstall, CheckUpgrade, CheckVdsm, RemoteCmd
 from .util_result_index import cache_logs_summary
 from reports import ResultsToPolarion
 from coverage import upload_coverage_raw_res_from_host, generate_final_coverage_result
+from checks import HOSTS
+from checks import CheckInstall, CheckUpgrade, CheckVdsm, RemoteCmd
 
 log = logging.getLogger("bender")
 

@@ -5,13 +5,19 @@ import json
 PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
 
 cfgjson = os.path.join(PROJECT_ROOT, 'auto_rhvh', 'constants.json')
-CFGS = json.load(open(cfgjson))
+
+if os.path.exists(cfgjson):
+    CFGS = json.load(open(cfgjson))
+else:
+    CFGS = {"test_level": 1,
+            "target_build": '',
+            "cb_profile": ''}
+
 TEST_LEVEL = CFGS['test_level']
 
 KS_FILES_DIR = os.path.join(PROJECT_ROOT, 'auto_rhvh', 'static', 'ksfiles')
 
-KS_FILES_AUTO_DIR = os.path.join(
-    PROJECT_ROOT, 'auto_rhvh', 'static', 'auto')
+KS_FILES_AUTO_DIR = os.path.join(PROJECT_ROOT, 'auto_rhvh', 'static', 'auto')
 
 BUILDS_SERVER_URL = "http://10.66.10.22:8090"
 

@@ -3,10 +3,10 @@ import requests
 import os
 import time
 import re
-from ..helpers import CheckComm
 import consts_upgrade as CONST
+from ..helpers import CheckComm
 from ..helpers.rhvmapi import RhevmAction
-from __builtin__ import False
+
 
 log = logging.getLogger('bender')
 
@@ -1029,24 +1029,5 @@ class CheckUpgrade(CheckComm):
             return cks
 
 
-def log_cfg_for_unit_test():
-    from utils import ResultsAndLogs
-    logs = ResultsAndLogs()
-    logs.logger_name = "unit_test.log"
-    logs.img_url = "upgrade/test"
-    logs.get_actual_logger("upgrade")
-
-
 if __name__ == '__main__':
-    log_cfg_for_unit_test()
-    log = logging.getLogger('bender')
-
-    ck = CheckUpgrade()
-    ck.host_string, ck.host_user, ck.host_pass = ('10.73.75.35', 'root',
-                                                  'redhat')
-    ck.source_build = 'redhat-virtualization-host-4.1-20170421.0'
-    ck.target_build = 'redhat-virtualization-host-4.1-20170522.0'
-    ck.beaker_name = 'dell-per510-01.lab.eng.pek2.redhat.com'
-    ck.ksfile = 'atu_rhvm_upgrade.ks'
-
-    print ck.go_check()
+    pass

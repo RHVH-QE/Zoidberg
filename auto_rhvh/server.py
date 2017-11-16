@@ -12,13 +12,12 @@ from flask_cors import CORS
 from .utils import init_redis, setup_funcs, get_lastline_of_file
 from .util_result_index import cache_logs_summary
 from .constants import CURRENT_IP_PORT, BUILDS_SERVER_URL, CB_PROFILE, TEST_LEVEL, PROJECT_ROOT
-from cases_info import HOSTS
 from .jobs import job_runner
 from .cobbler import Cobbler
 from .mongodata import MongoQuery
 from .celerytask import RhvhTask
 #from .reports import ResultsToPolarion
-from cases_info import CasesMap
+from checks import HOSTS, CasesMap
 
 rd_conn = init_redis()
 IP, PORT = CURRENT_IP_PORT

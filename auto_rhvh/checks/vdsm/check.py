@@ -3,9 +3,9 @@ import re
 import time
 import functools
 from fabric.api import settings, run, local
+from consts_vdsm import RHVM_INFO, MACHINE_INFO, NFS_INFO
 from ..helpers import CheckComm
 from ..helpers.vdsmapi import RhevmAction
-from consts_vdsm import RHVM_INFO, MACHINE_INFO, NFS_INFO
 
 log = logging.getLogger('bender')
 
