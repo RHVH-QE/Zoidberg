@@ -32,6 +32,11 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-22205": ('atu_yum_install.ks', DELL_PER510_01, 'packages_check'),
     "RHEVM-22204": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'update_again_unavailable_check'),
     "RHEVM-18106": ('atu_lack_space.ks', DELL_PET105_01, 'no_space_update_check'),
+    "RHEVM-18079": ('atu_yum_update_vlan.ks', DELL_PER510_01, 'basic_upgrade_check'),
+    "RHEVM-22203": ('atu_yum_update.ks', DELL_PET105_01, 'kdump_check'),
+    "RHEVM-18110": ('atu_yum_update.ks', DELL_PET105_01, 'delete_imgbase_check'),
+    "RHEVM-18107": ('atu_yum_update.ks', DELL_PET105_01, 'fips_check'),
+    "RHEVM-18076": ('atu_yum_update_bond.ks', DELL_PER515_01, 'bond_check'),
 }
 
 RHVM_DATA_MAP = {
