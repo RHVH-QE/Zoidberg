@@ -5,7 +5,7 @@ import time
 import re
 from fabric.network import disconnect_all
 from check_comm import CheckYoo
-from constants import KS_FILES_DIR, DELL_PET105_01, DELL_PER510_01
+from constants import KS_FILES_DIR, DELL_PET105_01, DELL_PER510_01, DELL_PER515_01
 from const_upgrade import CHECK_NEW_LVS, RHVM_DATA_MAP, \
     RHVH_UPDATE_RPM_URL, \
     KERNEL_SPACE_RPM_URL, \
@@ -628,7 +628,122 @@ class CheckUpgrade(CheckYoo):
 
         return True
 
+    ### Upgrade tier2, added by wujian ###
+    # 1-check fips status, FIPS=1
 
+    def _check_is_fips(self, is_fips=True):
+        if is_fips:
+            log.info("To check FIPs=1 in old build.")
+
+            cmd = "cat /proc/sys/crypto/fips_enabled"
+            ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+            if not ret[0] or not int(ret[1]) == 1:
+                return False
+            else:
+                log.info("Fips now is set as 1")
+        else:
+            log.info("FIPs now is set as default 0")
+        return True
+
+    # 2-check kdump.service =active
+    def _check_kdump_status(self):
+        log.info("Start to check kdump service status.")
+
+        cmd = "systemctl status kdump.service | grep 'Active' | awk '{print $2}'"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+
+        if not ret[0]:
+            return False
+
+        if ret[0]:
+            if ret[1] != 'active':
+                log.error("Kdump service is inactive.")
+                return False
+            else:
+                log.info("Kdump service is active.")
+        return True
+
+    # 3-remove vg/lv, delete old layer info on /etc/grub2.cfg
+    def _remove_lv(self):
+        log.info("Start to remove VG/LV")
+
+        cmd_pv = "lvs --noheading | awk '{print $1}' | grep '^rhvh'| sed -n '1,2p'"
+        cmd_vg = "lvs --noheading | awk '{print $2}' | uniq"
+
+        ret_pv = self.run_cmd(cmd_pv, timeout=FABRIC_TIMEOUT)
+        ret_vg = self.run_cmd(cmd_vg, timeout=FABRIC_TIMEOUT)
+
+        if not ret_pv[0] or not ret_vg[0]:
+            return False
+        else:
+            ret_pv = ret_pv[1].split('\r\n')
+            for i in range(2):
+                cmd = "lvremove " + str(ret_vg[1]) + "/" + ret_pv[i]
+                ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+                if not ret[0]:
+                    log.error('Run cmd "%s" failed, the result is %s', cmd, ret[1])
+                    return False
+
+            log.info("Remove old layer successfully!")
+        return True
+
+    def _change_grub_file(self):
+        log.info("start to change /etc/grub2.cfg.")
+        old_build_cmd = "lvs --noheading | awk '{print $1}' | grep '^rhvh'| sed -n '1p'"
+        ret_old_build = self.run_cmd(old_build_cmd, timeout=FABRIC_TIMEOUT)
+        if not ret_old_build[0]:
+            return False
+        ret_old_build = str(ret_old_build[1])
+
+        cmd = "sed -i '/^menuentry.*" + ret_old_build + "/,/^}/d' /etc/grub2.cfg \
+        /boot/grub2/grub.cfg"
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to delete old_build info on /etc/grub2.cfg \
+            /boot/grub2/grub2.cfg")
+            return False
+
+        log.info("Successfully delete old_build info on /etc/grub2.cfg \
+        /boot/grub2/grub.cfg")
+
+        return True
+
+    # 4-Upgrade with bond network
+    def _is_bond_net(self, is_bond):
+        log.info("Start to verify if bond network.")
+
+        if is_bond:
+            cmd = "ip -f inet addr show | grep '.*bond'| uniq | awk '{print $2}'|sed -n '1,2p'"
+            ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+            if not ret[0] or ("bond" not in ret[1]):
+                log.error("No bond network detected.")
+                return False
+            log.info("bond network works successfully.")
+            return True
+
+        return True
+
+    def _bond_status(self):
+        old_bond_info = self._check_infos.get("old").get("bond_ip")
+        new_bond_info = self._check_infos.get("New").get("bond_ip")
+
+        log.info("check bond:\n  \
+        old_bond_ip:\n %s\n  \
+        new_bond_ip:\n %s",
+        old_bond_info, new_bond_info)
+
+        if old_bond_info != new_bond_info:
+            log.error("bond network is changed after upgrade.")
+            return False
+
+        log.info("bond network keeps its status after upgrade.")
+        return True
+
+
+
+    #################
+    # checks in cases
+    #################
     def basic_upgrade_check(self):
         # To check imgbase w, imgbase layout, cockpit connection
         ck01 = self._check_imgbase_w()
@@ -817,6 +932,46 @@ class CheckUpgrade(CheckYoo):
             log.info('The output is %s', ret[1])
             log.error("Upgrade incorrect when no enough space left.")
             return False
+
+    ## added by wujian, upgrade tier2 checks
+    # 1-fips check
+    def fips_check(self):
+        return self.check_strs_in_file(
+            '/proc/sys/crypto/fips_enabled', ['1'], timeout=300)
+
+    # 2-check kdump.service =active
+    def kdump_check(self):
+        return self._check_kdump_status()
+
+    # 3-remove vg/lv, delete old layer info on /etc/grub2.cfg
+    def delete_imgbase_check(self):
+        ck01 = self._change_grub_file()
+        ck02 = self._remove_lv()
+        if not ck01 or not ck02:
+            log.error("Cannot remove vg/lv successfully.")
+            return False
+
+        log.info("Reboot into system.")
+
+        ret = self._enter_system()
+        if not ret[0]:
+            return False
+
+        ck03 = self._check_cockpit_connection()
+        ck04 = self._check_host_status_on_rhvm()
+        if not ck03 or not ck04:
+            log.error("Failed to work system again after remove vg/lv.")
+
+        log.info("System work normally.")
+        return True
+
+    # 4-Upgrade with bond network
+    def bond_check(self):
+        ck01 = self._bond_status()
+        ck02 = self.basic_upgrade_check()
+        return ck01 and ck02
+
+
 
     ##########################################
     # upgrade process
@@ -1103,37 +1258,76 @@ class CheckUpgrade(CheckYoo):
 
         log.info("Get host ip finished.")
 
-    def _add_10_route(self):
-        target_ip = "10.0.0.0/8"
+    ## replaced by _check_add_10_route
+    # def _add_10_route(self):
+    #     target_ip = "10.0.0.0/8"
+    #
+    #     log.info("Start to add %s route on host...", target_ip)
+    #
+    #     cmd = "ip route | grep --color=never default | head -1"
+    #     ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+    #     if not ret[0]:
+    #         log.error("Get default pub route failed.")
+    #         return False
+    #     log.info('The default pub route is "%s"', ret[1])
+    #
+    #     gateway = ret[1].split()[2]
+    #     nic = ret[1].split()[4]
+    #
+    #     cmd = "ip route add {target_ip} via {gateway} dev {nic}".format(
+    #         target_ip=target_ip, gateway=gateway, nic=nic)
+    #     ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+    #     if not ret[0]:
+    #         log.error("Add %s to route table failed.", target_ip)
+    #         return False
+    #
+    #     cmd = "echo '{target_ip} via {gateway}' > /etc/sysconfig/network-scripts/route-{nic}".format(
+    #         target_ip=target_ip, gateway=gateway, nic=nic)
+    #     ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+    #     if not ret[0]:
+    #         log.error("Create route-%s file failed.", nic)
+    #         return False
+    #
+    #     log.info("Add %s route on host finished.", target_ip)
+    #     return True
 
-        log.info("Start to add %s route on host...", target_ip)
+    ## Add is_vlan value, if True, do _add_10_route
+    def _check_add_10_route(self, is_vlan=False):
+        if is_vlan == True:
+            target_ip = "10.0.0.0/8"
 
-        cmd = "ip route | grep --color=never default | head -1"
-        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
-        if not ret[0]:
-            log.error("Get default pub route failed.")
-            return False
-        log.info('The default pub route is "%s"', ret[1])
+            log.info("Start to add %s route on host...", target_ip)
 
-        gateway = ret[1].split()[2]
-        nic = ret[1].split()[4]
+            cmd = "ip route | grep --color=never default | head -1"
+            ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+            if not ret[0]:
+                log.error("Get default pub route failed.")
+                return False
+            log.info('The default pub route is "%s"', ret[1])
 
-        cmd = "ip route add {target_ip} via {gateway} dev {nic}".format(
-            target_ip=target_ip, gateway=gateway, nic=nic)
-        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
-        if not ret[0]:
-            log.error("Add %s to route table failed.", target_ip)
-            return False
+            gateway = ret[1].split()[2]
+            nic = ret[1].split()[4]
 
-        cmd = "echo '{target_ip} via {gateway}' > /etc/sysconfig/network-scripts/route-{nic}".format(
-            target_ip=target_ip, gateway=gateway, nic=nic)
-        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
-        if not ret[0]:
-            log.error("Create route-%s file failed.", nic)
-            return False
+            cmd = "ip route add {target_ip} via {gateway} dev {nic}".format(
+                target_ip=target_ip, gateway=gateway, nic=nic)
+            ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+            if not ret[0]:
+                log.error("Add %s to route table failed.", target_ip)
+                return False
 
-        log.info("Add %s route on host finished.", target_ip)
+            cmd = "echo '{target_ip} via {gateway}' > /etc/sysconfig/network-scripts/route-{nic}".format(
+                target_ip=target_ip, gateway=gateway, nic=nic)
+            ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+            if not ret[0]:
+                log.error("Create route-%s file failed.", nic)
+                return False
+
+            log.info("Add %s route on host finished.", target_ip)
+        else:
+            log.info("Network is acttive without vlan.")
+
         return True
+
 
     def _del_vlan_route(self):
         log.info("Start to delete the default vlan route...")
@@ -1308,14 +1502,27 @@ class CheckUpgrade(CheckYoo):
         log.info("Run rhvm upgrade finished.")
         return True
 
-    def _yum_update_process(self):
+    def _yum_update_process(self, is_vlan=False, is_bond=False):
         log.info("Start to upgrade rhvh via yum update cmd...")
+
+        """
+        #is_vlan=True will check if add 10.0.0.0/8 route
+        #is_valn=False will not check if add 10.0.0.0/8 route
+        """
+        """
+        if not self._check_is_fips(is_fips=True):
+            return False
+        """
+        if not self._is_bond_net(is_bond=True):
+            return False
+        if not self._check_add_10_route(is_vlan):
+            return False
 
         if not self._add_update_files():
             return False
         if not self._put_repo_to_host():
             return False
-        if not self._add_host_to_rhvm():
+        if not self._add_host_to_rhvm(is_vlan):       ###add "is_vlan" value to activate vlan
             return False
         if not self._check_host_status_on_rhvm():
             return False
@@ -1359,7 +1566,8 @@ class CheckUpgrade(CheckYoo):
     def _rhvm_upgrade_process(self):
         log.info("Start to upgrade rhvh via rhvm...")
 
-        if not self._add_10_route():
+        #if not self._add_10_route():
+        if not self._check_add_10_route(is_vlan=True):
             return False
         if not self._put_repo_to_host():
             return False
@@ -1406,7 +1614,8 @@ class CheckUpgrade(CheckYoo):
             "lvs":
             # "lvs -a -o lv_name,vg_name,lv_size,pool_lv,origin --noheadings --separator ' '",
             "lvs -a -o lv_name,lv_size, --unit=m --noheadings --separator ' '",
-            "findmnt": "findmnt -r -n"
+            "findmnt": "findmnt -r -n",
+            "bond_ip": "ip -f inet addr show | grep 'inet 10' | awk '{print $2}'|awk -F '/' '{print $1}'",
         }
 
         for k, v in cmdmap.items():
@@ -1428,7 +1637,13 @@ class CheckUpgrade(CheckYoo):
                 raise RuntimeError("Failed to collect old infos.")
 
             if "yum_update" in self.ksfile:
-                ret = self._yum_update_process()
+                #ret = self._yum_update_process()
+                if re.split(r'_|\.', self.ksfile)[3] == 'vlan':
+                    ret = self._yum_update_process(is_vlan=True, is_bond=False)
+                elif re.split(r'_|\.', self.ksfile)[3] == 'bond':
+                    ret = self._yum_update_process(is_vlan=False, is_bond=True)
+                else:
+                    ret = self._yum_update_process(is_vlan=False, is_bond=False)
             elif "yum_install" in self.ksfile:
                 ret = self._yum_install_process()
             elif "rhvm_upgrade" in self.ksfile:
