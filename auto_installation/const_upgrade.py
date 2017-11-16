@@ -1,4 +1,4 @@
-from constants import DELL_PET105_01, DELL_PER510_01
+from constants import DELL_PET105_01, DELL_PER510_01, DELL_PER515_01
 
 UPGRADE_TIER1_TESTCASE_MAP = {
     "RHEVM-18068": ('atu_yum_update.ks', DELL_PET105_01, 'basic_upgrade_check'),
