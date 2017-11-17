@@ -709,7 +709,7 @@ class CheckUpgrade(CheckYoo):
         return True
 
     # 4-Upgrade with bond network
-    def _is_bond_net(self, is_bond):
+    def _is_bond_net(self, is_bond=False):
         log.info("Start to verify if bond network.")
 
         if is_bond:
@@ -968,8 +968,11 @@ class CheckUpgrade(CheckYoo):
     # 4-Upgrade with bond network
     def bond_check(self):
         ck01 = self._bond_status()
-        ck02 = self.basic_upgrade_check()
-        return ck01 and ck02
+        #ck02 = self.basic_upgrade_check()
+        ck02 = self._check_imgbase_w()
+        ck03 = self._check_imgbase_layout()
+        ck04 = self._check_cockpit_connection()
+        return ck01 and ck02 and ck03 and ck04
 
 
 
@@ -1168,6 +1171,9 @@ class CheckUpgrade(CheckYoo):
         return True
 
     def _mv_rpm_packages_on_host(self, packages_path = "/var/imgbased/persisted-rpms", packages_bak_path = "/var/rpms-bak", packages_files="*"):
+        if "-4.0-" in self.source_build:
+            return True
+
         log.info("mv rpm packages %s on host...", packages_files)
 
         cmd = "mkdir {packages_bak_path}".format(
@@ -1388,6 +1394,14 @@ class CheckUpgrade(CheckYoo):
                 self._rhvm.update_network(self._dc_name, "vlan",
                                           self._host_vlanid)
 
+                # ifup bond0.50 and slaves, due to one bug in rhvh 4.1 #
+                cmd1 = "ifup p1p1"
+                cmd2 = "ifup p1p2"
+                cmd3 = "ifup bond0.50"
+                ret1 = self.run_cmd(cmd1, timeout=FABRIC_TIMEOUT)
+                ret2 = self.run_cmd(cmd2, timeout=FABRIC_TIMEOUT)
+                ret3 = self.run_cmd(cmd3, timeout=FABRIC_TIMEOUT)
+
             log.info("Add cluster %s", self._cluster_name)
             self._rhvm.add_cluster(self._dc_name, self._cluster_name,
                                    self._host_cpu_type)
@@ -1507,13 +1521,13 @@ class CheckUpgrade(CheckYoo):
 
         """
         #is_vlan=True will check if add 10.0.0.0/8 route
-        #is_valn=False will not check if add 10.0.0.0/8 route
+        #is_vlan=False will not check if add 10.0.0.0/8 route
         """
         """
         if not self._check_is_fips(is_fips=True):
             return False
         """
-        if not self._is_bond_net(is_bond=True):
+        if not self._is_bond_net(is_bond):
             return False
         if not self._check_add_10_route(is_vlan):
             return False
@@ -1522,10 +1536,13 @@ class CheckUpgrade(CheckYoo):
             return False
         if not self._put_repo_to_host():
             return False
-        if not self._add_host_to_rhvm(is_vlan):       ###add "is_vlan" value to activate vlan
-            return False
-        if not self._check_host_status_on_rhvm():
-            return False
+
+        if not is_bond:
+            if not self._add_host_to_rhvm(is_vlan):       ###add "is_vlan" value to activate vlan
+                return False
+            if not self._check_host_status_on_rhvm():
+                return False
+
         if not self._check_cockpit_connection():
             return False
         if not self._install_rpms():
