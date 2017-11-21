@@ -1390,17 +1390,22 @@ class CheckUpgrade(CheckYoo):
             self._rhvm.add_datacenter(self._dc_name)
 
             if is_vlan:
-                log.info("Update network with vlan %s", self._host_vlanid)
-                self._rhvm.update_network(self._dc_name, "vlan",
-                                          self._host_vlanid)
-
-                # ifup bond0.50 and slaves, due to one bug in rhvh 4.1 #
+                # ifup bond0.50 and slaves, due to one bug 1475728 in rhvh 4.1 #
                 cmd1 = "ifup p1p1"
                 cmd2 = "ifup p1p2"
                 cmd3 = "ifup bond0.50"
                 ret1 = self.run_cmd(cmd1, timeout=FABRIC_TIMEOUT)
                 ret2 = self.run_cmd(cmd2, timeout=FABRIC_TIMEOUT)
                 ret3 = self.run_cmd(cmd3, timeout=FABRIC_TIMEOUT)
+
+                cmd4 = "ip a s"
+                ret4 = self.run_cmd(cmd4, timeout=FABRIC_TIMEOUT)
+                log.info('The vlan ip info of "%s" is %s', cmd4, ret4[1])
+                ## end ##
+
+                log.info("Update network with vlan %s", self._host_vlanid)
+                self._rhvm.update_network(self._dc_name, "vlan",
+                                          self._host_vlanid)
 
             log.info("Add cluster %s", self._cluster_name)
             self._rhvm.add_cluster(self._dc_name, self._cluster_name,
@@ -1546,7 +1551,8 @@ class CheckUpgrade(CheckYoo):
         if not self._check_cockpit_connection():
             return False
         if not self._install_rpms():
-            return False
+            #return False
+            log.info("Install rpms maybe failed.")
         if not self._yum_update():
             return False
         if not self._enter_system()[0]:
@@ -1697,8 +1703,8 @@ if __name__ == '__main__':
     ck = CheckUpgrade()
     ck.host_string, ck.host_user, ck.host_pass = ('10.73.75.35', 'root',
                                                   'redhat')
-    ck.source_build = 'redhat-virtualization-host-4.1-20170816.2'
-    ck.target_build = 'redhat-virtualization-host-4.1-20170914.1'
+    ck.source_build = 'redhat-virtualization-host-4.1-20170808.0'
+    ck.target_build = 'redhat-virtualization-host-4.1-20171117.0'
     ck.beaker_name = DELL_PER510_01
     ck.ksfile = 'atu_rhvm_upgrade.ks'
 
