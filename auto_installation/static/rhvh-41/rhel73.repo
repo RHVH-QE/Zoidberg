@@ -1,13 +1,13 @@
-[rhel73]
-name=RHEL73
-baseurl=http://download.eng.pnq.redhat.com/released/RHEL-7/7.3/Server/x86_64/os/
+[rhel74]
+name=RHEL74
+baseurl=http://download.eng.pek2.redhat.com/released/RHEL-7/7.4/Server/x86_64/os/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
 
-[rhel73more]
-name=RHEL73more
-baseurl=http://download.eng.pnq.redhat.com/released/RHEL-7/7.3/Server-optional/x86_64/os/
+[rhel74more]
+name=RHEL74more
+baseurl=http://download.eng.pek2.redhat.com/released/RHEL-7/7.4/Server-optional/x86_64/os/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
