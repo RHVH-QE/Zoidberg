@@ -926,7 +926,9 @@ class CheckUpgrade(CheckYoo):
         cmd = "yum update -y"
         ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
 
-        if "Disk Requirements" in ret[1] or "No space left on device" in ret[1]:
+        if "Disk Requirements" in ret[1] or "No space left on device" in ret[1] or "FAILED" in ret[1]:
+            return True
+        elif "Complete" not in ret[1]:
             return True
         else:
             log.info('The output is %s', ret[1])
@@ -968,11 +970,8 @@ class CheckUpgrade(CheckYoo):
     # 4-Upgrade with bond network
     def bond_check(self):
         ck01 = self._bond_status()
-        #ck02 = self.basic_upgrade_check()
-        ck02 = self._check_imgbase_w()
-        ck03 = self._check_imgbase_layout()
-        ck04 = self._check_cockpit_connection()
-        return ck01 and ck02 and ck03 and ck04
+        ck02 = self.basic_upgrade_check()
+        return ck01 and ck02
 
 
 
@@ -1249,11 +1248,28 @@ class CheckUpgrade(CheckYoo):
         if not is_vlan:
             self._host_ip = self.host_string
         else:
+            # ifup p1p1.50, bond0.50 and slaves, due to one bug 1475728 in rhvh 4.1 #
+            cmd1 = "ifup p1p1"
+            cmd2 = "ifup p1p1.50"
+            ret1 = self.run_cmd(cmd1, timeout=FABRIC_TIMEOUT)
+            ret2 = self.run_cmd(cmd2, timeout=FABRIC_TIMEOUT)
+
+            cmd3 = "ifup p1p2"
+            cmd4 = "ifup bond0.50"
+            ret3 = self.run_cmd(cmd3, timeout=FABRIC_TIMEOUT)
+            ret4 = self.run_cmd(cmd4, timeout=FABRIC_TIMEOUT)
+
+            cmd5 = "ip a s"
+            ret5 = self.run_cmd(cmd5, timeout=FABRIC_TIMEOUT)
+            log.info('The vlan ip info of "%s" is %s', cmd5, ret5[1])
+            ## end ##
+
             cmd = "ip -f inet addr show | grep 'inet 192' | awk '{print $2}'| awk -F '/' '{print $1}'"
             ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
             if not ret[0]:
                 return
             self._host_ip = ret[1]
+            log.info("Host ip is %s", ret[1])
 
             # get vlan id:
             cmd = """grep VLAN_ID /etc/sysconfig/network-scripts/* | awk -F '=' '{print $2}' | awk -F '"' '{print $2}'"""
@@ -1261,6 +1277,7 @@ class CheckUpgrade(CheckYoo):
             if not ret[0]:
                 return
             self._host_vlanid = ret[1]
+            log.info("Host vlanid is %s", ret[1])
 
         log.info("Get host ip finished.")
 
@@ -1542,11 +1559,11 @@ class CheckUpgrade(CheckYoo):
         if not self._put_repo_to_host():
             return False
 
-        if not is_bond:
-            if not self._add_host_to_rhvm(is_vlan):       ###add "is_vlan" value to activate vlan
-                return False
-            if not self._check_host_status_on_rhvm():
-                return False
+        #if not is_bond:
+        if not self._add_host_to_rhvm(is_vlan):       ###add "is_vlan" value to activate vlan
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
 
         if not self._check_cockpit_connection():
             return False
