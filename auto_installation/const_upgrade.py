@@ -35,7 +35,7 @@ UPGRADE_TIER1_TESTCASE_MAP = {
     "RHEVM-22203": ('atu_yum_update.ks', DELL_PET105_01, 'kdump_check'),
     # "RHEVM-18110": ('atu_yum_update.ks', DELL_PET105_01, 'delete_imgbase_check'),
     # #"RHEVM-18107": ('atu_yum_update.ks', DELL_PET105_01, 'fips_check'),
-    # "RHEVM-18076": ('atu_yum_update_bond.ks', DELL_PER515_01, 'bond_check'),
+    "RHEVM-18076": ('atu_yum_update_bond.ks', DELL_PER515_01, 'bond_check'),
     # "RHEVM-18080": ('atu_yum_update_bond.ks', DELL_PER515_01, 'bond_check'),
 }
 
