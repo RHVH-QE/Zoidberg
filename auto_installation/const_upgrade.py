@@ -2,7 +2,7 @@ from constants import DELL_PET105_01, DELL_PER510_01, DELL_PER515_01
 
 UPGRADE_TIER1_TESTCASE_MAP = {
     ##Tier1
-    "RHEVM-18068": ('atu_yum_update.ks', DELL_PET105_01, 'basic_upgrade_check'),
+    # "RHEVM-18068": ('atu_yum_update.ks', DELL_PET105_01, 'basic_upgrade_check'),
     # "RHEVM-18071": ('atu_yum_update.ks', DELL_PET105_01, 'packages_check'),
     # "RHEVM-18072": ('atu_yum_update.ks', DELL_PET105_01, 'settings_check'),
     # "RHEVM-18073": ('atu_yum_update.ks', DELL_PET105_01, 'roll_back_check'),
@@ -32,11 +32,11 @@ UPGRADE_TIER1_TESTCASE_MAP = {
     # "RHEVM-22204": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'update_again_unavailable_check'),
     # "RHEVM-18106": ('atu_lack_space.ks', DELL_PET105_01, 'no_space_update_check'),
     # "RHEVM-18079": ('atu_yum_update_vlan.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    "RHEVM-22203": ('atu_yum_update.ks', DELL_PET105_01, 'kdump_check'),
+    # "RHEVM-22203": ('atu_yum_update.ks', DELL_PET105_01, 'kdump_check'),
     # "RHEVM-18110": ('atu_yum_update.ks', DELL_PET105_01, 'delete_imgbase_check'),
     # #"RHEVM-18107": ('atu_yum_update.ks', DELL_PET105_01, 'fips_check'),
     "RHEVM-18076": ('atu_yum_update_bond.ks', DELL_PER515_01, 'bond_check'),
-    "RHEVM-18080": ('atu_yum_update_bond.ks', DELL_PER515_01, 'bond_check'),
+    # "RHEVM-18080": ('atu_yum_update_bond.ks', DELL_PER515_01, 'bond_check'),
 }
 
 UPGRADE_TIER2_TESTCASE_MAP = {
