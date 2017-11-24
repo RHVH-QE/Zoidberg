@@ -656,11 +656,11 @@ class CheckUpgrade(CheckYoo):
             return False
 
         if ret[0]:
-            if ret[1] != 'active':
-                log.error("Kdump service is inactive.")
+            if "inactive" in ret[1]:
+                log.error("Kdump service is %s.", ret[1])
                 return False
             else:
-                log.info("Kdump service is active.")
+                log.info("Kdump service is %s.", ret[1])
         return True
 
     # 3-remove vg/lv, delete old layer info on /etc/grub2.cfg
@@ -1718,11 +1718,11 @@ if __name__ == '__main__':
     log = logging.getLogger('bender')
 
     ck = CheckUpgrade()
-    ck.host_string, ck.host_user, ck.host_pass = ('10.73.75.35', 'root',
+    ck.host_string, ck.host_user, ck.host_pass = ('10.66.8.107', 'root',
                                                   'redhat')
-    ck.source_build = 'redhat-virtualization-host-4.1-20170808.0'
-    ck.target_build = 'redhat-virtualization-host-4.1-20171117.0'
-    ck.beaker_name = DELL_PER510_01
-    ck.ksfile = 'atu_rhvm_upgrade.ks'
+    ck.source_build = 'redhat-virtualization-host-4.1-20171101.0'
+    ck.target_build = 'redhat-virtualization-host-4.1-20171123.0'
+    ck.beaker_name = DELL_PET105_01
+    ck.ksfile = 'atu_yum_update.ks'
 
     print ck.go_check()
