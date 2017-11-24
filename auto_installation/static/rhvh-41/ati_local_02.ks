@@ -5,7 +5,7 @@ lang en_US.UTF-8
 timezone Asia/Shanghai --utc --ntpservers=clock02.util.phx2.redhat.com
 
 ### Keyboard ###
-keyboard --vckeymap=ge --xlayouts='ge'
+keyboard --vckeymap=de --xlayouts='de'
 
 ### Kdump ###
 
@@ -62,7 +62,7 @@ os.mkdir(REMOTE_TMP_FILE_DIR)
     
 checkdata_map = {}
 
-checkdata_map['keyboard'] = {'vckeymap': 'ge', 'xlayouts': 'ge'}
+checkdata_map['keyboard'] = {'vckeymap': 'de', 'xlayouts': 'de'}
 checkdata_map['selinux'] = 'permissive'
 
 checkdata_map['network'] = {
