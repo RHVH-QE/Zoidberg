@@ -67,7 +67,10 @@ class CasesMap(object):
             machine = value[1]
             flag = False
             if machine in machine_ksl_map:
-                if ks not in machine_ksl_map.get(machine):
+                for kst in machine_ksl_map.get(machine):
+                    if ks == kst[0]:
+                        break
+                else:
                     flag = True
             else:
                 machine_ksl_map[machine] = []
@@ -119,8 +122,6 @@ class CasesMap(object):
 
 
 if __name__ == '__main__':
-    test_level = COMM.DEBUG_TIER
+    test_level = COMM.INSTALL_TIER1 | COMM.INSTALL_TIER2
     casesmap = CasesMap(test_level)
-    print casesmap.testcase_map
-    print casesmap.get_checkpoint_cases_map('ati_fc_01.ks',
-                                            'dell-per510-01.lab.eng.pek2.redhat.com')
+    print casesmap.get_machine_ksl_map()
