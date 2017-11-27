@@ -1,8 +1,9 @@
-from fabric.api import env, settings, run, get, put
-from fabric.exceptions import NetworkError, CommandTimeout
-from fabric.network import disconnect_all
 import re
 import logging
+from fabric.api import env, run, get, put
+from fabric.exceptions import CommandTimeout
+from fabric.network import disconnect_all
+
 
 log = logging.getLogger('bender')
 

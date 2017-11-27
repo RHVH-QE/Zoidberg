@@ -155,7 +155,7 @@ class PartitionCheck(object):
                 ret = self.remotecmd.run_cmd(cmd, timeout=300)
                 if not ret[0]:
                     return False
-        
+
         return True
 
     def _check_parts_label(self, partitions):
@@ -186,7 +186,7 @@ class PartitionCheck(object):
 
         return True
 
-    def _check_parts(self, name_list=NULL):
+    def _check_parts(self, name_list=None):
         partitions = {}
         if not name_list:
             partitions = self.expected_partition
@@ -200,7 +200,7 @@ class PartitionCheck(object):
         ck02 = self._check_parts_size(partitions)
         ck03 = self._check_discard_option(partitions)
 
-        return ck01 and ck02 and ck03        
+        return ck01 and ck02 and ck03
 
     def partitions_check(self):
         return self._check_parts()
@@ -226,7 +226,8 @@ class PartitionCheck(object):
         return self._check_parts(name_list)
 
     def custom_nists_check(self):
-        name_list = ['/', '/var', '/var/log', '/var/log/audit', '/home', '/tmp', 'volgroup']
+        name_list = ['/', '/var', '/var/log',
+                     '/var/log/audit', '/home', '/tmp', 'volgroup']
         return self._check_parts(name_list)
 
     def custom_var_crash_check(self):

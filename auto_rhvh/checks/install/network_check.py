@@ -5,8 +5,8 @@ import attr
 class NetworkCheck(object):
     """
     """
-    expected_network = attr.ib()
     remotecmd = attr.ib()
+    expected_network = attr.ib()
 
     def _check_device_ifcfg_value(self, device_data_map):
         patterns = []

@@ -14,7 +14,7 @@ TAR_BUILD = ''
 BEAKER = 'dell-per510-01.lab.eng.pek2.redhat.com'
 KSFILE = 'ati_fc_01.ks'
 HOST_IP = '10.73.75.35'
-TEST_LEVEL = COMM.DEBUG_TIER
+TEST_LEVEL = COMM.INSTALL_TIER1
 
 
 def to_see_detailed_logs():
