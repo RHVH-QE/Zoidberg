@@ -43,10 +43,12 @@ VDSM_NOT_AUTOMATED_MAP = {
 # RHVM FQDN
 #
 RHVM_INFO = {
-    "rhvm40_vlan50_fqdn": "rhvm40-vlan50-1.lab.eng.pek2.redhat.com",
-    "rhvm41_vlan50_fqdn": "rhvm41-vdsm-auto.lab.eng.pek2.redhat.com",
-    "rhvm40_vlan20_fqdn": "rhvm40-vlan20-1.lab.eng.pek2.redhat.com",
-    "rhvm41_vlan20_fqdn": "rhvm41-vlan20-1.lab.eng.pek2.redhat.com"
+    "rhvm40_vlan50_fqdn": "rhvm40-vlan50-2.lab.eng.pek2.redhat.com",
+    "rhvm40_vlan20_fqdn": "rhvm40-vlan20-2.lab.eng.pek2.redhat.com",
+    "rhvm41_vlan50_fqdn": "rhvm41-vlan50-2.lab.eng.pek2.redhat.com",
+    "rhvm41_vlan20_fqdn": "rhvm41-vlan20-2.lab.eng.pek2.redhat.com",
+    "rhvm42_vlan50_fqdn": "rhvm42-vlan50-2.lab.eng.pek2.redhat.com",
+    "rhvm42_vlan20_fqdn": "rhvm42-vlan20-2.lab.eng.pek2.redhat.com"
 }
 
 #

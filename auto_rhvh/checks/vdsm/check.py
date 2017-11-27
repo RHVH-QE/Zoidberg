@@ -62,10 +62,13 @@ class CheckVdsm(CheckComm):
     def _get_host_version(self):
         BUILD_4_0 = "-4.0-"
         BUILD_4_1 = "-4.1-"
+        BUILD_4_2 = "-4.2-"
         if BUILD_4_0 in self._build:
             build_ver = "40"
         elif BUILD_4_1 in self._build:
             build_ver = "41"
+        elif BUILD_4_2 in self._build:
+            build_ver = "42"
         else:
             build_ver = None
         return build_ver
