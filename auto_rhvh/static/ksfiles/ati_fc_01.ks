@@ -76,7 +76,6 @@ expected_data['network'] = {
         'VLAN_ID': '50',
         'ONBOOT': 'yes'
     }
-    'hostname': 'fctest.redhat.com'
 }
 
 output = commands.getoutput('vgs --noheadings -o vg_name')
@@ -91,6 +90,11 @@ expected_data['partition'] = {
     'volgroup': {
         'lvm': True,
         'name': output.strip()
+    },
+    'swap': {
+        'lvm': True,
+        'name': 'swap',
+        'recommended': True
     },
     'pool_meta': {
         'lvm': True,

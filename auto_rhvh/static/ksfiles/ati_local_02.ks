@@ -68,13 +68,12 @@ expected_data['keyboard'] = {'vckeymap': 'de', 'xlayouts': 'de'}
 expected_data['selinux'] = 'disabled'
 
 expected_data['partition'] = {
-    'bootdevice': '/dev/mapper/36005076300810b3e0000000000000022'
     '/boot': {
         'lvm': False,
         'device_alias': '/dev/mapper/mpatha1',
         'device_wwid': '/dev/mapper/36005076300810b3e0000000000000022p1',        
         'fstype': 'ext4',
-        'recommended': True
+        'size': 1024
     }    
 }
 

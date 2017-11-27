@@ -53,7 +53,6 @@ class RemoteCmd(object):
             ret = run(cmd, quiet=True, timeout=timeout)
             if ret.succeeded:
                 log.info('Run cmd "%s" succeeded', cmd)
-                print ret
                 return True, ret
             else:
                 log.error('Run cmd "%s" failed', cmd)

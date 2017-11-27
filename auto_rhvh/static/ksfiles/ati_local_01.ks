@@ -95,27 +95,14 @@ expected_data['network'] = {
         'BOOTPROTO': 'dhcp',
         'status': status,
         'ONBOOT': 'no'
-    }    
+    },
+    'hostname': 'fctest.redhat.com'
 }
 
 expected_data['partition'] = {
-    '/boot': {
-        'lvm': False,
-        'device_alias': '/dev/sda1',
-        'device_wwid': '/dev/sda1',
-        'fstype': 'ext4',
-        'size': '1024'
-    },
     'volgroup': {
         'lvm': True,
-        'name': 'rhvh',
-        'size': '200000'
-    },
-    'pool': {
-        'lvm': True,
-        'name': 'pool',
-        'size': '1',
-        'grow': True
+        'name': 'rhvh'
     },
     '/': {
         'lvm': True,
