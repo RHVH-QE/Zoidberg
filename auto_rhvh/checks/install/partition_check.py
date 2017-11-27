@@ -1,5 +1,8 @@
+import logging
 import attr
 import re
+
+log = logging.getLogger('bender')
 
 
 @attr.s
@@ -8,6 +11,35 @@ class PartitionCheck(object):
     """
     remotecmd = attr.ib()
     expected_partition = attr.ib()
+
+    def _check_parts_mnt_fstype(self, partitions):
+        volgroup = partitions.get('volgroup')
+        if volgroup:
+            vgname = volgroup.get('name')
+            lvpre = '/dev/mapper/{}'.format(vgname.replace('-', '--'))
+
+        df_patterns = []
+        for key in partitions:
+            if key in ['pool', 'pool_meta', 'swap', 'volgroup', 'bootdevice']:
+                continue
+
+            part = partitions.get(key)
+            fstype = part.get('fstype')
+            if part.get('lvm'):
+                name = part.get('name')
+                if key == '/':
+                    pattern = r'^{}-rhvh.*{}.*{}'.format(lvpre, fstype, key)
+                else:
+                    pattern = r'^{}-{}.*{}.*{}'.format(
+                        lvpre, name.replace('-', '--'), fstype, key)
+            else:
+                part_device = part.get('device_alias')
+                pattern = r'^{}.*{}.*{}'.format(part_device, fstype, key)
+
+            df_patterns.append(pattern)
+
+        return self.remotecmd.match_strs_in_cmd_output(
+            'df -Th', df_patterns, timeout=300)
 
     def _check_recommended_swap_size(self):
         cmd = "free -g | grep Mem | sed -r 's/\s*Mem:\s*([0-9]+)\s*.*/\\1/'"
@@ -42,78 +74,60 @@ class PartitionCheck(object):
 
         return True
 
-    def _check_parts_mnt_fstype(self):
-        partition = self.expected_partition
-        volgroup = partition.get('volgroup')
-        if volgroup:
-            vgname = volgroup.get('name')
-            lvpre = '/dev/mapper/{}'.format(vgname.replace('-', '--'))
+    def _get_part_real_size(self, part, vgname):
+        part_real_size = None
 
-        df_patterns = []
-        for key in partition:
-            if key in ['pool', 'pool_meta', 'swap', 'volgroup', 'bootdevice']:
-                continue
-
-            part = partition.get(key)
-            fstype = part.get('fstype')
-            if part.get('lvm'):
-                name = part.get('name')
-                if key == '/':
-                    pattern = r'^{}-rhvh.*{}.*{}'.format(lvpre, fstype, key)
-                else:
-                    pattern = r'^{}-{}.*{}.*{}'.format(
-                        lvpre, name.replace('-', '--'), fstype, key)
+        if part.get('lvm'):
+            if part.get('percent'):
+                cmd = 'python -c "print int(' \
+                    "round($(lvs --noheadings -o size --unit=m --nosuffix {}/{}) * 100 / " \
+                    '$(vgs --noheadings -o size --unit=m --nosuffix {})))"'.format(
+                        vgname, part.get('name'), vgname)
             else:
-                part_device = part.get('device_alias')
-                pattern = r'^{}.*{}.*{}'.format(part_device, fstype, key)
-
-            df_patterns.append(pattern)
-
-        return self.remotecmd.match_strs_in_cmd_output(
-            'df -Th', df_patterns, timeout=300)
-
-    def _check_parts_size(self):
-        partition = self.expected_partition
-        volgroup = partition.get('volgroup')
-        if volgroup:
-            vgname = volgroup.get('name')
-
-        for key in partition:
-            if key in ['volgroup']:
-                continue
-
-            part = partition.get(key)
-            if part.get('lvm'):
-                if part.get('percent'):
-                    cmd = 'python -c "print int(' \
-                        "round($(lvs --noheadings -o size --unit=m --nosuffix {}/{}) * 100 / " \
-                        '$(vgs --noheadings -o size --unit=m --nosuffix {})))"'.format(
-                            vgname, part.get('name'), vgname)
-                else:
-                    cmd = "lvs --noheadings -o size --unit=m --nosuffix {}/{} | sed -r 's/\s*([0-9]+)\..*/\\1/'".format(
+                cmd = "lvs --noheadings -o size --unit=m --nosuffix {}/{} | " \
+                    "sed -r 's/\s*([0-9]+)\..*/\\1/'".format(
                         vgname, part.get('name'))
-            else:
-                cmd = "expr $(fdisk -s {}) / 1024".format(
-                    part.get('device_wwid'))
+        else:
+            cmd = "expr $(fdisk -s {}) / 1024".format(part.get('device_wwid'))
 
-            ret = self.remotecmd.run_cmd(cmd, timeout=300)
+        ret = self.remotecmd.run_cmd(cmd, timeout=300)
+        if ret[0]:
+            for line in ret[1].split('\r\n'):
+                if re.match(r'\d+$', line):
+                    part_real_size = int(line.strip())
+                    break
 
-            if ret[0]:
-                for line in ret[1].split('\r\n'):
-                    if re.match(r'\d+$', line):
-                        part_real_size = int(line.strip())
-                        break
-                else:
-                    return False
-            else:
+        return part_real_size
+
+    def _check_parts_size(self, partitions):
+        volgroup = partitions.get('volgroup')
+        vgname = None
+        if volgroup:
+            vgname = volgroup.get('name')
+
+        for key in partitions:
+            if key in ['volgroup', 'bootdevice']:
+                continue
+
+            part = partitions.get(key)
+
+            # To get part real size
+            part_real_size = self._get_part_real_size(part, vgname)
+            if not part_real_size:
+                log.error("Failed to get part %s real size.", part.get('name'))
                 return False
 
+            # To check whether the part real size is correct
             if part.get('grow'):
                 if part_real_size <= int(part.get('size')):
+                    log.error("For Part %s, real size %s lower than configured size %s",
+                              part.get('name'), str(part_real_size), part.get('size'))
                     return False
                 else:
                     maxsize = part.get('maxsize')
                     if maxsize and part_real_size > int(maxsize):
+                        log.error("For part %s, real size %s bigger than configured maxsize %s",
+                                  part.get('name'), str(part_real_size), maxsize)
                         return False
             elif part.get('recommended'):
                 if key == 'swap':
@@ -121,26 +135,40 @@ class PartitionCheck(object):
                         return False
                 elif key == '/boot':
                     if part_real_size != 1024:
+                        log.error(
+                            "/boot size is %s, not the recommended 1024M", part_real_size)
                         return False
                 else:
                     return False
             else:
                 if part_real_size != int(part.get('size')):
+                    log.error("For Part %s, real size %s not equal to configured size %s",
+                              part.get('name'), str(part_real_size), part.get('size'))
                     return False
 
         return True
 
-    def _check_parts_label(self):
-        partition = self.expected_partition
-        volgroup = partition.get('volgroup')
+    def _check_discard_option(self, partitions):
+        df_patterns = []
+        for key in partitions:
+            part = partitions.get(key)
+            if part.get('discard'):
+                pattern = r'{}\stype'.format(key)
+                df_patterns.append(pattern)
+
+        return self.remotecmd.match_strs_in_cmd_output(
+            'mount | grep discard', df_patterns, timeout=300)
+
+    def _check_parts_label(self, partitions):
+        volgroup = partitions.get('volgroup')
         if volgroup:
             vgname = volgroup.get('name')
 
-        for key in partition:
+        for key in partitions:
             if key in ['volgroup']:
                 continue
 
-            part = partition.get(key)
+            part = partitions.get(key)
             label = part.get('label')
             if label:
                 if part.get('lvm'):
@@ -159,16 +187,70 @@ class PartitionCheck(object):
 
         return True
 
-    def partition_check(self):
-        ck01 = self._check_parts_mnt_fstype()
-        ck02 = self._check_parts_size()
+    def _get_partitions(self, pnames):
+        partitions = {}
+
+        for key in pnames:
+            value = self.expected_partition.get(key)
+            if value:
+                partitions[key] = value
+
+        return partitions
+
+    def partitions_check(self):
+        partitions = self.expected_partition
+
+        ck01 = self._check_parts_mnt_fstype(partitions)
+        ck02 = self._check_parts_size(partitions)
+        ck03 = self._check_discard_option(partitions)
         # ck03 = self._check_parts_label()
 
-        return ck01 and ck02
+        return ck01 and ck02 and ck03
 
     def bootloader_check(self):
         boot_device = self.expected_partition.get('bootdevice')
-        cmd = 'dd if={} bs=512 count=1 2>&1 | strings |grep -i grub'.format(
+        cmd = 'dd if={} bs=512 count=1 2>&1 | strings | grep -i grub'.format(
             boot_device)
 
         return self.remotecmd.check_strs_in_cmd_output(cmd, ['GRUB'], timeout=300)
+
+    def reqpart_check(self):
+        pnlist = ['/boot', '/boot/efi', 'biosboot']
+        partitions = self._get_partitions(pnlist)
+
+        ck01 = self._check_parts_mnt_fstype(partitions)
+        ck02 = self._check_parts_size(partitions)
+
+        return ck01 and ck02
+
+    def vgfree_check(self):
+        cmd = "vgs --units=m --rows | grep {name} | sed 's/{name}//' | " \
+            "sed -r 's/\s*([0-9]+)\..*/\\1/'"
+        cmd1 = cmd.format(name='VSize')
+        cmd2 = cmd.format(name='VFree')
+
+        size = []
+        for cmd in [cmd1, cmd2]:
+            ret = self.remotecmd.run_cmd(cmd, timeout=300)
+            if ret[0]:
+                size.append(ret[1].strip())
+            else:
+                return False
+
+        act_percent = round(float(size[1]) / float(size[0]))
+        conf_percent = self.expected_partition.get(
+            'volgroup').get('reserved-percent')
+        if act_percent != conf_percent:
+            log.error('The real reserved percent of volume group is %s, not equal to the configured %s',
+                      act_percent, conf_percent)
+            return False
+
+        return True
+
+    def swap_check(self):
+        pnlsit = ['swap']
+        partitions = self._get_partitions(pnlsit)
+
+        ck = self._check_parts_size(partitions)
+
+        return ck

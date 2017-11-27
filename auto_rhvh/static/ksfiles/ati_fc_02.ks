@@ -14,12 +14,9 @@ keyboard --vckeymap=us --xlayouts='us'
 ### User ###
 rootpw --plaintext redhat
 auth --enableshadow --passalgo=sha512
-user --name=test --password=redhat --plaintext
 
 ### Misc ###
 services --enabled=sshd
-firewall --enabled
-selinux --disabled
 
 ### Installation mode ###
 install
@@ -28,9 +25,9 @@ liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-h
 text
 reboot
 
+# This ks is specific to dell-per510-01, which is a multipath FC machine, use the FC luns
 ### Network ###
 network --device=em2 --bootproto=dhcp
-network --device=bond0 --bootproto=dhcp --bondslaves=p1p1,p1p2 --bondopts=mode=balance-rr,miimon=100 --vlanid=50
 network --hostname=fctest.redhat.com
 
 ### Partitioning ###
@@ -38,16 +35,7 @@ ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244,/dev/
 zerombr
 clearpart --all
 bootloader --location=mbr
-reqpart --add-boot
-part pv.01 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000022 --size=1 --grow
-part pv.02 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000023 --size=1 --grow
-part pv.03 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000024 --size=1 --grow
-volgroup rhvh pv.01 pv.02 pv.03 --reserved-percent=2
-logvol swap --fstype=swap --name=swap --vgname=rhvh --recommended
-logvol none --name=pool --vgname=rhvh --thinpool --size=300000 --grow
-logvol / --fstype=ext4 --name=root --vgname=rhvh --thin --poolname=pool --size=300000
-logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --size=15360
-logvol /home --fstype=xfs --name=home --vgname=rhvh --thin --poolname=pool --size=20000 --grow --maxsize=50000
+autopart --type=thinp
 
 ### Pre deal ###
 
@@ -56,7 +44,6 @@ logvol /home --fstype=xfs --name=home --vgname=rhvh --thin --poolname=pool --siz
 compose_expected_data(){
 python << ES
 import json
-import commands
 import os
 
 AUTO_TEST_DIR = '/boot/autotest'
@@ -64,81 +51,7 @@ EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_fc_02.json')
 
 os.mkdir(AUTO_TEST_DIR)
 
-expected_data = {}
-
-expected_data['ntpservers'] = 'clock02.util.phx2.redhat.com'
-expected_data['user'] = {'name': 'test'}
-expected_data['selinux'] = 'disabled'
-
-expected_data['network'] = {
-    'dhcp': {
-        'DEVICE': 'em2',
-        'BOOTPROTO': 'dhcp',
-        'ONBOOT': 'yes'
-    },
-    'bond': {
-        'DEVICE': 'bond0',
-        'TYPE': 'Bond',
-        'BONDING_OPTS': 'mode=balance-rr miimon=100',
-        'ONBOOT': 'yes',
-        'slaves': ['p1p1', 'p1p2']
-    },
-    'vlan': {
-        'DEVICE': 'bond0.50',
-        'TYPE': 'Vlan',
-        'BOOTPROTO': 'dhcp',
-        'VLAN_ID': '50',
-        'ONBOOT': 'yes'
-    }
-}
-
-expected_data['partition'] = {
-    'bootdevice': '/dev/mapper/36005076300810b3e0000000000000022'
-    '/boot': {
-        'lvm': False,
-        'device_alias': '/dev/mapper/mpatha1',
-        'device_wwid': '/dev/mapper/36005076300810b3e0000000000000022p1',        
-        'fstype': 'ext4',
-        'size': '1024'
-    },
-    'volgroup': {
-        'lvm': True,
-        'name': 'rhvh'
-    },
-    'pool': {
-        'lvm': True,
-        'name': 'pool',
-        'size': '300000',
-        'grow': True
-    },
-    '/': {
-        'lvm': True,
-        'name': 'root',
-        'fstype': 'ext4',
-        'size': '300000'
-    },
-    '/var': {
-        'lvm': True,
-        'name': 'var',
-        'fstype': 'ext4',
-        'size': '15360'
-    },
-    '/home': {
-        'lvm': True,
-        'name': 'home',
-        'fstype': 'xfs',
-        'size': '20000',
-        'grow': True,
-        'maxsize': '50000'
-    },
-    'swap': {
-        'lvm': True,
-        'name': 'swap',
-        'recommended': True
-    }
-}
-
-expected_data['grubby'] = 'crashkernel=250'
+expected_data = {"data": None}
 
 with open(EXPECTED_DATA_FILE, 'wb') as json_file:
     json_file.write(
@@ -146,12 +59,6 @@ with open(EXPECTED_DATA_FILE, 'wb') as json_file:
             expected_data, indent=4))
 
 ES
-}
-
-grubby_test(){
-kernel=$(grubby --info=0 | grep '^kernel')
-kernel=${kernel#*=}
-grubby --args=crashkernel=250 --update-kernel $kernel
 }
 
 coverage_check(){
@@ -164,6 +71,5 @@ cp .coverage* /boot/coverage
 
 coverage_check
 #imgbase layout --init
-grubby_test
 compose_expected_data
 %end

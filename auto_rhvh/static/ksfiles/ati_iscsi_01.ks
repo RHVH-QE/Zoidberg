@@ -17,27 +17,33 @@ auth --enableshadow --passalgo=sha512
 
 ### Misc ###
 services --enabled=sshd
-selinux --enforcing
 
 ### Installation mode ###
 install
-#liveimg url will substitued by autoframework
-liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-host-4.1-20170120.0/redhat-virtualization-host-4.1-20170120.0.x86_64.liveimg.squashfs
+#liveimg url will be substitued by autoframework
+liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-host-4.1-20170202.0/redhat-virtualization-host-4.1-20170202.0.x86_64.liveimg.squashfs
 text
 reboot
 
-# This ks is specific to dell-per510-01, which is a multipath FC machine, use the FC luns
+# This ks is specific to dell-pet105-01, which is a single path iSCSI machine, use the iSCSI luns
 ### Network ###
-network --device=em2 --bootproto=dhcp
-network --device=bond0 --bootproto=dhcp --bondslaves=p1p1,p1p2 --bondopts=mode=active-backup,primary=p1p1,miimon=100 --vlanid=50
-network --hostname=fctest.redhat.com
+network --device=enp2s0 --bootproto=dhcp
+network --hostname=localtest.redhat.com
 
 ### Partitioning ###
-ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244
+ignoredisk --drives=sda
 zerombr
 clearpart --all
 bootloader --location=mbr
-autopart --type=thinp
+part /boot --fstype=ext4 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000022 --size=1024
+part pv.01 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000022 --size=1 --grow
+part pv.02 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000023 --size=1 --grow
+part pv.03 --ondisk=/dev/disk/by-id/scsi-36005076300810b3e0000000000000024 --size=1 --grow
+volgroup rhvh pv.01 pv.02 pv.03 --reserved-percent=2
+logvol swap --fstype=swap --name=swap --vgname=rhvh --recommended
+logvol none --name=pool --vgname=rhvh --thinpool --size=300000 --grow
+logvol / --fstype=ext4 --name=root --vgname=rhvh --thin --poolname=pool --size=200000 --grow
+logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --size=15360
 
 ### Pre deal ###
 
@@ -48,60 +54,48 @@ python << ES
 import json
 import commands
 import os
-
+    
 AUTO_TEST_DIR = '/boot/autotest'
-EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_fc_01.json')
+EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_iscsi_01.json')
 
 os.mkdir(AUTO_TEST_DIR)
-
+    
+#run ip cmd to get nic status during installation
+cmd = "nmcli -t -f DEVICE,STATE dev |grep 'enp6s1f0:connected'"
+status = commands.getstatusoutput(cmd)[0]
+    
 expected_data = {}
 
-expected_data['network'] = {
-    'dhcp': {
-        'DEVICE': 'em2',
-        'BOOTPROTO': 'dhcp',
-        'ONBOOT': 'yes'
-    },
-    'bond': {
-        'DEVICE': 'bond0',
-        'TYPE': 'Bond',
-        'BONDING_OPTS': 'mode=active-backup primary=p1p1 miimon=100',
-        'ONBOOT': 'yes',
-        'slaves': ['p1p1', 'p1p2']
-    },
-    'vlan': {
-        'DEVICE': 'bond0.50',
-        'TYPE': 'Vlan',
-        'BOOTPROTO': 'dhcp',
-        'VLAN_ID': '50',
-        'ONBOOT': 'yes'
-    }
-    'hostname': 'fctest.redhat.com'
-}
-
-output = commands.getoutput('vgs --noheadings -o vg_name')
 expected_data['partition'] = {
+    'bootdevice': '/dev/mapper/36005076300810b3e0000000000000022'
     '/boot': {
         'lvm': False,
         'device_alias': '/dev/mapper/mpatha1',
-        'device_wwid': '/dev/mapper/36005076300810b3e0000000000000022p1',
+        'device_wwid': '/dev/mapper/36005076300810b3e0000000000000022p1',        
         'fstype': 'ext4',
-        'size': '1024'
+        'recommended': True
     },
     'volgroup': {
         'lvm': True,
-        'name': output.strip()
+        'name': 'rhvh',
+        'reserved-percent': 2
     },
-    'pool_meta': {
+    'swap': {
         'lvm': True,
-        'name': 'pool00_tmeta',
-        'size': '1024'
-    },    
-   '/': {
+        'name': 'swap',
+        'recommended': True
+    },
+    'pool': {
+        'lvm': True,
+        'name': 'pool',
+        'size': '300000',
+        'grow': True
+    },
+    '/': {
         'lvm': True,
         'name': 'root',
         'fstype': 'ext4',
-        'size': '6144',
+        'size': '200000',
         'grow': True,
         'discard': True
     },
@@ -109,7 +103,7 @@ expected_data['partition'] = {
         'lvm': True,
         'name': 'var',
         'fstype': 'ext4',
-        'size': '15360',
+        'size': '20000',
         'discard': True
     },
     '/var/log': {

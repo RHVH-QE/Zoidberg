@@ -14,64 +14,25 @@ class ExpectedData(object):
     def expected_partition(self):
         """
         'bootdevice':
-        '/boot': {
-            'lvm':
+        'standard partition name': {
+            'lvm': False
             'device_alias':
             'device_wwid':
             'fstype':
             'size':
+            'grow':
+            'maxsize'            
         },
-        'volgroup': {
-            'lvm':
+        'logic volume name':{
+            'lvm': True
             'name':
-        },
-        'pool': {
-            'lvm':
-            'name':
+            'fstype':
             'size':
             'grow':
-        },
-        '/': {
-            'lvm':
-            'name':
-            'fstype':
-            'size':
-        },
-        '/var': {
-            'lvm':
-            'name':
-            'fstype':
-            'size':
-        },
-        '/var/log': {
-            'lvm':
-            'name':
-            'fstype':
-            'size':
-        },
-        '/var/log/audit': {
-            'lvm':
-            'name':
-            'fstype':
-            'size':
-        },
-        '/tmp': {
-            'lvm':
-            'name':
-            'fstype':
-            'size':
+            'maxsize':
+            'recommended': True/False
+            'discard': True/False
         }
-        '/home': {
-            'lvm':
-            'name':
-            'fstype':
-            'size':
-        },
-        'swap': {
-            'lvm':
-            'name':
-            'size':
-        },
         """
         return self._expected_data.get('partition')
 

@@ -5,9 +5,11 @@ lang en_US.UTF-8
 timezone Asia/Shanghai --utc --ntpservers=clock02.util.phx2.redhat.com
 
 ### Keyboard ###
-keyboard --vckeymap=ge --xlayouts='ge'
+keyboard --vckeymap=de --xlayouts='de'
 
 ### Kdump ###
+%addon com_redhat_kdump --disable
+%end
 
 ### Security ###
 
@@ -17,31 +19,33 @@ auth --enableshadow --passalgo=sha512
 
 ### Misc ###
 services --enabled=sshd
-selinux --permissive
+firewall --enabled
+selinux --disabled
 
 ### Installation mode ###
 install
-#liveimg url will be substitued by autoframework
-liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-host-4.1-20170202.0/redhat-virtualization-host-4.1-20170202.0.x86_64.liveimg.squashfs
+#liveimg url will substitued by autoframework
+liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-host-4.1-20170120.0/redhat-virtualization-host-4.1-20170120.0.x86_64.liveimg.squashfs
 text
 reboot
 
+# This ks is specific to dell-per515-01, which is a multipath iSCSI machine, but only use the big local disk
 ### Network ###
-network --device=enp2s0 --bootproto=static --ip=10.66.148.9 --netmask=255.255.252.0 --gateway=10.66.151.254 --ipv6=2620:52:0:4294:222:19ff:fe27:54c7/64
-network --hostname=localtest.redhat.com
+network --device=em2 --bootproto=dhcp
+network --hostname=fctest.redhat.com
 
 ### Partitioning ###
 ignoredisk --only-use=sda
 zerombr
 clearpart --all
 bootloader --location=mbr
-part /boot --fstype=ext4 --size=1024
-part pv.01 --size=200000
-volgroup rhvh pv.01
-logvol swap --fstype=swap --name=swap --vgname=rhvh --percent=5
-logvol none --name=pool --vgname=rhvh --thinpool --size=1 --grow
-logvol / --fstype=ext4 --name=root --vgname=rhvh --thin --poolname=pool --percent=85
-logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --percent=10
+reqpart --add-boot
+part pv.01 --size=20000 --grow
+volgroup rhvh pv.01 --reserved-percent=2
+logvol swap --fstype=swap --name=swap --vgname=rhvh --recommended
+logvol none --name=pool --vgname=rhvh --thinpool --size=300000 --grow
+logvol / --fstype=ext4 --name=root --vgname=rhvh --thin --poolname=pool --size=200000 --grow
+logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --size=20000
 
 ### Pre deal ###
 
@@ -52,68 +56,29 @@ python << ES
 import json
 import commands
 import os
-    
+
 AUTO_TEST_DIR = '/boot/autotest'
-EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_local_02.json')
+EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_fc_02.json')
 
 os.mkdir(AUTO_TEST_DIR)
-    
+
 expected_data = {}
 
-expected_data['keyboard'] = {'vckeymap': 'ge', 'xlayouts': 'ge'}
-expected_data['selinux'] = 'permissive'
-
-expected_data['network'] = {
-    'static': {
-        'DEVICE': 'enp2s0',
-        'BOOTPROTO': 'static',
-        'IPADDR': '10.66.148.9',
-        'NETMASK': '255.255.252.0',
-        'GATEWAY': '10.66.151.254',
-        'IPV6ADDR': '2620:52:0:4294:222:19ff:fe27:54c7/64'
-    }
-}
+expected_data['keyboard'] = {'vckeymap': 'de', 'xlayouts': 'de'}
+expected_data['selinux'] = 'disabled'
 
 expected_data['partition'] = {
+    'bootdevice': '/dev/mapper/36005076300810b3e0000000000000022'
     '/boot': {
         'lvm': False,
-        'device_alias': '/dev/sda1',
-        'device_wwid': '/dev/sda1',
+        'device_alias': '/dev/mapper/mpatha1',
+        'device_wwid': '/dev/mapper/36005076300810b3e0000000000000022p1',        
         'fstype': 'ext4',
-        'size': '1024'
-    },
-    'volgroup': {
-        'lvm': True,
-        'name': 'rhvh',
-        'size': '200000'
-    },
-    'pool': {
-        'lvm': True,
-        'name': 'pool',
-        'size': '1',
-        'grow': True
-    },
-    '/': {
-        'lvm': True,
-        'name': 'root',
-        'fstype': 'ext4',
-        'percent': True,
-        'size': '85'
-    },
-    '/var': {
-        'lvm': True,
-        'name': 'var',
-        'fstype': 'ext4',
-        'percent': True,
-        'size': '10'
-    },
-    'swap': {
-        'lvm': True,
-        'name': 'swap',
-        'percent': True,
-        'size': '5'
-    }
+        'recommended': True
+    }    
 }
+
+expected_data['grubby'] = 'crashkernel=250'
 
 with open(EXPECTED_DATA_FILE, 'wb') as json_file:
     json_file.write(
@@ -121,6 +86,12 @@ with open(EXPECTED_DATA_FILE, 'wb') as json_file:
             expected_data, indent=4))
 
 ES
+}
+
+grubby_test(){
+kernel=$(grubby --info=0 | grep '^kernel')
+kernel=${kernel#*=}
+grubby --args=crashkernel=250 --update-kernel $kernel
 }
 
 coverage_check(){
@@ -133,5 +104,6 @@ cp .coverage* /boot/coverage
 
 coverage_check
 #imgbase layout --init
+grubby_test
 compose_expected_data
 %end
