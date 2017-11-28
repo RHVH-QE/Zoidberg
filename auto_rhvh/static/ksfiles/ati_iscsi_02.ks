@@ -31,7 +31,7 @@ reboot
 network --device=em2 --bootproto=dhcp
 #network --device=bond0 --bootproto=dhcp --bondslaves=em1,em2 --bondopts=mode=active-backup,primary=em2,miimon=100
 network --device=p2p1 --bootproto=dhcp --vlanid=50
-network --hostname=fctest.redhat.com
+network --hostname=ati_iscsi_02.test.redhat.com
 
 ### Partitioning ###
 ignoredisk --drives=/dev/disk/by-id/scsi-36b8ca3a0e7899a001dfd500516473f47,/dev/disk/by-id/scsi-360a9800050334c33424b4a4b306a2d66
@@ -63,7 +63,7 @@ import commands
 import os
     
 AUTO_TEST_DIR = '/boot/autotest'
-EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_fc_03.json')
+EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_iscsi_02.json')
 
 os.mkdir(AUTO_TEST_DIR)
     
@@ -112,6 +112,7 @@ expected_data['partition'] = {
     '/lv_data': {
         'lvm': True,
         'name': 'lv_data',
+        'fstype': 'xfs',
         'size': '5000',
         'grow': True,
         'maxsize': '10000',

@@ -38,7 +38,7 @@ reboot
 ### Network ###
 network --device=enp2s0 --bootproto=static --ip=10.66.148.9 --netmask=255.255.252.0 --gateway=10.66.151.254 --ipv6=2620:52:0:4294:222:19ff:fe27:54c7/64
 network --device=enp6s1f0 --bootproto=dhcp --activate --onboot=no
-network --hostname=localtest.redhat.com
+network --hostname=ati_local_01.test.redhat.com
 
 ### Partitioning ###
 ignoredisk --only-use=sda
@@ -64,10 +64,14 @@ import commands
 import os
     
 AUTO_TEST_DIR = '/boot/autotest'
-EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_local_02.json')
+EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_local_01.json')
 
 os.mkdir(AUTO_TEST_DIR)
-    
+
+#run ip cmd to get nic status during installation
+cmd = "nmcli -t -f DEVICE,STATE dev |grep 'enp6s1f0:connected'"
+status = commands.getstatusoutput(cmd)[0]
+
 expected_data = {}
 
 expected_data['lang'] = 'en_US.UTF-8'
@@ -96,7 +100,7 @@ expected_data['network'] = {
         'status': status,
         'ONBOOT': 'no'
     },
-    'hostname': 'fctest.redhat.com'
+    'hostname': 'ati_local_01.test.redhat.com'
 }
 
 expected_data['partition'] = {

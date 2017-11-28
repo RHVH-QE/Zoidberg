@@ -32,20 +32,14 @@ reboot
 # This ks is specific to dell-per515-01, which is a multipath iSCSI machine, but only use the big local disk
 ### Network ###
 network --device=em2 --bootproto=dhcp
-network --hostname=fctest.redhat.com
+network --hostname=ati_local_02.test.redhat.com
 
 ### Partitioning ###
 ignoredisk --only-use=sda
 zerombr
 clearpart --all
 bootloader --location=mbr
-reqpart --add-boot
-part pv.01 --size=20000 --grow
-volgroup rhvh pv.01 --reserved-percent=2
-logvol swap --fstype=swap --name=swap --vgname=rhvh --recommended
-logvol none --name=pool --vgname=rhvh --thinpool --size=300000 --grow
-logvol / --fstype=ext4 --name=root --vgname=rhvh --thin --poolname=pool --size=200000 --grow
-logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --size=20000
+autopart --type=thinp
 
 ### Pre deal ###
 
@@ -58,7 +52,7 @@ import commands
 import os
 
 AUTO_TEST_DIR = '/boot/autotest'
-EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_fc_02.json')
+EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_local_02.json')
 
 os.mkdir(AUTO_TEST_DIR)
 
@@ -66,17 +60,6 @@ expected_data = {}
 
 expected_data['keyboard'] = {'vckeymap': 'de', 'xlayouts': 'de'}
 expected_data['selinux'] = 'disabled'
-
-expected_data['partition'] = {
-    '/boot': {
-        'lvm': False,
-        'device_alias': '/dev/mapper/mpatha1',
-        'device_wwid': '/dev/mapper/36005076300810b3e0000000000000022p1',        
-        'fstype': 'ext4',
-        'size': 1024
-    }    
-}
-
 expected_data['grubby'] = 'crashkernel=250'
 
 with open(EXPECTED_DATA_FILE, 'wb') as json_file:

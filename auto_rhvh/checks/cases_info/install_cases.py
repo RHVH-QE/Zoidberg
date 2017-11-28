@@ -6,13 +6,13 @@ INSTALL_TIER1_TESTCASE_MAP = {
     'RHEVM-23945': ('ati_fc_01.ks', DELL_PER510_01, 'NetworkCheck.dhcp_network_check'),
     'RHEVM-23950': ('ati_fc_01.ks', DELL_PER510_01, 'NetworkCheck.bond_vlan_check'),
     'RHEVM-24162': ('ati_fc_01.ks', DELL_PER510_01, 'GeneralCheck.node_check'),
-    'RHEVM-23930': ('ati_iscsi_01.ks', DELL_PET105_01, 'PartitionCheck.vgfree_check'),
-    'RHEVM-23938': ('ati_iscsi_01.ks', DELL_PET105_01, 'PartitionCheck.custom_nists_check'),
-    'RHEVM-23942': ('ati_iscsi_01.ks', DELL_PET105_01, 'PartitionCheck.custom_swap_check'),
-    'RHEVM-24689': ('ati_iscsi_01.ks', DELL_PET105_01, 'PartitionCheck.custom_var_crash_check'),
-    'RHEVM-23919': ('ati_local_02.ks', DELL_PER515_01, 'PartitionCheck.custom_boot_check'),
-    'RHEVM-24161': ('ati_local_02.ks', DELL_PER515_01, 'GeneralCheck.node_check'),
-    'RHEVM-24163': ('ati_iscsi_02.ks', DELL_PER515_01, 'GeneralCheck.node_check'),
+    'RHEVM-23919': ('ati_iscsi_01.ks', DELL_PER515_01, 'PartitionCheck.custom_boot_check'),
+    'RHEVM-23930': ('ati_iscsi_01.ks', DELL_PER515_01, 'PartitionCheck.vgfree_check'),
+    'RHEVM-23938': ('ati_iscsi_01.ks', DELL_PER515_01, 'PartitionCheck.custom_nists_check'),
+    'RHEVM-23942': ('ati_iscsi_01.ks', DELL_PER515_01, 'PartitionCheck.custom_swap_check'),
+    'RHEVM-24689': ('ati_iscsi_01.ks', DELL_PER515_01, 'PartitionCheck.custom_var_crash_check'),
+    'RHEVM-24163': ('ati_iscsi_01.ks', DELL_PER515_01, 'GeneralCheck.node_check'),
+    'RHEVM-24161': ('ati_local_01.ks', DELL_PET105_01, 'GeneralCheck.node_check'),
 }
 
 INSTALL_TIER2_TESTCASE_MAP = {
@@ -34,11 +34,11 @@ INSTALL_TIER2_TESTCASE_MAP = {
     'RHEVM-23955': ('ati_local_01.ks', DELL_PET105_01, 'NetworkCheck.static_network_check'),
     'RHEVM-24186': ('ati_local_01.ks', DELL_PET105_01, 'GeneralCheck.fips_check'),
     'RHEVM-24195': ('ati_local_01.ks', DELL_PET105_01, 'GeneralCheck.layout_init_check'),
-    'RHEVM-23888': ('ati_local_02.ks', DELL_PER515_01, 'KeyboardCheck.keyboard_check'),
-    'RHEVM-23895': ('ati_local_02.ks', DELL_PER515_01, 'KdumpCheck.kdump_disable_check'),
-    'RHEVM-23901': ('ati_local_02.ks', DELL_PER515_01, 'SelinuxCheck.selinux_check'),
-    'RHEVM-23905': ('ati_local_02.ks', DELL_PER515_01, 'FirewallCheck.firewall_check'),
-    'RHEVM-23907': ('ati_local_02.ks', DELL_PER515_01, 'GrubbyCheck.grubby_check'),
+    'RHEVM-23888': ('ati_local_02.ks', DELL_PET105_01, 'KeyboardCheck.keyboard_check'),
+    'RHEVM-23895': ('ati_local_02.ks', DELL_PET105_01, 'KdumpCheck.kdump_disable_check'),
+    'RHEVM-23901': ('ati_local_02.ks', DELL_PET105_01, 'SelinuxCheck.selinux_check'),
+    'RHEVM-23905': ('ati_local_02.ks', DELL_PET105_01, 'FirewallCheck.firewall_check'),
+    'RHEVM-23907': ('ati_local_02.ks', DELL_PET105_01, 'GrubbyCheck.grubby_check'),
     'RHEVM-23902': ('ati_iscsi_02.ks', DELL_PER515_01, 'SelinuxCheck.selinux_check'),
     'RHEVM-23912': ('ati_iscsi_02.ks', DELL_PER515_01, 'PartitionCheck.bootloader_check'),
     'RHEVM-23924': ('ati_iscsi_02.ks', DELL_PER515_01, 'PartitionCheck.custom_boot_check'),
@@ -52,7 +52,6 @@ INSTALL_TIER2_TESTCASE_MAP = {
     'RHEVM-24167': ('ati_fc_01.ks', DELL_PER510_01, 'GeneralCheck.node_check'),
     'RHEVM-24168': ('ati_fc_02.ks', DELL_PER510_01, 'GeneralCheck.node_check'),
     'RHEVM-24192': ('ati_fc_02.ks', DELL_PER510_01, 'GeneralCheck.iqn_check'),
-    'RHEVM-24164': ('ati_iscsi_01.ks', DELL_PET105_01, 'GeneralCheck.node_check'),
 }
 
 KS_PRESSURE_MAP = {'ati_fc_02.ks': '3'}
