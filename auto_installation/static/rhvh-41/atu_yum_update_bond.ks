@@ -1,5 +1,5 @@
 #
-# KS for iscsi bond upgrade test on dell-per515-01
+# KS for upgrade bond iscsi test on dell-per515-01
 #
 ### Language ###
 lang en_US.UTF-8
@@ -25,12 +25,11 @@ selinux --enforcing
 ### Installation mode ###
 install
 #liveimg url will substitued by autoframework
-liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-host-4.1-20171101.0/redhat-virtualization-host-4.1-20171101.0.x86_64.liveimg.squashfs
+liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-host-4.1-20170120.0/redhat-virtualization-host-4.1-20170120.0.x86_64.liveimg.squashfs
 text
 reboot
 
 ### Network ###
-##network --device=bond0 --bootproto=dhcp --bondslaves=em1,em2 --bondopts=mode=active-backup,primary=em2,miimon=100
 network --device=bond0 --bootproto=static --ip=10.73.73.17 --netmask=255.255.252.0 --gateway=10.73.75.254 --bondslaves=em1,em2 --bondopts=mode=active-backup,primary=em2,miimon=100
 
 ### Partitioning ###
