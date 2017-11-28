@@ -255,7 +255,7 @@ class PartitionCheck(object):
             else:
                 return False
 
-        act_percent = round(float(size[1]) / float(size[0]))
+        act_percent = round(float(size[1]) * 100 / float(size[0]))
         conf_percent = self.expected_partition.get(
             'volgroup').get('reserved-percent')
         if act_percent != conf_percent:

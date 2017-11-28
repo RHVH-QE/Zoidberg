@@ -11,9 +11,9 @@ from cases_info import common as COMM
 # Neet to modify these values manually befor debuging.
 SRC_BUILD = ''
 TAR_BUILD = ''
-BEAKER = 'dell-per510-01.lab.eng.pek2.redhat.com'
-KSFILE = 'ati_fc_01.ks'
-HOST_IP = '10.73.75.35'
+BEAKER = COMM.DELL_PER515_01
+KSFILE = 'ati_iscsi_01.ks'
+HOST_IP = '10.73.75.79'
 TEST_LEVEL = COMM.INSTALL_TIER1
 
 

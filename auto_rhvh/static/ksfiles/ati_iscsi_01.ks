@@ -69,7 +69,7 @@ expected_data['partition'] = {
         'device_wwid': '/dev/mapper/360a9800050334c33424b41762d726954p1',
         'fstype': 'ext4',
         'size': 1024
-    }
+    },
     'volgroup': {
         'lvm': True,
         'name': 'rhvh',
