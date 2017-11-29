@@ -18,7 +18,7 @@ class TimezoneCheck(object):
     def timezone_check(self):
         timezone = self.expected_timezone.get('timezone')
         cmd = "timedatectl | grep 'Time zone'"
-        return self.remotecmd.check_strs_in_cmd_output(cdm, [timezone], timeout=300)
+        return self.remotecmd.check_strs_in_cmd_output(cmd, [timezone], timeout=300)
 
     def utc_check(self):
         cmd = 'timedatectl'

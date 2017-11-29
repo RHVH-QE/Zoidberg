@@ -24,7 +24,7 @@ INSTALL_TIER2_TESTCASE_MAP = {
     'RHEVM-23892': ('ati_local_01.ks', DELL_PET105_01, 'UserCheck.user_check'),
     'RHEVM-23896': ('ati_local_01.ks', DELL_PET105_01, 'KdumpCheck.kdump_enable_check'),
     'RHEVM-23897': ('ati_local_01.ks', DELL_PET105_01, 'SelinuxCheck.selinux_check'),
-    'RHEVM-23899': ('ati_local_01.ks', DELL_PET105_01, 'SecurityCheck.security_check'),
+    'RHEVM-23899': ('ati_local_01.ks', DELL_PET105_01, 'SecurityCheck.security_policy_check'),
     'RHEVM-23904': ('ati_local_01.ks', DELL_PET105_01, 'FirewallCheck.firewall_disable_check'),
     'RHEVM-23909': ('ati_local_01.ks', DELL_PET105_01, 'ServicesCheck.sshd_check'),
     'RHEVM-23941': ('ati_local_01.ks', DELL_PET105_01, 'PartitionCheck.partitions_check'),
