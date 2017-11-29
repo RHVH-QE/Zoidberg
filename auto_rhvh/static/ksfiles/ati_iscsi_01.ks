@@ -52,7 +52,6 @@ logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --size
 compose_expected_data(){
 python << ES
 import json
-import commands
 import os
     
 AUTO_TEST_DIR = '/boot/autotest'

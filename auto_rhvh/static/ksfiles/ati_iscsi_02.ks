@@ -59,7 +59,6 @@ logvol /thin_data --fstype=xfs --name=thin_data --vgname=rhvh --thin --poolname=
 compose_expected_data(){
 python << ES
 import json
-import commands
 import os
     
 AUTO_TEST_DIR = '/boot/autotest'

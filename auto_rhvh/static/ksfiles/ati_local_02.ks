@@ -48,7 +48,6 @@ autopart --type=thinp
 compose_expected_data(){
 python << ES
 import json
-import commands
 import os
 
 AUTO_TEST_DIR = '/boot/autotest'

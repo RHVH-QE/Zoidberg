@@ -91,7 +91,7 @@ expected_data['network'] = {
         'IPADDR': '10.66.148.9',
         'NETMASK': '255.255.252.0',
         'GATEWAY': '10.66.151.254',
-        'IPV6ADDR': '2620:52:0:4294:222:19ff:fe27:54c7/64'
+        'IPV6ADDR': '2620:52:0:4294:222:19ff:fe27:54c7/64',
         'ONBOOT': 'yes'
     },
     'nic': {
