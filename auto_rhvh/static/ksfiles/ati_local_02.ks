@@ -8,8 +8,6 @@ timezone Asia/Shanghai --utc --ntpservers=clock02.util.phx2.redhat.com
 keyboard --vckeymap=de --xlayouts='de'
 
 ### Kdump ###
-%addon com_redhat_kdump --disable
-%end
 
 ### Security ###
 
