@@ -48,9 +48,9 @@ logvol /lv_data --fstype=xfs --name=lv_data --vgname=rhvh --size=5000 --grow --m
 logvol none --name=pool --vgname=rhvh --thinpool --size=200000 --grow
 logvol / --fstype=ext4 --name=root --vgname=rhvh --thin --poolname=pool --size=100000 --grow
 logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --size=15360
-logvol /home --fstype=xfs --name=home --vgname=rhvh --thin --poolname=pool --size=5000
-logvol /var/crash --fstype=xfs --name=var_crash --vgname=rhvh --thin --poolname=pool --size=20000
-logvol /thin_data --fstype=xfs --name=thin_data --vgname=rhvh --thin --poolname=pool --size=5000 --grow --maxsize=10000
+logvol /home --fstype=xfs --name=home --vgname=rhvh --thin --poolname=pool --size=5000 --fsoptions="discard"
+logvol /var/crash --fstype=xfs --name=var_crash --vgname=rhvh --thin --poolname=pool --size=20000 --fsoptions="discard"
+logvol /thin_data --fstype=xfs --name=thin_data --vgname=rhvh --thin --poolname=pool --size=5000 --grow --maxsize=10000 --fsoptions="discard"
 
 ### Pre deal ###
 
@@ -133,7 +133,8 @@ expected_data['partition'] = {
     },
     '/thin_data': {
         'lvm': True,
-        'name': 'lv_data',
+        'name': 'thin_data',
+        'fstype': 'xfs',
         'size': '5000',
         'grow': True,
         'maxsize': '10000',
