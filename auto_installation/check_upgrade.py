@@ -466,7 +466,7 @@ class CheckUpgrade(CheckYoo):
                 return False
             ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
             log.info('The result of "%s" is %s', cmd, ret[1])
-            if "Active: active" not in ret01[1]:
+            if "Active: active" not in ret[1]:
                 log.info('ntpd is not active.')
                 ret_01 = False
             else:
@@ -901,14 +901,16 @@ class CheckUpgrade(CheckYoo):
 
     def reinstall_rpm_check(self):
         if "-4.0-" in self.source_build:
-            return True
+            raise RuntimeError(
+                "The source build is 4.0, no need to check.")
 
         return self._reinstall_rpms_check()
 
     def update_again_unavailable_check(self):
         log.info("Start to check update again unavailable.")
         if "-4.0-" in self.source_build:
-            return True
+            raise RuntimeError(
+                "The source build is 4.0, no need to check.")
 
         if not self._rhvm.check_update_available(self._host_name):
             log.info("Can not update rhvh again after upgrade.")
@@ -1626,6 +1628,10 @@ class CheckUpgrade(CheckYoo):
         return True
 
     def _yum_update_lack_space_process(self):
+        if "-4.0-" in self.source_build:
+            raise RuntimeError(
+                "The source build is 4.0, no need to check.")
+
         log.info("Start to upgrade rhvh via yum update when no enough space left...")
 
         if not self._add_update_files():
@@ -1718,10 +1724,10 @@ if __name__ == '__main__':
     log = logging.getLogger('bender')
 
     ck = CheckUpgrade()
-    ck.host_string, ck.host_user, ck.host_pass = ('10.66.8.107', 'root',
+    ck.host_string, ck.host_user, ck.host_pass = ('10.66.148.9', 'root',
                                                   'redhat')
     ck.source_build = 'redhat-virtualization-host-4.1-20171101.0'
-    ck.target_build = 'redhat-virtualization-host-4.1-20171123.0'
+    ck.target_build = 'redhat-virtualization-host-4.1-20171127.0'
     ck.beaker_name = DELL_PET105_01
     ck.ksfile = 'atu_yum_update.ks'
 
