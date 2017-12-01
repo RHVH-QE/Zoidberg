@@ -1,54 +1,13 @@
 #
-# Cases remained to be automated or could not be automated
-#
-VDSM_NOT_AUTOMATED_MAP = {
-    "RHEVM-18121": (
-        "Create VMs on rhvh from rhvm side successfully after add rhvh to rhvm",
-        "Half automation",
-        "Reason: Half automated since the OS can not be installed automatically"
-    ),
-    "RHEVM-18124": (
-        "rhvh info check in rhvm",
-        "Needs to do"
-        "Not easy to compare the rhevh info"
-    ),
-    "RHEVM-18125": (
-        "Verify engine-iso-uploader works good",
-        "Needs to do"
-        "Needs to answer the password of engine"
-    ),
-    "RHEVM-18126": (
-        "Verify VM migration successful",
-        "Can not"
-        "Needs two server"
-    ),
-    "RHEVM-18129": (
-        "VM boot from PXE",
-        "Can not",
-        "Can not chose PXE boot for vm installation"
-    ),
-    "RHEVM-18138": (
-        "The rhvh's firewall ports were enabled by default after adding to rhvm",
-        "Needs to do",
-        "Not easy to compare"
-    ),
-    "RHEVM-19736": (
-        "Imgbase layout check on rhvh with a large number of LUNs attached",
-        "Needs to do",
-        "Needs to create 1000+ lvms"
-    )
-}
-
-#
 # RHVM FQDN
 #
 RHVM_INFO = {
-    "rhvm40_vlan50_fqdn": "rhvm40-vlan50-2.lab.eng.pek2.redhat.com",
     "rhvm40_vlan20_fqdn": "rhvm40-vlan20-2.lab.eng.pek2.redhat.com",
-    "rhvm41_vlan50_fqdn": "rhvm41-vlan50-2.lab.eng.pek2.redhat.com",
+    "rhvm40_vlan50_fqdn": "rhvm40-vlan50-2.lab.eng.pek2.redhat.com",
     "rhvm41_vlan20_fqdn": "rhvm41-vlan20-2.lab.eng.pek2.redhat.com",
-    "rhvm42_vlan50_fqdn": "rhvm42-vlan50-2.lab.eng.pek2.redhat.com",
-    "rhvm42_vlan20_fqdn": "rhvm42-vlan20-2.lab.eng.pek2.redhat.com"
+    "rhvm41_vlan50_fqdn": "rhvm41-vlan50-2.lab.eng.pek2.redhat.com",
+    "rhvm42_vlan20_fqdn": "rhvm42-vlan20-2.lab.eng.pek2.redhat.com",
+    "rhvm42_vlan50_fqdn": "rhvm42-vlan50-2.lab.eng.pek2.redhat.com"
 }
 
 #
