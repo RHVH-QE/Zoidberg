@@ -17,7 +17,7 @@ class EnvWork(object):
         is_local = self.vdsminfo.rhvm_info["is_local"]
         cluster_name = self.vdsminfo.rhvm_info["cluster_name"]
         cpu_type = self.vdsminfo.rhvm_info["cpu_type"]
-        rhvm = self.vdsminfo.rhvm_info["rhvm"]
+        rhvm = self.vdsminfo.rhvm
 
         try:
             self._create_datacenter(rhvm, dc_name, is_local)  # Creating datacenter
@@ -37,7 +37,7 @@ class EnvWork(object):
         host_name = self.vdsminfo.host_info.get("host_name", None)
         isd_name = self.vdsminfo.storage_info.get("isd_name", None)
         vm_name = self.vdsminfo.vm_info.get("vm_name", None)
-        rhvm = self.vdsminfo.rhvm_info["rhvm"]
+        rhvm = self.vdsminfo.rhvm
 
         try:
             self._remove_vm(rhvm, vm_name)  # Remove VM

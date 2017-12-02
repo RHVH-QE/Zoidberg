@@ -1,9 +1,9 @@
 import logging
 import re
-from ..helplers import CheckComm
 from env_work import EnvWork
 from vdsm_info import VdsmInfo
 from checkpoints import CheckPoints
+from ..helpers import CheckComm
 
 
 log = logging.getLogger('bender')
@@ -13,8 +13,8 @@ class CheckVdsm(CheckComm):
     """"""
 
     def __init__(self):
-        self.vdsminfo = VdsmInfo()
-        self.checkpoints = CheckPoints()
+        self._vdsminfo = VdsmInfo()
+        self._checkpoints = CheckPoints()
 
     #################################################
     # Before checking, create the datacenter, cluster
@@ -38,10 +38,10 @@ class CheckVdsm(CheckComm):
                 disorder_checkpoint_cases_map.items(), key=lambda item: item[0])
 
             # make checkpoints instance
-            self.checkpoints.vdsminfo = self.vdsminfo
-            self.checkpoints.ksfile = self.ksfile
-            self.checkpoints.remotecmd = self.remotecmd
-            self.checkpoints.set_rhvm()
+            self._checkpoints.vdsminfo = self._vdsminfo
+            self._checkpoints.ksfile = self._ksfile
+            self._checkpoints.remotecmd = self._remotecmd
+            self._checkpoints.set_rhvm()
 
             # run check
             log.info("Start to run check points, please wait...")
@@ -74,7 +74,7 @@ class CheckVdsm(CheckComm):
                      checkpoint, cases)
 
     def call_func_by_name(self, name=''):
-        func = getattr(self.checkpoints, name.lower(), None)
+        func = getattr(self._checkpoints, name.lower(), None)
         if func:
             return func()
         else:
@@ -82,12 +82,12 @@ class CheckVdsm(CheckComm):
                 'The checkpoint function {} is not defined'.format(name))
 
     def _get_vdsm_info(self):
-        self.vdsminfo.build = self.source_build
-        self.vdsminfo.beaker_name = self.beaker_name
-        self.vdsminfo.ksfile = self.ksfile
-        self.vdsminfo.remotecmd = self.remotecmd
+        self._vdsminfo.build = self._source_build
+        self._vdsminfo.beaker_name = self._beaker_name
+        self._vdsminfo.ksfile = self._ksfile
+        self._vdsminfo.remotecmd = self._remotecmd
 
-        self.vdsminfo.get()
+        self._vdsminfo.get()
 
     def go_check(self):
         self.remotecmd.disconnect()
@@ -96,7 +96,7 @@ class CheckVdsm(CheckComm):
         self._get_vdsm_info()
 
         # Env setup
-        ew = EnvWork(self.vdsminfo)
+        ew = EnvWork(self._vdsminfo)
         is_setup_success = self._setup_before_check(ew)
 
         # Run cases
@@ -107,23 +107,6 @@ class CheckVdsm(CheckComm):
 
         return cks
 
-def log_cfg_for_unit_test():
-    from utils import ResultsAndLogs
-    logs = ResultsAndLogs()
-    logs.logger_name = "unit_test.log"
-    logs.img_url = "vdsm/test"
-    logs.get_actual_logger("vdsm")
-
 
 if __name__ == '__main__':
-    log_cfg_for_unit_test()
-    log = logging.getLogger('bender')
-
-    ck = CheckVdsm()
-    ck.host_string, ck.host_user, ck.host_pass = ('10.73.73.17', 'root',
-                                                  'redhat')
-    ck.build = 'redhat-virtualization-host-4.1-20170531.0'
-    ck.beaker_name = 'dell-per515-01.lab.eng.pek2.redhat.com'
-    ck.ksfile = 'atv_bondi_02.ks'
-
-    print ck.go_check()
+    pass

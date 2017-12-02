@@ -88,7 +88,7 @@ class CheckPoints(object):
             cluster_name = self._vdsminfo.rhvm_info["cluster_name"]
             vlan_id = self._vdsminfo.rhvm_info.get("vlan_id", None)
 
-            if vlanid:
+            if vlan_id:
                 self._update_network_vlan_tag(dc_name, vlan_id)
 
             if re.search("vlani", self._ksfile):
