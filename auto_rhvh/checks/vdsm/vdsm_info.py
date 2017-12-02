@@ -517,17 +517,20 @@ class VdsmInfo(object):
 
     ##############################################################
     # storage_info:
-    # {"storage_type": "localfs", "data_path": "/home/data"}
+    # {
+    #   "storage_type": "localfs|nfs|fcp|iscsi", 
+    #   "data_path": "/home/data"
+    # }
     ##############################################################
-    def _get_sd_info(self):
+    def _get_storage_info(self):
         scen = self.ksfile.split('_')[1]
         sd_name = sd_name_tpl.replace('tpl', scen)
         isd_name = isd_name_tpl.replace('tpl', scen)
-        self._sd_info.update({"sd_name": sd_name})
-        self._sd_info.update({"isd_name": isd_name})
+        self.storage_info.update({"sd_name": sd_name})
+        self.storage_info.update({"isd_name": isd_name})
         if re.search("local", self.ksfile):
             data_path = MACHINE_INFO[self.beaker_name]["local"]["data_path"]
-            self._sd_info.update({
+            self.storage_info.update({
                 "storage_type": "localfs",
                 "data_path": data_path})
         elif re.search("nfs", self.ksfile):
@@ -535,7 +538,7 @@ class VdsmInfo(object):
             nfs_password = NFS_INFO["password"]
             nfs_data_path = NFS_INFO["data_path"]
             nfs_iso_path = NFS_INFO["iso_path"]
-            self._sd_info.update({
+            self.storage_info.update({
                 "storage_type": "nfs",
                 "nfs_ip": nfs_ip,
                 "nfs_password": nfs_password,
@@ -544,7 +547,7 @@ class VdsmInfo(object):
         elif re.search("fc", self.ksfile):
             boot_lun = MACHINE_INFO[self.beaker_name]["fc"]["boot_lun"]
             avl_luns = MACHINE_INFO[self.beaker_name]["fc"]["avl_luns"]
-            self._sd_info.update({
+            self.storage_info.update({
                 "storage_type": "fcp",
                 "boot_lun": boot_lun,
                 "avl_luns": avl_luns})
@@ -554,7 +557,7 @@ class VdsmInfo(object):
             lun_addr = MACHINE_INFO[self.beaker_name]["scsi"]["lun_address"]
             lun_port = MACHINE_INFO[self.beaker_name]["scsi"]["lun_port"]
             lun_target = MACHINE_INFO[self.beaker_name]["scsi"]["lun_target"]
-            self._sd_info.update({
+            self.storage_info.update({
                 "storage_type": "iscsi",
                 "boot_lun": boot_lun,
                 "avl_luns": avl_luns,
@@ -578,7 +581,7 @@ class VdsmInfo(object):
     def _get_disk_info(self):
         scen = self.ksfile.split('_')[1]
         disk0_name = disk0_name_tpl.replace('tpl', scen)
-        disk0_type = self._sd_info["storage_type"]
+        disk0_type = self.storage_info["storage_type"]
         self._disk_info.update({"disk0":
                                 {"disk_name": disk0_name,
                                  "disk_type": disk0_type}
@@ -588,7 +591,7 @@ class VdsmInfo(object):
             self._disk_info["disk0"].update({"disk_size": disk_size})
         else:
             disk1_name = disk1_name_tpl.replace('tpl', scen)
-            disk1_type = self._sd_info["storage_type"]
+            disk1_type = self.storage_info["storage_type"]
             self._disk_info.update({"disk1":
                                     {"disk_name": disk1_name,
                                      "disk_type": disk1_type}
