@@ -35,6 +35,7 @@ class EnvWork(object):
         dc_name = self.vdsminfo.rhvm_info.get("dc_name", None)
         cluster_name = self.vdsminfo.rhvm_info.get("cluster_name", None)
         host_name = self.vdsminfo.host_info.get("host_name", None)
+        sd_name = self.vdsminfo.storage_info.get("sd_name", None)
         isd_name = self.vdsminfo.storage_info.get("isd_name", None)
         vm_name = self.vdsminfo.vm_info.get("vm_name", None)
         rhvm = self.vdsminfo.rhvm
@@ -44,13 +45,15 @@ class EnvWork(object):
             
             self._maintenance_host(rhvm, host_name)  # Maintenance Host
 
-            self._remove_sd(rhvm, isd_name, host_name)  # Remove ISO domain
+            self._remove_sd(rhvm, sd_name, host_name)  # Destroy data domain
 
-            self._remove_dc(rhvm, dc_name)  # Remove Datacenter
+            self._remove_sd(rhvm, isd_name, host_name)  # Destroy iso domain
 
             self._remove_host(rhvm, host_name)  # Remove host
 
             self._remove_cluster(rhvm, cluster_name)  # Remove cluster
+
+            self._remove_dc(rhvm, dc_name)  # Remove Datacenter
 
         except Exception as e:
             log.exception(e)
@@ -78,7 +81,7 @@ class EnvWork(object):
 
     def _remove_sd(self, rhvm, sd_name, host_name):
         if sd_name and rhvm.list_storage_domain(sd_name):
-            log.info("Removing iso storage domain...")
+            log.info("Removing storage domain...")
             rhvm.remove_storage_domain(sd_name, host_name)
             time.sleep(5)
 

@@ -391,7 +391,7 @@ class CheckPoints(object):
         :return:
         """
         log.info("Creating a float disk for VM")
-        disk_name = self._vdsninfo.disk_info[flag]["disk_name"]
+        disk_name = self._vdsminfo.disk_info[flag]["disk_name"]
         disk_type = self._vdsminfo.disk_info[flag]["disk_type"]
         sd_name = self._vdsminfo.storage_info["sd_name"]
         host_name = self._vdsminfo.host_info["host_name"]
