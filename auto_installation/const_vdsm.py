@@ -87,8 +87,8 @@ RHVM_INFO = {
 NFS_INFO = {
     "ip": "10.66.148.11",
     "password": "redhat",
-    "data_path": ["/home/jiawu/vdsm_auto/data"],
-    "iso_path": ["/home/jiawu/vdsm_auto/iso"]
+    "data_path": ["/home/dguo/atv/data"],
+    "iso_path": ["/home/dguo/atv/iso"]
 }
 
 #
