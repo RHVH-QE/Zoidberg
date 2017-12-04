@@ -45,9 +45,9 @@ class EnvWork(object):
             
             self._maintenance_host(rhvm, host_name)  # Maintenance Host
 
-            self._remove_sd(rhvm, sd_name, host_name)  # Destroy data domain
-
             self._remove_sd(rhvm, isd_name, host_name)  # Destroy iso domain
+
+            self._remove_sd(rhvm, sd_name, host_name)  # Destroy data domain
 
             self._remove_host(rhvm, host_name)  # Remove host
 

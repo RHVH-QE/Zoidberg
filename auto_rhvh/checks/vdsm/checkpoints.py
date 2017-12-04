@@ -1,6 +1,7 @@
 import logging
 import re
 import time
+from fabric.api import settings, run
 
 
 log = logging.getLogger('bender')
@@ -60,7 +61,7 @@ class CheckPoints(object):
             elif host_status == 'non_operational':
                 raise RuntimeError("Host is not %s as current status is: %s" % (
                     expect_status, host_status))
-            time.sleep(10)
+            time.sleep(15)
             i += 1
 
     def _update_network_vlan_tag(self, dc_name, vlan_id):
@@ -190,7 +191,7 @@ class CheckPoints(object):
             raise RuntimeError("Failed to cleanup the nfs path %s" % nfs_data_path)
 
     def _create_nfs_storage_domain(self, sd_name, sd_type, nfs_ip, nfs_data_path, host_name):
-        log.info("Creating the nfs storage domain")
+        log.info("Creating the nfs storage domain %s" % sd_name)
         self._rhvm.create_plain_storage_domain(
             sd_name=sd_name,
             sd_type=sd_type,
@@ -210,7 +211,7 @@ class CheckPoints(object):
             sd_name = self._vdsminfo.storage_info['sd_name']
             sd_type = 'data'
             dc_name = self._vdsminfo.rhvm_info['dc_name']
-            storage_type = self._vdsminfo.rhvm_info['storage_type']
+            storage_type = self._vdsminfo.storage_info['storage_type']
             if not storage_type == "nfs":
                 raise RuntimeError("Storage type is %s, not nfs" % storage_type)
 

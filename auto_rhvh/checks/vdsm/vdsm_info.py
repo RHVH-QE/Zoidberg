@@ -1,5 +1,6 @@
 import logging
 import re
+import os
 from consts_vdsm import RHVM_INFO, MACHINE_INFO, NFS_INFO
 
 log = logging.getLogger('bender')
@@ -394,7 +395,7 @@ class VdsmInfo(object):
         for dev, ifcfg_str in ifcfg_str_dict.items():
             s, tcfg = mkstemp()
             cmd = "echo '%s' > %s" % (ifcfg_str, tcfg)
-            local(cmd)
+            os.system(cmd)
 
             dcfg = "/etc/sysconfig/network-scripts/ifcfg-%s" % dev
             self._remotecmd.put_remote_file(tcfg, dcfg)
@@ -428,7 +429,7 @@ class VdsmInfo(object):
         for dev, ifcfg_str in ifcfg_str_dict.items():
             s, tcfg = mkstemp()
             cmd = "echo '%s' > %s" % (ifcfg_str, tcfg)
-            local(cmd)
+            os.system(cmd)
 
             dcfg = "/etc/sysconfig/network-scripts/ifcfg-%s" % dev
             self._remotecmd.put_remote_file(tcfg, dcfg)
@@ -453,7 +454,7 @@ class VdsmInfo(object):
         for dev, ifcfg_str in ifcfg_str_dict.items():
             s, tcfg = mkstemp()
             cmd = "echo '%s' > %s" % (ifcfg_str, tcfg)
-            local(cmd)
+            os.system(cmd)
 
             dcfg = "/etc/sysconfig/network-scripts/ifcfg-%s" % dev
             self._remotecmd.put_remote_file(tcfg, dcfg)
@@ -533,8 +534,8 @@ class VdsmInfo(object):
         elif re.search("nfs", self._ksfile):
             nfs_ip = NFS_INFO["ip"]
             nfs_password = NFS_INFO["password"]
-            nfs_data_path = NFS_INFO["data_path"]
-            nfs_iso_path = NFS_INFO["iso_path"]
+            nfs_data_path = NFS_INFO["data_path"][0]
+            nfs_iso_path = NFS_INFO["iso_path"][0]
             self.storage_info.update({
                 "storage_type": "nfs",
                 "nfs_ip": nfs_ip,
