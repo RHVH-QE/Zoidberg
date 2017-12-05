@@ -725,7 +725,7 @@ class CheckUpgrade(CheckYoo):
 
     def _bond_status(self):
         old_bond_info = self._check_infos.get("old").get("bond_ip")
-        new_bond_info = self._check_infos.get("New").get("bond_ip")
+        new_bond_info = self._check_infos.get("new").get("bond_ip")
 
         log.info("check bond:\n  \
         old_bond_ip:\n %s\n  \
@@ -795,6 +795,20 @@ class CheckUpgrade(CheckYoo):
             '''
             if not self._check_user_space_rpm():
                 return False
+
+        # roll back to new layer
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0]:
+            return False
+
+        ret = self._enter_system()
+        if not ret[0]:
+            return False
+
+        if ret[1] != self._check_infos.get("new").get("imgbase_w"):
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
 
         return True
 
@@ -1644,6 +1658,25 @@ class CheckUpgrade(CheckYoo):
         log.info("Fill up space before upgrading rhvh via yum update finished.")
         return True
 
+    def _rhvm_update_iscsi_process(self):
+        log.info("Start to upgrade iscsi rhvh via rhvm...")
+
+        if not self._put_repo_to_host():
+            return False
+        if not self._add_host_to_rhvm(is_vlan=True):
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._check_cockpit_connection():
+            return False
+        if not self._rhvm_upgrade():
+            return False
+        if not self._enter_system(flag="auto")[0]:
+            return False
+
+        log.info("Upgrade iscsi rhvh via rhvm finished.")
+        return True
+
     def _collect_infos(self, flag):
         log.info('Collect %s infos on host...', flag)
 
@@ -1696,6 +1729,8 @@ class CheckUpgrade(CheckYoo):
                 ret = self._rhvm_upgrade_process()
             elif "lack_space" in self.ksfile:
                 ret = self._yum_update_lack_space_process()
+            elif "rhvm_iscsi" in self.ksfile:
+                ret = self._rhvm_update_iscsi_process()
 
             if not ret:
                 raise RuntimeError("Failed to run upgrade.")
