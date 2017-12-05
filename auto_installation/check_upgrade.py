@@ -1663,7 +1663,7 @@ class CheckUpgrade(CheckYoo):
 
         if not self._put_repo_to_host():
             return False
-        if not self._add_host_to_rhvm(is_vlan=True):
+        if not self._add_host_to_rhvm(is_vlan=False):
             return False
         if not self._check_host_status_on_rhvm():
             return False
@@ -1759,11 +1759,11 @@ if __name__ == '__main__':
     log = logging.getLogger('bender')
 
     ck = CheckUpgrade()
-    ck.host_string, ck.host_user, ck.host_pass = ('10.66.148.9', 'root',
+    ck.host_string, ck.host_user, ck.host_pass = ('10.73.75.79', 'root',
                                                   'redhat')
     ck.source_build = 'redhat-virtualization-host-4.1-20171101.0'
     ck.target_build = 'redhat-virtualization-host-4.1-20171127.0'
-    ck.beaker_name = DELL_PET105_01
-    ck.ksfile = 'atu_yum_update.ks'
+    ck.beaker_name = DELL_PER515_01
+    ck.ksfile = 'atu_rhvm_iscsi.ks'
 
     print ck.go_check()
