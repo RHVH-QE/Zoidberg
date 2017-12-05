@@ -283,8 +283,8 @@ class VdsmInfo(object):
                 res.update({slave: slave_ifcfg_str})
 
         elif network_mode == "vlan":
-            vlan_id = self._network_info["id"]
-            nic = self._network_info["nics"][0]
+            vlan_id = self.network_info["id"]
+            nic = self.network_info["nics"][0]
             nic_vlan = nic + '.' + vlan_id
 
             nic_ifcfg_str = """\
@@ -306,7 +306,7 @@ class VdsmInfo(object):
                 VLAN="yes"\
                 """.format(device=nic_vlan)
             else:
-                static_ip = self._network_info["static_ip"]
+                static_ip = self.network_info["static_ip"]
                 prefix = "24"
                 gateway = "192.168.%s.1" % vlan_id
                 vlan_ifcfg_str = """\
@@ -325,9 +325,9 @@ class VdsmInfo(object):
             res.update({nic_vlan: vlan_ifcfg_str})
 
         else:  # This is for vlan over bond case
-            bond_name = self._network_info["bond_name"]
-            vlan_id = self._network_info["vlan_id"]
-            slaves = self._network_info["slaves"]
+            bond_name = self.network_info["bond_name"]
+            vlan_id = self.network_info["vlan_id"]
+            slaves = self.network_info["slaves"]
             bv = bond_name + '.' + vlan_id
 
             bond_ifcfg_str = """\
@@ -363,7 +363,7 @@ class VdsmInfo(object):
                 VLAN="yes"\
                 """.format(device=bv)
             else:
-                static_ip = self._network_info["static_ip"]
+                static_ip = self.network_info["static_ip"]
                 prefix = "24"
                 gateway = "192.168.%s.1" % vlan_id
 
