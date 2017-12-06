@@ -677,7 +677,7 @@ class CheckUpgrade(CheckYoo):
             return False
         else:
             ret_pv = ret_pv[1].split('\r\n')
-            for i in range(2):
+            for i in (1, 0):
                 cmd = "lvremove " + str(ret_vg[1]) + "/" + ret_pv[i]
                 ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
                 if not ret[0]:
