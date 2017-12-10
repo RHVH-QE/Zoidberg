@@ -231,7 +231,13 @@ class RhevmAction:
     def deactive_host(self, host_name):
         api_url_base = self.api_url.format(
             rhevm_fqdn=self.rhevm_fqdn, item='hosts')
-        host_id = self.list_host(host_name)['id']
+
+        host = self.list_host(host_name)
+        host_status = host['status']
+        if host_status == 'maintenance':
+            return
+
+        host_id = host['id']
         api_url = api_url_base + "/%s/deactivate" % host_id
         r = self.req.post(
             api_url,
@@ -343,6 +349,7 @@ class RhevmAction:
               <logical_unit id="{lun_id}"/>
             </logical_units>
           </storage>
+          <discard_after_delete>false</discard_after_delete>
           <host>
             <name>{host}</name>
           </host>
