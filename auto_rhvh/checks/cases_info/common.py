@@ -51,6 +51,5 @@ UPGRADE_TIER2 = 0x40
 VDSM_TIER = 0x80
 
 DEBUG_TIER_TESTCASE_MAP = {
-    #'RHEVM-17788': ('ati_local_01.ks', DELL_PET105_01, 'GeneralCheck.node_check'),
-    'RHEVM-16972': ('ati_fc_01.ks', DELL_PER510_01, 'PartitionCheck.partition_check')
+    'RHEVM-23911': ('ati_fc_01.ks', DELL_PER510_01, 'PartitionCheck.partitions_check'),
 }
