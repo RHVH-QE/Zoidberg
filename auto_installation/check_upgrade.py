@@ -860,7 +860,7 @@ class CheckUpgrade(CheckYoo):
     def avc_denied_check(self):
         log.info("Start to check avc denied errors.")
 
-        cmd = "grep 'avc:  denied' /var/log/audit/audit.log"
+        cmd = "grep 'avc:  denied' /var/log/audit/audit.log --color=never"
         ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             log.error(
