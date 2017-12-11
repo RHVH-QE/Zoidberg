@@ -330,7 +330,7 @@ class CheckPoints(object):
                 raise RuntimeError("Storage type is %s, not fc" % storage_type)
 
             # Clean the fc lun
-            lun_id = self._rhvminfo.storage_info["avl_luns"][0]
+            lun_id = self._vdsminfo.storage_info["avl_luns"][0]
             self._clear_fc_scsi_lun(lun_id)
 
             # Create the fc storage domain
