@@ -1,5 +1,6 @@
 import logging
 import attr
+import re
 
 log = logging.getLogger('bender')
 
@@ -13,7 +14,13 @@ class TimezoneCheck(object):
 
     def ntp_check(self):
         ntp = self.expected_timezone.get('ntpservers')
-        return self.remotecmd.check_strs_in_file('/etc/chrony.conf', [ntp], timeout=300)
+        ck01 = self.remotecmd.check_strs_in_file(
+            '/etc/chrony.conf', [ntp], timeout=300)
+
+        ck02 = self.remotecmd.check_strs_in_cmd_output(
+            'systemctl status chronyd', ['running'], timeout=300)
+
+        return ck01 and ck02
 
     def timezone_check(self):
         timezone = self.expected_timezone.get('timezone')
@@ -29,9 +36,9 @@ class TimezoneCheck(object):
         timedate = ret[1].split('\r\n')
         for line in timedate:
             if 'Universal time' in line:
-                univer_time = line.split('time:')[-1].split('UTC')[0].strip()
+                univer_time = re.split(r"time:|UTC", line)[1].strip()[:-3]
             elif 'RTC time' in line:
-                rtc_time = line.split('time:')[-1].strip()
+                rtc_time = re.split(r"time:", line)[1].strip()[:-3]
             elif 'RTC in local TZ' in line:
                 rtc_local_flag = line.split(':')[-1].strip()
 
