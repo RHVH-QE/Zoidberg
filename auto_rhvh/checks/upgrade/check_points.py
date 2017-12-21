@@ -38,6 +38,7 @@ class CheckPoints(object):
         self._remotecmd = None
         self._beaker_name = None
         self._host_pass = None
+        self._ksfile = None
 
     @property
     def remotecmd(self):
@@ -86,6 +87,14 @@ class CheckPoints(object):
     @host_pass.setter
     def host_pass(self, val):
         self._host_pass = val
+
+    @property
+    def ksfile(self):
+        return self._ksfile
+
+    @ksfile.setter
+    def ksfile(self, val):
+        self._ksfile = val
 
     ######################################################################
     # public methods used both by CheckPoints and UpgradeProcess
