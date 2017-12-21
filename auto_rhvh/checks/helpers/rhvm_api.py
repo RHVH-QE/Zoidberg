@@ -269,7 +269,7 @@ class RhevmAction:
             host_id = host.get('id')
 
             if host.get('status') != 'maintenance':
-                self._deactive_host(host_id)
+                self.deactive_host(host_id)
                 sleep(10)
 
             api_url = api_url_base + '/%s' % host_id
@@ -909,7 +909,7 @@ class RhevmAction:
         if r.status_code != 200:
             raise RuntimeError(
                 "Update network %s with %s=%s in data center %s failed as\n %s"
-                % (nw_name, param_name, param_vlue, dc_name, r.text))
+                % (nw_name, param_name, param_value, dc_name, r.text))
 
     def update_dc_network(self, dc_name, network_name, key, value):
         """
