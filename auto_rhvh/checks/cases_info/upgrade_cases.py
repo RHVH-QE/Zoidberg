@@ -1,22 +1,22 @@
 from common import DELL_PET105_01, DELL_PER510_01
 
 UPGRADE_TIER1_TESTCASE_MAP = {
-    "RHEVM-18068": ('atu_yum_update.ks', DELL_PET105_01, 'basic_upgrade_check'),
-    "RHEVM-18071": ('atu_yum_update.ks', DELL_PET105_01, 'packages_check'),
-    "RHEVM-18072": ('atu_yum_update.ks', DELL_PET105_01, 'settings_check'),
-    "RHEVM-18073": ('atu_yum_update.ks', DELL_PET105_01, 'roll_back_check'),
-    "RHEVM-18077": ('atu_yum_update.ks', DELL_PET105_01, 'cannot_update_check'),
-    "RHEVM-18082": ('atu_yum_update.ks', DELL_PET105_01, 'basic_upgrade_check'),
-    "RHEVM-18093": ('atu_yum_update.ks', DELL_PET105_01, 'cmds_check'),
-    "RHEVM-18104": ('atu_yum_update.ks', DELL_PET105_01, 'signed_check'),
-    #"RHEVM-18211": ('atu_yum_update.ks', DELL_PET105_01, 'knl_space_rpm_check'),
-    "RHEVM-18212": ('atu_yum_update.ks', DELL_PET105_01, 'usr_space_rpm_check'),
-    "RHEVM-21647": ('atu_yum_update.ks', DELL_PET105_01, 'cmds_check'),
-    "RHEVM-18069": ('atu_yum_install.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    "RHEVM-18078": ('atu_yum_install.ks', DELL_PER510_01, 'cannot_install_check'),
-    "RHEVM-18081": ('atu_yum_install.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    "RHEVM-18089": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    "RHEVM-21717": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
+    "RHEVM-23979": ('atu_yum_update.ks', DELL_PET105_01, 'basic_upgrade_check'),
+    "RHEVM-23981": ('atu_yum_update.ks', DELL_PET105_01, 'packages_check'),
+    "RHEVM-23982": ('atu_yum_update.ks', DELL_PET105_01, 'settings_check'),
+    "RHEVM-23983": ('atu_yum_update.ks', DELL_PET105_01, 'roll_back_check'),
+    "RHEVM-23987": ('atu_yum_update.ks', DELL_PET105_01, 'cannot_update_check'),
+    "RHEVM-23992": ('atu_yum_update.ks', DELL_PET105_01, 'basic_upgrade_check'),
+    "RHEVM-24003": ('atu_yum_update.ks', DELL_PET105_01, 'cmds_check'),
+    "RHEVM-24014": ('atu_yum_update.ks', DELL_PET105_01, 'signed_check'),
+    #"RHEVM-24022": ('atu_yum_update.ks', DELL_PET105_01, 'knl_space_rpm_check'),
+    "RHEVM-24023": ('atu_yum_update.ks', DELL_PET105_01, 'usr_space_rpm_check'),
+    "RHEVM-24029": ('atu_yum_update.ks', DELL_PET105_01, 'cmds_check'),
+    "RHEVM-23980": ('atu_yum_install.ks', DELL_PER510_01, 'basic_upgrade_check'),
+    "RHEVM-23988": ('atu_yum_install.ks', DELL_PER510_01, 'cannot_install_check'),
+    "RHEVM-23991": ('atu_yum_install.ks', DELL_PER510_01, 'basic_upgrade_check'),
+    "RHEVM-23999": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
+    "RHEVM-24030": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
 }
 
 UPGRADE_TIER2_TESTCASE_MAP = {

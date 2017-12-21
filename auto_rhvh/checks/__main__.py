@@ -9,12 +9,12 @@ from cases_info import common as COMM
 
 
 # Neet to modify these values manually befor debuging.
-SRC_BUILD = ''
-TAR_BUILD = ''
-BEAKER = COMM.DELL_PER515_01
-KSFILE = 'ati_iscsi_01.ks'
-HOST_IP = '10.73.75.79'
-TEST_LEVEL = COMM.INSTALL_TIER1
+SRC_BUILD = 'redhat-virtualization-host-4.1-20171207.0'
+TAR_BUILD = 'redhat-virtualization-host-4.2-20171218.1'
+BEAKER = COMM.DELL_PET105_01
+KSFILE = 'atu_yum_update.ks'
+HOST_IP = '10.66.148.9'
+TEST_LEVEL = COMM.UPGRADE_TIER1
 
 
 def to_see_detailed_logs():
@@ -42,10 +42,12 @@ def check(module_name):
     ck.ksfile = KSFILE
     ck.remotecmd = RemoteCmd(HOST_IP, 'root', 'redhat')
     ck.casesmap = CasesMap(TEST_LEVEL)
+    ck.host_string = HOST_IP
+    ck.host_pass = 'redhat'
 
     print ck.go_check()
 
 
 if __name__ == '__main__':
     to_see_detailed_logs()
-    check("install")
+    check("upgrade")
