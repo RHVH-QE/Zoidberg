@@ -75,10 +75,9 @@ grubby --args=crashkernel=250 --update-kernel $kernel
 
 coverage_check(){
 easy_install coverage
-cd /usr/lib/python2.7/site-packages/
-coverage run -p -m --branch --source=imgbased imgbased layout --init
 mkdir /boot/coverage
-cp .coverage* /boot/coverage
+export COVERAGE_FILE=/boot/coverage/.coverage
+coverage run -p -m --branch --source=/usr/lib/python2.7/site-packages/imgbased imgbased layout --init
 }
 
 coverage_check
