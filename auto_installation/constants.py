@@ -28,7 +28,7 @@ DELL_PER510_01 = 'dell-per510-01.lab.eng.pek2.redhat.com'
 DELL_OP790_01 = 'dell-op790-01.qe.lab.eng.nay.redhat.com'
 DELL_PER515_01 = 'dell-per515-01.lab.eng.pek2.redhat.com'
 
-COVERAGE_TEST = True
+COVERAGE_TEST = False
 
 # ANACONDA-TIER1, ANACONDA-TIER2, KS-TIER1, KS-TIER2,ALL
 DEBUG_TIER = 0x01
