@@ -20,6 +20,8 @@ class CheckPoints(object):
         self._add_file_content = "test"
         self._update_file_name = "/etc/my.cnf"
         self._update_file_content = "# test"
+        self._add_var_file_name = "/var/upgrade_test_var"
+        self._update_var_log_file_name = "/var/log/maillog"
         self._kernel_space_rpm = None
         self._user_space_rpms_set = None
         self._rhvm = None
@@ -38,7 +40,7 @@ class CheckPoints(object):
         self._remotecmd = None
         self._beaker_name = None
         self._host_pass = None
-        self._ksfile = None
+        # self._ksfile = None
 
     @property
     def remotecmd(self):
@@ -88,13 +90,13 @@ class CheckPoints(object):
     def host_pass(self, val):
         self._host_pass = val
 
-    @property
-    def ksfile(self):
-        return self._ksfile
-
-    @ksfile.setter
-    def ksfile(self, val):
-        self._ksfile = val
+    # @property
+    # def ksfile(self):
+    #     return self._ksfile
+    #
+    # @ksfile.setter
+    # def ksfile(self, val):
+    #     self._ksfile = val
 
     ######################################################################
     # public methods used both by CheckPoints and UpgradeProcess
@@ -170,7 +172,7 @@ class CheckPoints(object):
         return True
 
     def _get_update_rpm_name_from_http(self):
-        ver = self.target_build.split("-host-")[-1]
+        ver = self._target_build.split("-host-")[-1]
         update_rpm_name = None
         try:
             r = requests.get(CONST.RHVH_UPDATE_RPM_URL, verify=False)
@@ -202,6 +204,54 @@ class CheckPoints(object):
         ret = self._remotecmd.run_cmd(cmd, timeout=600)
 
         return ret[0]
+
+    def _put_repo_to_host(self, repo_file="rhvh.repo"):
+        log.info("Put repo file %s to host...", repo_file)
+
+        local_path = os.path.join(CONST.LOCAL_DIR, repo_file)
+        remote_path = "/etc/yum.repos.d/"
+        try:
+            self._remotecmd.put_remote_file(local_path, remote_path)
+        except Exception as e:
+            log.error(e)
+            return False
+
+        log.info("Put repo file %s to host finished.", repo_file)
+        return True
+
+    def _install_user_space_rpm(self):
+        log.info("Start to install user space rpm...")
+
+        install_log = "/root/httpd.log"
+        cmd = "yum install -y httpd > {}".format(install_log)
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Install user space rpm httpd failed. Please check %s.",
+                      install_log)
+            return False
+        log.info("Install user space rpm httpd succeeded.")
+
+        return self._check_user_space_rpm()
+
+    def _mv_rpm_packages_on_host(self, packages_path = "/var/imgbased/persisted-rpms", packages_bak_path = "/var/rpms-bak", packages_files="*"):
+        if "-4.0-" in self._source_build:
+            return True
+
+        log.info("mv rpm packages %s on host...", packages_files)
+
+        cmd = "mkdir {packages_bak_path}".format(
+            packages_bak_path=packages_bak_path)
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+
+        cmd = "mv {packages_path}/{packages_files} {packages_bak_path}".format(
+            packages_path=packages_path, packages_files=packages_files, packages_bak_path=packages_bak_path)
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to mv rpm packages file %s", packages_files)
+            return False
+
+        log.info("Mv rpm packages file %s finished.", packages_files)
+        return True
 
     ##########################################
     # check methods of check points
@@ -258,10 +308,10 @@ class CheckPoints(object):
         # The ver number in `imgbase w` sometimes is different from the one in the build name
         # So, do not check whether the ver number is in the build name.
         '''
-        if old_ver not in self.source_build:
+        if old_ver not in self._source_build:
             log.error("The old rhvh build is not the desired one.")
             return False
-        if new_ver not in self.target_build:
+        if new_ver not in self._target_build:
             log.error("The new rhvh build is not the desired one.")
             return False
         '''
@@ -474,7 +524,7 @@ class CheckPoints(object):
     def _check_cockpit_connection(self):
         log.info("Check cockpit connection.")
 
-        url = "http://{}:9090".format(self.host_string)
+        url = "http://{}:9090".format(self._host_string)
         try:
             r = requests.get(url, verify=False)
             if r.status_code == 200:
@@ -544,6 +594,224 @@ class CheckPoints(object):
 
         return True
 
+    # added by huzhao, tier2 cases
+    def _check_iptables_status(self):
+        log.info("Start to check iptables status.")
+
+        cmd = "systemctl status iptables | grep 'Active: active' --color=never"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check iptables status failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+
+        if "Active: active" in ret[1]:
+            log.info('iptables is active.')
+            return True
+        else:
+            log.info('iptables is not active.')
+            return False
+
+    def _check_firewalld_status(self):
+        log.info("Start to check firewalld status.")
+
+        cmd = "systemctl status firewalld | grep 'Active: active' --color=never"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        log.info('The result of "%s" is %s', cmd, ret[1])
+
+        if "Active: active" in ret[1]:
+            log.info('firewalld is active.')
+            return False
+        else:
+            log.info('firewalld is not active.')
+            return True
+
+    def _start_ntpd(self):
+        log.info("Start ntpd and enable ntpd...")
+        cmd = "systemctl start ntpd.service"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Start ntpd failed.")
+            return False
+        log.info("Start ntpd successful.")
+        ret01 = True
+
+        cmd = "systemctl enable ntpd.service"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Enable ntpd failed.")
+            return False
+        log.info("Enable ntpd successful.")
+        ret02 = True
+
+        return ret01 and ret02
+
+    def _check_ntpd_status(self):
+        log.info("Start to check ntpd status.")
+
+        cmd = "systemctl status ntpd | grep 'Active: active' --color=never"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        if "Active: active" not in ret[1]:
+            if not self._start_ntpd():
+                return False
+            ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+            log.info('The result of "%s" is %s', cmd, ret[1])
+            if "Active: active" not in ret[1]:
+                log.info('ntpd is not active.')
+                ret_01 = False
+            else:
+                log.info('ntpd is active.')
+                ret_01 = True
+        else:
+            log.info('ntpd is active.')
+            ret_01 = True
+
+        cmd = "rpm -qa | egrep 'ntp-|chrony-' --color=never"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check rpm ntp and chrony failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        if "ntp-" in ret[1] and "chrony-" in ret[1]:
+            ret_02 = True
+        else:
+            ret_02 = False
+
+        return ret_01 and ret_02
+
+    def _check_sysstat(self):
+        log.info("Start to check sysstat collect data.")
+
+        cmd = "ls /var/log/sa"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check sysstat collect data failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+
+        if "No such file or directory" not in ret[1] and "sa" in ret[1]:
+            log.info('sysstat can collect data')
+            return True
+        else:
+            log.info('sysstat can not collect data')
+            return False
+
+    def _check_ovirt_imageio_daemon_status(self):
+        log.info("Start to check ovirt-imageio-daemon status.")
+
+        cmd = "systemctl status ovirt-imageio-daemon.service | grep 'Active: active' --color=never"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check ovirt-imageio-daemon status failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        if "Active: active" in ret[1]:
+            log.info('ovirt-imageio-daemon is active.')
+            ret01 = True
+        else:
+            log.info('ovirt-imageio-daemon is not active.')
+            ret01 = False
+
+        cmd = "ls -ld /var/log/ovirt-imageio-daemon/"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check ovirt-imageio-daemon owership failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        if "vdsm" in ret[1] and "kvm" in ret[1]:
+            ret02 = True
+        else:
+            ret02 = False
+
+        return ret01 and ret02
+
+    def _check_boot_dmesg_log(self):
+        log.info("Start to check /var/log/boot.log and /var/log/dmesg.")
+
+        cmd = "egrep -i 'error|fail' /var/log/boot.log --color=never"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        if ret[1].strip(' ') != '':
+            log.info('There are error or fail info in /var/log/boot.log')
+            ret01 = False
+        else:
+            ret01 = True
+
+        cmd = "egrep -i 'error|fail' /var/log/dmesg --color=never"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        if ret[1].strip(' ') != '':
+            log.info('There are error or fail info in /var/log/dmesg')
+            ret02 = False
+        else:
+            ret02 = True
+
+        return ret01 and ret02
+
+    def _check_separate_volumes(self):
+        log.info("Start to check /var /var/log /var/log/audit /tmp /home on separate volumes .")
+
+        cmd = "findmnt -D | egrep '/var|/var/log|/var/log/audit|/home|/tmp' --color=never"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check separate volumes failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+
+        volumes_num = len(ret[1].splitlines())
+        # tar_build_time = self._target_build.split('-')[-1].split('.')[0]
+
+        if volumes_num == 6:
+            log.info('Check the %d special separate volumes right.', volumes_num)
+            return True
+        else:
+            log.info('Check the %d special separate volumes failed.', volumes_num)
+            return False
+
+    def _reinstall_rpms(self):
+        log.info("Start to reinstall rpms...")
+
+        if not self._put_repo_to_host(repo_file="rhel73.repo"):
+            return False
+        if not self._mv_rpm_packages_on_host(packages_path = "/var/rpms-bak", packages_bak_path = "/var/imgbased/persisted-rpms", packages_files="*"):
+            return False
+
+        if not self._install_user_space_rpm():
+            return False
+        # if not self._del_repo_on_host(repo_file="rhel73.repo"):
+        #     return False
+
+        return True
+
+    def _reinstall_rpms_check(self):
+        log.info("Start to check reinstall rpms...")
+
+        # There should be no user space rpm as initial after upgrade, due to moved packages and repo
+        if self._check_user_space_rpm():
+            log.error('There is user space rpm! Should be no user space rpm.')
+            return False
+        if not self._reinstall_rpms():
+            return False
+
+        if not self._check_user_space_rpm():
+            return False
+
+        return True
+    # added by huzhao end, tier2
+
     ##########################################
     # check points
     ##########################################
@@ -564,10 +832,10 @@ class CheckPoints(object):
         return ck01 and ck02
 
     def settings_check(self):
-        ck01 = self.remotecmd.check_strs_in_file(
+        ck01 = self._remotecmd.check_strs_in_file(
             self._add_file_name, [self._add_file_content],
             timeout=CONST.FABRIC_TIMEOUT)
-        ck02 = self.remotecmd.check_strs_in_file(
+        ck02 = self._remotecmd.check_strs_in_file(
             self._update_file_name, [self._update_file_content],
             timeout=CONST.FABRIC_TIMEOUT)
 
@@ -577,7 +845,7 @@ class CheckPoints(object):
         log.info("Roll back.")
 
         cmd = "imgbase rollback"
-        ret = self.remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0]:
             return False
 
@@ -603,7 +871,7 @@ class CheckPoints(object):
 
     def cannot_update_check(self):
         cmd = "yum update"
-        return self.remotecmd.check_strs_in_cmd_output(
+        return self._remotecmd.check_strs_in_cmd_output(
             cmd, ["No packages marked for update"], timeout=CONST.FABRIC_TIMEOUT)
 
     def cannot_install_check(self):
@@ -611,7 +879,7 @@ class CheckPoints(object):
         self._update_rpm_path = '/root/' + update_rpm_name
 
         cmd = "yum install {}".format(self._update_rpm_path)
-        ret = self.remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0] and "Nothing to do" in ret[1]:
             return True
         else:
@@ -628,7 +896,7 @@ class CheckPoints(object):
             "grep -v 'Key ID' | " \
             "grep -v 'update-{}' | " \
             "wc -l".format(self._target_build.split('-host-')[-1])
-        ret = self.remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0]:
             return False
         if ret[1].strip() != '0':
@@ -648,3 +916,98 @@ class CheckPoints(object):
             raise RuntimeError(
                 "The source build is 4.0, no need to check user space rpm.")
         return self._check_user_space_rpm()
+
+    # added by huzhao, tier2 check points
+    def avc_denied_check(self):
+        log.info("Start to check avc denied errors.")
+
+        cmd = "grep 'avc:  denied' /var/log/audit/audit.log"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check avc denied errors failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+
+        if ret[1].strip(' ') != '':
+            log.error("The result of avc denied check is %s, not null", ret[1])
+            return False
+
+        log.info("The result of '%s' is null", cmd)
+
+        return True
+
+    def iptables_status_check(self):
+        ck01 = self._check_iptables_status()
+        ck02 = self._check_firewalld_status()
+
+        return ck01 and ck02
+
+    def ntpd_status_check(self):
+        return self._check_ntpd_status()
+
+    def sysstat_check(self):
+        return self._check_sysstat()
+
+    def ovirt_imageio_daemon_check(self):
+        return self._check_ovirt_imageio_daemon_status()
+
+    def boot_dmesg_log_check(self):
+        return self._check_boot_dmesg_log()
+
+    def separate_volumes_check(self):
+        return self._check_separate_volumes()
+
+    def etc_var_file_update_check(self):
+        ck01 = self._remotecmd.check_strs_in_file(
+            self._add_file_name, [self._add_file_content],
+            timeout=CONST.FABRIC_TIMEOUT)
+        ck02 = self._remotecmd.check_strs_in_file(
+            self._update_file_name, [self._update_file_content],
+            timeout=CONST.FABRIC_TIMEOUT)
+        ck03 = self._remotecmd.check_strs_in_file(
+            self._add_var_file_name, [self._add_file_content],
+            timeout=CONST.FABRIC_TIMEOUT)
+        ck04 = self._remotecmd.check_strs_in_file(
+            self._update_var_log_file_name, [self._update_file_content],
+            timeout=CONST.FABRIC_TIMEOUT)
+
+        return ck01 and ck02 and ck03 and ck04
+
+    def reinstall_rpm_check(self):
+        if "-4.0-" in self._source_build:
+            raise RuntimeError(
+                "The source build is 4.0, no need to check.")
+
+        return self._reinstall_rpms_check()
+
+    def update_again_unavailable_check(self):
+        log.info("Start to check update again unavailable.")
+        if "-4.0-" in self._source_build:
+            raise RuntimeError(
+                "The source build is 4.0, no need to check.")
+
+        if not self._rhvm.check_update_available(self._host_name):
+            log.info("Can not update rhvh again after upgrade.")
+            return True
+        else:
+            log.info("Can update again, should be not!")
+            return False
+
+    def no_space_update_check(self):
+        if "-4.0-" in self._source_build:
+            raise RuntimeError(
+                "The source build is 4.0, no need to check.")
+
+        log.info("Start to check can not upgrade if no space left.")
+        cmd = "yum update -y"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+
+        if "Disk Requirements" in ret[1] or "No space left on device" in ret[1] or "FAILED" in ret[1]:
+            return True
+        elif "Complete" not in ret[1]:
+            return True
+        else:
+            log.info('The output is %s', ret[1])
+            log.error("Upgrade incorrect when no enough space left.")
+            return False

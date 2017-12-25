@@ -27,9 +27,17 @@ class UpgradeProcess(CheckPoints):
             "echo '{}' >> {}".format(self._update_file_content,
                                      self._update_file_name),
             timeout=CONST.FABRIC_TIMEOUT)
+        ret3 = self._remotecmd.run_cmd(
+            "echo '{}' > {}".format(self._add_file_content,
+                                    self._add_var_file_name),
+            timeout=CONST.FABRIC_TIMEOUT)
+        ret4 = self._remotecmd.run_cmd(
+            "echo '{}' >> {}".format(self._update_file_content,
+                                     self._update_var_log_file_name),
+            timeout=CONST.FABRIC_TIMEOUT)
 
         log.info("Add and update files on host finished.")
-        return ret1[0] and ret2[0]
+        return ret1[0] and ret2[0] and ret3[0] and ret4[0]
 
     def __install_kernel_space_rpm_via_curl(self):
         self._kernel_space_rpm = CONST.KERNEL_SPACE_RPM_URL.split('/')[-1]
@@ -84,21 +92,6 @@ class UpgradeProcess(CheckPoints):
 
         return True
 
-    def _install_user_space_rpm(self):
-        log.info("Start to install user space rpm...")
-
-        install_log = "/root/httpd.log"
-        cmd = "yum install -y httpd > {}".format(install_log)
-        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
-        if not ret[0]:
-            log.error("Install user space rpm httpd failed. Please check %s.",
-                      install_log)
-            return False
-        log.info("Install user space rpm httpd succeeded.")
-
-        # return self._check_user_space_rpm()
-        return self._check_user_space_rpm()
-
     def _install_rpms(self):
         if "-4.0-" in self.source_build:
             return True
@@ -118,21 +111,6 @@ class UpgradeProcess(CheckPoints):
 
         return True
 
-
-    def _put_repo_to_host(self, repo_file="rhvh.repo"):
-        log.info("Put repo file %s to host...", repo_file)
-
-        local_path = os.path.join(CONST.LOCAL_DIR, repo_file)
-        remote_path = "/etc/yum.repos.d/"
-        try:
-            self._remotecmd.put_remote_file(local_path, remote_path)
-        except Exception as e:
-            log.error(e)
-            return False
-
-        log.info("Put repo file %s to host finished.", repo_file)
-        return True
-
     def _del_repo_on_host(self, repo_file="rhvh.repo"):
         log.info("Delete repo fiel %s on host...", repo_file)
 
@@ -145,6 +123,18 @@ class UpgradeProcess(CheckPoints):
             return False
 
         log.info("Delete repo file %s finished.", repo_file)
+        return True
+
+    def _set_locale_on_host(self):
+        log.info("Set host to a locale that uses commas for decimals...")
+
+        cmd = "export LC_ALL=fr_FR"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to set host to a locale")
+            return False
+
+        log.info("Set host to a locale finished.")
         return True
 
     def _get_host_cpu_type(self):
@@ -177,7 +167,7 @@ class UpgradeProcess(CheckPoints):
 
     def _gen_name(self):
         log.info("Generate dc name, cluster name, host name...")
-        mc_name = self.beaker_name.split('.')[0]
+        mc_name = self._beaker_name.split('.')[0]
         # t = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         # gen_name = mc_name + '-' + t
         gen_name = mc_name
@@ -197,16 +187,16 @@ class UpgradeProcess(CheckPoints):
             # ifup p1p1.50, bond0.50 and slaves, due to one bug 1475728 in rhvh 4.1 #
             cmd1 = "ifup p1p1"
             cmd2 = "ifup p1p1.50"
-            ret1 = self._remotecmd.run_cmd(cmd1, timeout=FABRIC_TIMEOUT)
-            ret2 = self._remotecmd.run_cmd(cmd2, timeout=FABRIC_TIMEOUT)
+            ret1 = self._remotecmd.run_cmd(cmd1, timeout=CONST.FABRIC_TIMEOUT)
+            ret2 = self._remotecmd.run_cmd(cmd2, timeout=CONST.FABRIC_TIMEOUT)
 
             cmd3 = "ifup p1p2"
             cmd4 = "ifup bond0.50"
-            ret3 = self._remotecmd.run_cmd(cmd3, timeout=FABRIC_TIMEOUT)
-            ret4 = self._remotecmd.run_cmd(cmd4, timeout=FABRIC_TIMEOUT)
+            ret3 = self._remotecmd.run_cmd(cmd3, timeout=CONST.FABRIC_TIMEOUT)
+            ret4 = self._remotecmd.run_cmd(cmd4, timeout=CONST.FABRIC_TIMEOUT)
 
             cmd5 = "ip a s"
-            ret5 = self._remotecmd.run_cmd(cmd5, timeout=FABRIC_TIMEOUT)
+            ret5 = self._remotecmd.run_cmd(cmd5, timeout=CONST.FABRIC_TIMEOUT)
             log.info('The vlan ip info of "%s" is %s', cmd5, ret5[1])
             ## end ##
 
@@ -321,7 +311,7 @@ class UpgradeProcess(CheckPoints):
                                    self._host_cpu_type)
 
             log.info("Add host %s", self._host_name)
-            self._rhvm.add_host(self._host_ip, self._host_name, self.host_pass,
+            self._rhvm.add_host(self._host_ip, self._host_name, self._host_pass,
                                 self._cluster_name)
         except Exception as e:
             log.error(e)
@@ -391,6 +381,15 @@ class UpgradeProcess(CheckPoints):
         log.info("Run rhvm upgrade finished.")
         return True
 
+    def _fill_up_space(self):
+        log.info("Start to fill up space...")
+
+        cmd = "dd if=/dev/urandom of=/test.img bs=1M count=4200"
+        ret = self._remotecmd.run_cmd(cmd, timeout=ENTER_SYSTEM_TIMEOUT)
+
+        log.info("Already fill up space, %s...", ret[1])
+        return True
+
     def yum_update_process(self):
         log.info("Start to upgrade rhvh via yum update cmd...")
 
@@ -425,6 +424,14 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._check_cockpit_connection():
             return False
+
+        if not self._install_rpms():
+            return False
+        if not self._mv_rpm_packages_on_host():
+            return False
+        if not self._set_locale_on_host():
+            return False
+
         if not self._yum_install():
             return False
         if not self._enter_system()[0]:
@@ -452,4 +459,21 @@ class UpgradeProcess(CheckPoints):
             return False
 
         log.info("Upgrade rhvh via rhvm finished.")
+        return True
+
+    def yum_update_lack_space_process(self):
+        if "-4.0-" in self._source_build:
+            raise RuntimeError(
+                "The source build is 4.0, no need to check.")
+
+        log.info("Start to upgrade rhvh via yum update when no enough space left...")
+
+        if not self._add_update_files():
+            return False
+        if not self._put_repo_to_host():
+            return False
+        if not self._fill_up_space():
+            return False
+
+        log.info("Fill up space before upgrading rhvh via yum update finished.")
         return True

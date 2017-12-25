@@ -20,16 +20,16 @@ UPGRADE_TIER1_TESTCASE_MAP = {
 }
 
 UPGRADE_TIER2_TESTCASE_MAP = {
-    "RHEVM-18111": ('atu_yum_update.ks', DELL_PET105_01, 'avc_denied_check'),
-    "RHEVM-22200": ('atu_yum_update.ks', DELL_PET105_01, 'iptables_status_check'),
-    "RHEVM-22201": ('atu_yum_update.ks', DELL_PET105_01, 'ntpd_status_check'),
-    "RHEVM-22202": ('atu_yum_update.ks', DELL_PET105_01, 'sysstat_check'),
-    "RHEVM-22231": ('atu_yum_update.ks', DELL_PET105_01, 'ovirt_imageio_daemon_check'),
-    "RHEVM-18094": ('atu_yum_update.ks', DELL_PET105_01, 'boot_dmesg_log_check'),
-    "RHEVM-18102": ('atu_yum_update.ks', DELL_PET105_01, 'separate_volumes_check'),
-    "RHEVM-18103": ('atu_yum_update.ks', DELL_PET105_01, 'etc_var_file_update_check'),
-    "RHEVM-21347": ('atu_yum_install.ks', DELL_PER510_01, 'reinstall_rpm_check'),
-    "RHEVM-22205": ('atu_yum_install.ks', DELL_PER510_01, 'packages_check'),
-    "RHEVM-22204": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'update_again_unavailable_check'),
-    "RHEVM-18106": ('atu_lack_space.ks', DELL_PET105_01, 'no_space_update_check'),
+    "RHEVM-24021": ('atu_yum_update.ks', DELL_PET105_01, 'avc_denied_check'),
+    "RHEVM-24032": ('atu_yum_update.ks', DELL_PET105_01, 'iptables_status_check'),
+    "RHEVM-24033": ('atu_yum_update.ks', DELL_PET105_01, 'ntpd_status_check'),
+    "RHEVM-24034": ('atu_yum_update.ks', DELL_PET105_01, 'sysstat_check'),
+    "RHEVM-24038": ('atu_yum_update.ks', DELL_PET105_01, 'ovirt_imageio_daemon_check'),
+    "RHEVM-24004": ('atu_yum_update.ks', DELL_PET105_01, 'boot_dmesg_log_check'),
+    "RHEVM-24012": ('atu_yum_update.ks', DELL_PET105_01, 'separate_volumes_check'),
+    "RHEVM-24013": ('atu_yum_update.ks', DELL_PET105_01, 'etc_var_file_update_check'),
+    "RHEVM-24028": ('atu_yum_install.ks', DELL_PER510_01, 'reinstall_rpm_check'),
+    "RHEVM-24037": ('atu_yum_install.ks', DELL_PER510_01, 'packages_check'),
+    "RHEVM-24036": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'update_again_unavailable_check'),
+    "RHEVM-24016": ('atu_lack_space.ks', DELL_PET105_01, 'no_space_update_check'),
 }

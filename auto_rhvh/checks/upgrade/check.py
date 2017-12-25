@@ -55,14 +55,14 @@ class CheckUpgrade(CheckComm):
         self._check_points.beaker_name = self._beaker_name
         self._check_points.host_string = self._host_string
         self._check_points.host_pass = self._host_pass
-        self._check_points.ksfile = self._ksfile
+        # self._check_points.ksfile = self._ksfile
         self._upgrade_process.remotecmd = self._remotecmd
         self._upgrade_process.source_build = self._source_build
         self._upgrade_process.target_build = self._target_build
         self._upgrade_process.beaker_name = self._beaker_name
         self._upgrade_process.host_string = self._host_string
         self._upgrade_process.host_pass = self._host_pass
-        self._upgrade_process.ksfile = self._ksfile
+        # self._upgrade_process.ksfile = self._ksfile
 
         self.remotecmd.disconnect()
         cks = {}
@@ -77,6 +77,8 @@ class CheckUpgrade(CheckComm):
                 ret = self._upgrade_process.yum_install_process()
             elif "rhvm_upgrade" in self.ksfile:
                 ret = self._upgrade_process.rhvm_upgrade_process()
+            elif "lack_space" in self.ksfile:
+                ret = self._upgrade_process.yum_update_lack_space_process()
 
             if not ret:
                 raise RuntimeError("Failed to run upgrade.")
