@@ -93,7 +93,7 @@ class UpgradeProcess(CheckPoints):
         return True
 
     def _install_rpms(self):
-        if "-4.0-" in self.source_build:
+        if "-4.0-" in self._source_build:
             return True
 
         log.info("Start to install rpms...")
@@ -155,10 +155,12 @@ class UpgradeProcess(CheckPoints):
 
     def _get_rhvm_fqdn(self):
         log.info("Get rhvm fqdn...")
-        if '-4.0-' in self.source_build:
+        if '-4.0-' in self._source_build:
             key = "4.0_rhvm_fqdn"
-        elif '-4.1-' in self.source_build:
+        elif '-4.1-' in self._source_build:
             key = "4.1_rhvm_fqdn"
+        elif '-4.2-' in self._source_build:
+            key = "4.2_rhvm_fqdn"
         else:
             log.error("The version of host src build is not 4.0 or 4.1")
             return
