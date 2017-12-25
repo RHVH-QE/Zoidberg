@@ -1280,7 +1280,7 @@ class CheckUpgrade(CheckYoo):
             log.info('The vlan ip info of "%s" is %s', cmd5, ret5[1])
             ## end ##
 
-            cmd = "ip -f inet addr show | grep 'inet 192' | awk '{print $2}'| awk -F '/' '{print $1}'"
+            cmd = "ip -f inet addr show | grep 'inet 192.168.50' | awk '{print $2}'| awk -F '/' '{print $1}'"
             ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
             if not ret[0]:
                 return
