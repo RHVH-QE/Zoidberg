@@ -147,9 +147,9 @@ class JobRunner(object):
                         log.info(ck.go_check())
 
                         if ks.find("ati") == 0 and COVERAGE_TEST:
-                            upload_coverage_raw_res_from_host(ck)
+                            upload_coverage_raw_res_from_host(ck.remotecmd)
 
-                            # TODO wati for cockpit new results format
+                        # TODO wati for cockpit new results format
                 else:
                     log.error(
                         "provisioning on host %s failed with return code %s",
@@ -158,7 +158,7 @@ class JobRunner(object):
         self.generate_final_results()
 
         if ks.find("ati") == 0 and COVERAGE_TEST:
-            generate_final_coverage_result(ck, self.build_url.split('/')[-2])
+            generate_final_coverage_result(ck.remotecmd, ck.source_build)
 
         cache_logs_summary()
         self.rd_conn.set("running", "0")

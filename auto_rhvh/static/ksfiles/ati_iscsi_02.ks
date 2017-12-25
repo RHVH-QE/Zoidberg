@@ -155,7 +155,7 @@ ES
 coverage_check(){
 easy_install coverage
 mkdir /boot/coverage
-export COVERAGE_FILE=/boot/coverage/.coverage
+export COVERAGE_FILE=/boot/coverage/.coverage.install
 coverage run -p -m --branch --source=/usr/lib/python2.7/site-packages/imgbased imgbased layout --init
 }
 
