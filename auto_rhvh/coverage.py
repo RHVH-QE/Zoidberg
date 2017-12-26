@@ -26,7 +26,7 @@ COV_LOCAL_FINAL_RES_PATH = os.path.join(
     PROJECT_ROOT, 'logs', 'coverage')
 
 
-def upload_coverage_raw_res_from_host(ck):
+def upload_coverage_raw_res_from_host(remotecmd):
     # To makeup local deal path:
     if not os.path.exists(COV_LOCAL_DEAL_PATH):
         os.makedirs(COV_LOCAL_DEAL_PATH)
@@ -34,14 +34,15 @@ def upload_coverage_raw_res_from_host(ck):
     # To compress .coverage* files under /boot/coverage on host
     cmd = "tar -zcf {} -C {} .".format(COV_HOST_RAW_RES_TAR_PATH,
                                        COV_HOST_RAW_RES_PATH)
-    ret = ck.run_cmd(cmd, timeout=300)
+    ret = remotecmd.run_cmd(cmd, timeout=300)
     if not ret[0]:
         log.error("Failed to compress {}".format(COV_HOST_RAW_RES_PATH))
         return False
 
     # To upload coverage tar file to local server
     try:
-        ck.get_remote_file(COV_HOST_RAW_RES_TAR_PATH, COV_LOCAL_DEAL_PATH)
+        remotecmd.get_remote_file(
+            COV_HOST_RAW_RES_TAR_PATH, COV_LOCAL_DEAL_PATH)
     except Exception as e:
         log.error(e)
         return False
@@ -58,7 +59,7 @@ def upload_coverage_raw_res_from_host(ck):
     return True
 
 
-def download_all_coverage_raw_res_to_host(ck):
+def download_all_coverage_raw_res_to_host(remotecmd):
     # To compress all coverage file on local server
     cmd = "tar -zcf {} -C {} .".format(
         COV_LOCAL_ALL_RAW_RES_TAR_PATH, COV_LOCAL_DEAL_PATH)
@@ -66,7 +67,8 @@ def download_all_coverage_raw_res_to_host(ck):
 
     # To download the coverage files to host
     try:
-        ck.put_remote_file(COV_LOCAL_ALL_RAW_RES_TAR_PATH, COV_HOST_DEAL_PATH)
+        remotecmd.put_remote_file(
+            COV_LOCAL_ALL_RAW_RES_TAR_PATH, COV_HOST_DEAL_PATH)
     except Exception as e:
         log.error(e)
         return False
@@ -74,18 +76,18 @@ def download_all_coverage_raw_res_to_host(ck):
     return True
 
 
-def combine_all_coverage_raw_res_on_host(ck):
+def combine_all_coverage_raw_res_on_host(remotecmd):
     # To decompress coverage files on host
     cmd = "tar -zxf {}/{} -C {}".format(COV_HOST_DEAL_PATH,
                                         COV_ALL_RAW_RES_TAR_NAME, COV_HOST_DEAL_PATH)
-    ret = ck.run_cmd(cmd, timeout=300)
+    ret = remotecmd.run_cmd(cmd, timeout=300)
     if not ret[0]:
         log.error("Failed to decompress all coverage tar on host")
         return False
 
     # To combine all coverages
     cmd = "coverage combine {}".format(COV_HOST_DEAL_PATH)
-    ret = ck.run_cmd(cmd, timeout=300)
+    ret = remotecmd.run_cmd(cmd, timeout=300)
     if not ret[0]:
         log.error("Failed to combine coverage on host")
         return False
@@ -93,10 +95,10 @@ def combine_all_coverage_raw_res_on_host(ck):
     return True
 
 
-def generate_coverage_html_res_on_host(ck):
+def generate_coverage_html_res_on_host(remotecmd):
     cmd = "coverage html -d {}/{}".format(COV_HOST_DEAL_PATH,
                                           COV_HTML_RES_NAME)
-    ret = ck.run_cmd(cmd, timeout=300)
+    ret = remotecmd.run_cmd(cmd, timeout=300)
     if not ret[0]:
         log.error("Failed to gen coverage html on host")
         return False
@@ -104,7 +106,7 @@ def generate_coverage_html_res_on_host(ck):
     # To compress the html result
     cmd = "tar -zcf {0}/{1}.tar.gz -C {0} {1}".format(
         COV_HOST_DEAL_PATH, COV_HTML_RES_NAME)
-    ret = ck.run_cmd(cmd, timeout=300)
+    ret = remotecmd.run_cmd(cmd, timeout=300)
     if not ret[0]:
         log.error("Failed to compress html result on host")
         return False
@@ -112,7 +114,7 @@ def generate_coverage_html_res_on_host(ck):
     return True
 
 
-def upload_coverage_html_res_to_server(ck, src_build):
+def upload_coverage_html_res_to_server(remotecmd, src_build):
     final_result_path = os.path.join(
         COV_LOCAL_FINAL_RES_PATH, src_build)
     if not os.path.exists(final_result_path):
@@ -124,7 +126,7 @@ def upload_coverage_html_res_to_server(ck, src_build):
     remote_file = "{}/{}".format(COV_HOST_DEAL_PATH,
                                  COV_HTML_RES_TAR_NAME)
     try:
-        ck.get_remote_file(remote_file, final_result_path)
+        remotecmd.get_remote_file(remote_file, final_result_path)
     except Exception as e:
         log.error(e)
         return False
@@ -146,13 +148,13 @@ def upload_coverage_html_res_to_server(ck, src_build):
     return True
 
 
-def generate_final_coverage_result(ck, src_build):
-    if not download_all_coverage_raw_res_to_host(ck):
+def generate_final_coverage_result(remotecmd, src_build):
+    if not download_all_coverage_raw_res_to_host(remotecmd):
         return False
-    if not combine_all_coverage_raw_res_on_host(ck):
+    if not combine_all_coverage_raw_res_on_host(remotecmd):
         return False
-    if not generate_coverage_html_res_on_host(ck):
+    if not generate_coverage_html_res_on_host(remotecmd):
         return False
-    if not upload_coverage_html_res_to_server(ck, src_build):
+    if not upload_coverage_html_res_to_server(remotecmd, src_build):
         return False
     return True
