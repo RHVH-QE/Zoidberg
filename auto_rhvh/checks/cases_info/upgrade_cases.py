@@ -1,4 +1,4 @@
-from common import DELL_PET105_01, DELL_PER510_01
+from common import DELL_PET105_01, DELL_PER510_01, DELL_PER515_01
 
 UPGRADE_TIER1_TESTCASE_MAP = {
     "RHEVM-23979": ('atu_yum_update.ks', DELL_PET105_01, 'basic_upgrade_check'),
@@ -28,8 +28,12 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-24004": ('atu_yum_update.ks', DELL_PET105_01, 'boot_dmesg_log_check'),
     "RHEVM-24012": ('atu_yum_update.ks', DELL_PET105_01, 'separate_volumes_check'),
     "RHEVM-24013": ('atu_yum_update.ks', DELL_PET105_01, 'etc_var_file_update_check'),
+    "RHEVM-22203": ('atu_yum_update.ks', DELL_PET105_01, 'kdump_check'),
+    "RHEVM-18110": ('atu_yum_update.ks', DELL_PET105_01, 'delete_imgbase_check'),
     "RHEVM-24028": ('atu_yum_install.ks', DELL_PER510_01, 'reinstall_rpm_check'),
     "RHEVM-24037": ('atu_yum_install.ks', DELL_PER510_01, 'packages_check'),
     "RHEVM-24036": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'update_again_unavailable_check'),
     "RHEVM-24016": ('atu_lack_space.ks', DELL_PET105_01, 'no_space_update_check'),
+    "RHEVM-18079": ('atu_yum_update_vlan.ks', DELL_PER510_01, 'basic_upgrade_check'),
+    "RHEVM-18080": ('atu_rhvm_iscsi.ks', DELL_PER515_01, 'basic_upgrade_check'),
 }

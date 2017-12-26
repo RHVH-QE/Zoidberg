@@ -1,3 +1,5 @@
+### KS for upgrade yum install test on dell-per510-01
+
 ### Language ###
 lang en_US.UTF-8
 

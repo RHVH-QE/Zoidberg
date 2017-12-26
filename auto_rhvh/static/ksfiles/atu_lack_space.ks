@@ -1,3 +1,5 @@
+### KS for upgrade lack space test on dell-pet105-01
+
 ### Language ###
 lang en_US.UTF-8
 

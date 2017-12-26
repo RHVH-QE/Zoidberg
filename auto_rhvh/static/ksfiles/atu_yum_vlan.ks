@@ -1,10 +1,10 @@
-### KS for upgrade yum update test on dell-pet105-01
+### KS for upgrade vlan test on dell-per510-01
 
 ### Language ###
 lang en_US.UTF-8
 
 ### Timezone ###
-timezone Asia/Shanghai --utc --ntpservers=clock02.util.phx2.redhat.com
+timezone Asia/Shanghai
 
 ### Keyboard ###
 keyboard --vckeymap=us --xlayouts='us'
@@ -23,15 +23,16 @@ services --enabled=sshd
 ### Installation mode ###
 install
 #liveimg url will be substitued by autoframework
-liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-host-4.1-20170120.0/redhat-virtualization-host-4.1-20170120.0.x86_64.liveimg.squashfs
+liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-host-4.1-20170202.0/redhat-virtualization-host-4.1-20170202.0.x86_64.liveimg.squashfs
 text
 reboot
 
 ### Network ###
-network --device=enp2s0 --bootproto=dhcp
+network --device=em2 --bootproto=dhcp
+network --device=p1p1 --bootproto=dhcp --bondopts=mode=active-backup,primary=p1p1,miimon=100 --vlanid=50
 
 ### Partitioning ###
-ignoredisk --only-use=sda
+ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244,/dev/disk/by-id/scsi-36005076300810b3e0000000000000270
 zerombr
 clearpart --all
 bootloader --location=mbr

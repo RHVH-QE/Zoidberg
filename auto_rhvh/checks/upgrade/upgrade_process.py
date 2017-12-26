@@ -479,3 +479,43 @@ class UpgradeProcess(CheckPoints):
 
         log.info("Fill up space before upgrading rhvh via yum update finished.")
         return True
+
+    def rhvm_update_iscsi_process(self):
+        log.info("Start to upgrade iscsi rhvh via rhvm...")
+
+        if not self._put_repo_to_host():
+            return False
+        if not self._add_host_to_rhvm(is_vlan=False):
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._check_cockpit_connection():
+            return False
+        if not self._rhvm_upgrade():
+            return False
+        if not self._enter_system(flag="auto")[0]:
+            return False
+
+        log.info("Upgrade iscsi rhvh via rhvm finished.")
+        return True
+
+    def yum_update_vlan_process(self):
+        log.info("Start to upgrade rhvh with vlan via yum update cmd...")
+
+        if not self._add_10_route():
+            return False
+        if not self._put_repo_to_host():
+            return False
+        if not self._add_host_to_rhvm(is_vlan=True):
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._check_cockpit_connection():
+            return False
+        if not self._yum_update():
+            return False
+        if not self._enter_system()[0]:
+            return False
+
+        log.info("Upgrading rhvh with vlan via yum update finished.")
+        return True

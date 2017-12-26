@@ -47,6 +47,29 @@ class CheckUpgrade(CheckComm):
             raise NameError(
                 'The checkpoint function {} is not defined'.format(name))
 
+    def run_cases(self):
+        cks = {}
+        try:
+            # get checkpoint cases map
+            checkpoint_cases_map = self.casesmap.get_checkpoint_cases_map(self.ksfile,
+                                                                          self.beaker_name)
+
+            # run check
+            log.info("Start to run check points, please wait...")
+
+            delete_imgbase_cases = None
+            for checkpoint, cases in checkpoint_cases_map.items():
+                if checkpoint == "delete_imgbase_check":
+                    delete_imgbase_cases = cases
+                    continue
+                self.run_checkpoint(checkpoint, cases, cks)
+            if delete_imgbase_cases:
+                self.run_checkpoint("delete_imgbase_check", delete_imgbase_cases, cks)
+        except Exception as e:
+            log.error(e)
+
+        return cks
+
     def go_check(self):
         # make _check_points and _upgrade_process instance
         self._check_points.remotecmd = self._remotecmd
@@ -79,6 +102,10 @@ class CheckUpgrade(CheckComm):
                 ret = self._upgrade_process.rhvm_upgrade_process()
             elif "lack_space" in self.ksfile:
                 ret = self._upgrade_process.yum_update_lack_space_process()
+            elif "rhvm_iscsi" in self.ksfile:
+                ret = self._upgrade_process.rhvm_update_iscsi_process()
+            elif "yum_vlan" in self.ksfile:
+                ret = self._upgrade_process.yum_update_vlan_process()
 
             if not ret:
                 raise RuntimeError("Failed to run upgrade.")

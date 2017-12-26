@@ -812,6 +812,70 @@ class CheckPoints(object):
         return True
     # added by huzhao end, tier2
 
+    # added by jiawu, tier2
+    # 1-check kdump.service =active
+    def _check_kdump_status(self):
+        log.info("Start to check kdump service status.")
+
+        cmd = "systemctl status kdump.service | grep 'Active' | awk '{print $2}'"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+
+        if not ret[0]:
+            return False
+
+        if ret[0]:
+            if "inactive" in ret[1]:
+                log.error("Kdump service is %s.", ret[1])
+                return False
+            else:
+                log.info("Kdump service is %s.", ret[1])
+        return True
+
+    # 2-remove vg/lv, delete old layer info on /etc/grub2.cfg
+    def _remove_lv(self):
+        log.info("Start to remove VG/LV")
+
+        cmd_pv = "lvs --noheading | awk '{print $1}' | grep '^rhvh'| sed -n '1,2p'"
+        cmd_vg = "lvs --noheading | awk '{print $2}' | uniq"
+
+        ret_pv = self._remotecmd.run_cmd(cmd_pv, timeout=CONST.FABRIC_TIMEOUT)
+        ret_vg = self._remotecmd.run_cmd(cmd_vg, timeout=CONST.FABRIC_TIMEOUT)
+
+        if not ret_pv[0] or not ret_vg[0]:
+            return False
+        else:
+            ret_pv = ret_pv[1].split('\r\n')
+            for i in (1, 0):
+                cmd = "lvremove " + str(ret_vg[1]) + "/" + ret_pv[i]
+                ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+                if not ret[0]:
+                    log.error('Run cmd "%s" failed, the result is %s', cmd, ret[1])
+                    return False
+
+            log.info("Remove old layer successfully!")
+        return True
+
+    def _change_grub_file(self):
+        log.info("start to change /etc/grub2.cfg.")
+        old_build_cmd = "lvs --noheading | awk '{print $1}' | grep '^rhvh'| sed -n '1p'"
+        ret_old_build = self._remotecmd.run_cmd(old_build_cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_old_build[0]:
+            return False
+        ret_old_build = str(ret_old_build[1])
+
+        cmd = "sed -i '/^menuentry.*" + ret_old_build + "/,/^}/d' /etc/grub2.cfg \
+        /boot/grub2/grub.cfg"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to delete old_build info on /etc/grub2.cfg \
+            /boot/grub2/grub2.cfg")
+            return False
+
+        log.info("Successfully delete old_build info on /etc/grub2.cfg \
+        /boot/grub2/grub.cfg")
+
+        return True
+
     ##########################################
     # check points
     ##########################################
@@ -866,6 +930,19 @@ class CheckPoints(object):
             '''
             if not self._check_user_space_rpm():
                 return False
+
+        # roll back to new layer
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            return False
+
+        ret = self._enter_system()
+        if not ret[0]:
+            return False
+        if ret[1] != self._check_infos.get("new").get("imgbase_w"):
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
 
         return True
 
@@ -1011,3 +1088,30 @@ class CheckPoints(object):
             log.info('The output is %s', ret[1])
             log.error("Upgrade incorrect when no enough space left.")
             return False
+
+    # added by jiawu, tier2
+    # 1-check kdump.service =active
+    def kdump_check(self):
+        return self._check_kdump_status()
+
+    # 2-remove vg/lv, delete old layer info on /etc/grub2.cfg
+    def delete_imgbase_check(self):
+        ck01 = self._change_grub_file()
+        ck02 = self._remove_lv()
+        if not ck01 or not ck02:
+            log.error("Cannot remove vg/lv successfully.")
+            return False
+
+        log.info("Reboot into system.")
+
+        ret = self._enter_system()
+        if not ret[0]:
+            return False
+
+        ck03 = self._check_cockpit_connection()
+        ck04 = self._check_host_status_on_rhvm()
+        if not ck03 or not ck04:
+            log.error("Failed to work system again after remove vg/lv.")
+
+        log.info("System work normally.")
+        return True
