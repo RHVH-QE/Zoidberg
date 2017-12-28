@@ -185,6 +185,8 @@ class JobRunner(object):
         ck.ksfile = ks
         ck.remotecmd = RemoteCmd(host_ip, 'root', 'redhat')
         ck.casesmap = self.casesmap
+        ck.host_string = host_ip
+        ck.host_pass = 'redhat'
 
         return ck
 

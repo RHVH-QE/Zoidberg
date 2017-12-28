@@ -211,10 +211,9 @@ class UpgradeProcess(CheckPoints):
             # get vlan id:
             cmd = """grep VLAN_ID /etc/sysconfig/network-scripts/* | awk -F '=' '{print $2}' | awk -F '"' '{print $2}'"""
             ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
-            # if not ret[0]:
-            #     return
-            # self._host_vlanid = ret[1]
-            self._host_vlanid = '50'
+            if not ret[0]:
+                return
+            self._host_vlanid = ret[1]
 
         log.info("Get host ip finished.")
 
