@@ -184,7 +184,7 @@ class UpgradeProcess(CheckPoints):
         log.info("Get host ip...")
 
         if not is_vlan:
-            self._host_ip = self.host_string
+            self._host_ip = self._host_string
         else:
             # ifup p1p1.50, bond0.50 and slaves, due to one bug 1475728 in rhvh 4.1 #
             cmd1 = "ifup p1p1"
@@ -211,9 +211,10 @@ class UpgradeProcess(CheckPoints):
             # get vlan id:
             cmd = """grep VLAN_ID /etc/sysconfig/network-scripts/* | awk -F '=' '{print $2}' | awk -F '"' '{print $2}'"""
             ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
-            if not ret[0]:
-                return
-            self._host_vlanid = ret[1]
+            # if not ret[0]:
+            #     return
+            # self._host_vlanid = ret[1]
+            self._host_vlanid = '50'
 
         log.info("Get host ip finished.")
 
