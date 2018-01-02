@@ -387,7 +387,7 @@ class UpgradeProcess(CheckPoints):
         log.info("Start to fill up space...")
 
         cmd = "dd if=/dev/urandom of=/test.img bs=1M count=4200"
-        ret = self._remotecmd.run_cmd(cmd, timeout=ENTER_SYSTEM_TIMEOUT)
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.ENTER_SYSTEM_TIMEOUT)
 
         log.info("Already fill up space, %s...", ret[1])
         return True
