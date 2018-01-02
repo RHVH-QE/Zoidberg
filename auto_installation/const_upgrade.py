@@ -18,7 +18,7 @@ UPGRADE_TIER1_TESTCASE_MAP = {
     "RHEVM-18081": ('atu_yum_install.ks', DELL_PER510_01, 'basic_upgrade_check'),
     "RHEVM-18089": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
     "RHEVM-21717": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    ##Tier2
+    #Tier2
     "RHEVM-18111": ('atu_yum_update.ks', DELL_PET105_01, 'avc_denied_check'),
     "RHEVM-22200": ('atu_yum_update.ks', DELL_PET105_01, 'iptables_status_check'),
     "RHEVM-22201": ('atu_yum_update.ks', DELL_PET105_01, 'ntpd_status_check'),
@@ -33,14 +33,13 @@ UPGRADE_TIER1_TESTCASE_MAP = {
     "RHEVM-18106": ('atu_lack_space.ks', DELL_PET105_01, 'no_space_update_check'),
     "RHEVM-18079": ('atu_yum_update_vlan.ks', DELL_PER510_01, 'basic_upgrade_check'),
     "RHEVM-22203": ('atu_yum_update.ks', DELL_PET105_01, 'kdump_check'),
-    "RHEVM-18110": ('atu_yum_update.ks', DELL_PET105_01, 'delete_imgbase_check'),
-    #"RHEVM-18107": ('atu_yum_update.ks', DELL_PET105_01, 'fips_check'),
-    "RHEVM-18076": ('atu_yum_update_bond.ks', DELL_PER515_01, 'bond_check'),
-    "RHEVM-18080": ('atu_yum_update_bond.ks', DELL_PER515_01, 'bond_check'),
 }
 
 UPGRADE_TIER2_TESTCASE_MAP = {
-
+    "RHEVM-18080": ('atu_rhvm_iscsi.ks', DELL_PER515_01, 'basic_upgrade_check'),
+    "RHEVM-18110": ('atu_yum_update.ks', DELL_PET105_01, 'delete_imgbase_check'),
+    # #"RHEVM-18107": ('atu_yum_update.ks', DELL_PET105_01, 'fips_check'),
+    # "RHEVM-18076": ('atu_yum_update_bond.ks', DELL_PER510_01, 'bond_check'),
 }
 
 RHVM_DATA_MAP = {
@@ -62,6 +61,6 @@ YUM_UPDATE_TIMEOUT = 1200
 YUM_INSTALL_TIMEOUT = 1200
 CHK_HOST_ON_RHVM_STAT_MAXCOUNT = 20
 CHK_HOST_ON_RHVM_STAT_INTERVAL = 60
-ENTER_SYSTEM_MAXCOUNT = 10
+ENTER_SYSTEM_MAXCOUNT = 20
 ENTER_SYSTEM_INTERVAL = 60
 ENTER_SYSTEM_TIMEOUT = 600

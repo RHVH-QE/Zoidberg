@@ -466,7 +466,7 @@ class CheckUpgrade(CheckYoo):
                 return False
             ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
             log.info('The result of "%s" is %s', cmd, ret[1])
-            if "Active: active" not in ret01[1]:
+            if "Active: active" not in ret[1]:
                 log.info('ntpd is not active.')
                 ret_01 = False
             else:
@@ -677,7 +677,7 @@ class CheckUpgrade(CheckYoo):
             return False
         else:
             ret_pv = ret_pv[1].split('\r\n')
-            for i in range(2):
+            for i in (1, 0):
                 cmd = "lvremove " + str(ret_vg[1]) + "/" + ret_pv[i]
                 ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
                 if not ret[0]:
@@ -725,7 +725,7 @@ class CheckUpgrade(CheckYoo):
 
     def _bond_status(self):
         old_bond_info = self._check_infos.get("old").get("bond_ip")
-        new_bond_info = self._check_infos.get("New").get("bond_ip")
+        new_bond_info = self._check_infos.get("new").get("bond_ip")
 
         log.info("check bond:\n  \
         old_bond_ip:\n %s\n  \
@@ -796,6 +796,20 @@ class CheckUpgrade(CheckYoo):
             if not self._check_user_space_rpm():
                 return False
 
+        # roll back to new layer
+        ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
+        if not ret[0]:
+            return False
+
+        ret = self._enter_system()
+        if not ret[0]:
+            return False
+
+        if ret[1] != self._check_infos.get("new").get("imgbase_w"):
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+
         return True
 
     def cannot_update_check(self):
@@ -846,7 +860,7 @@ class CheckUpgrade(CheckYoo):
     def avc_denied_check(self):
         log.info("Start to check avc denied errors.")
 
-        cmd = "grep 'avc:  denied' /var/log/audit/audit.log"
+        cmd = "grep 'avc:  denied' /var/log/audit/audit.log --color=never"
         ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
         if not ret[0]:
             log.error(
@@ -901,14 +915,16 @@ class CheckUpgrade(CheckYoo):
 
     def reinstall_rpm_check(self):
         if "-4.0-" in self.source_build:
-            return True
+            raise RuntimeError(
+                "The source build is 4.0, no need to check.")
 
         return self._reinstall_rpms_check()
 
     def update_again_unavailable_check(self):
         log.info("Start to check update again unavailable.")
         if "-4.0-" in self.source_build:
-            return True
+            raise RuntimeError(
+                "The source build is 4.0, no need to check.")
 
         if not self._rhvm.check_update_available(self._host_name):
             log.info("Can not update rhvh again after upgrade.")
@@ -1264,7 +1280,7 @@ class CheckUpgrade(CheckYoo):
             log.info('The vlan ip info of "%s" is %s', cmd5, ret5[1])
             ## end ##
 
-            cmd = "ip -f inet addr show | grep 'inet 192' | awk '{print $2}'| awk -F '/' '{print $1}'"
+            cmd = "ip -f inet addr show | grep 'inet 192.168.50' | awk '{print $2}'| awk -F '/' '{print $1}'"
             ret = self.run_cmd(cmd, timeout=FABRIC_TIMEOUT)
             if not ret[0]:
                 return
@@ -1626,6 +1642,10 @@ class CheckUpgrade(CheckYoo):
         return True
 
     def _yum_update_lack_space_process(self):
+        if "-4.0-" in self.source_build:
+            raise RuntimeError(
+                "The source build is 4.0, no need to check.")
+
         log.info("Start to upgrade rhvh via yum update when no enough space left...")
 
         if not self._add_update_files():
@@ -1636,6 +1656,25 @@ class CheckUpgrade(CheckYoo):
             return False
 
         log.info("Fill up space before upgrading rhvh via yum update finished.")
+        return True
+
+    def _rhvm_update_iscsi_process(self):
+        log.info("Start to upgrade iscsi rhvh via rhvm...")
+
+        if not self._put_repo_to_host():
+            return False
+        if not self._add_host_to_rhvm(is_vlan=False):
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._check_cockpit_connection():
+            return False
+        if not self._rhvm_upgrade():
+            return False
+        if not self._enter_system(flag="auto")[0]:
+            return False
+
+        log.info("Upgrade iscsi rhvh via rhvm finished.")
         return True
 
     def _collect_infos(self, flag):
@@ -1690,6 +1729,8 @@ class CheckUpgrade(CheckYoo):
                 ret = self._rhvm_upgrade_process()
             elif "lack_space" in self.ksfile:
                 ret = self._yum_update_lack_space_process()
+            elif "rhvm_iscsi" in self.ksfile:
+                ret = self._rhvm_update_iscsi_process()
 
             if not ret:
                 raise RuntimeError("Failed to run upgrade.")
@@ -1718,11 +1759,11 @@ if __name__ == '__main__':
     log = logging.getLogger('bender')
 
     ck = CheckUpgrade()
-    ck.host_string, ck.host_user, ck.host_pass = ('10.66.8.107', 'root',
+    ck.host_string, ck.host_user, ck.host_pass = ('10.73.75.79', 'root',
                                                   'redhat')
     ck.source_build = 'redhat-virtualization-host-4.1-20171101.0'
-    ck.target_build = 'redhat-virtualization-host-4.1-20171123.0'
-    ck.beaker_name = DELL_PET105_01
-    ck.ksfile = 'atu_yum_update.ks'
+    ck.target_build = 'redhat-virtualization-host-4.1-20171127.0'
+    ck.beaker_name = DELL_PER515_01
+    ck.ksfile = 'atu_rhvm_iscsi.ks'
 
     print ck.go_check()
