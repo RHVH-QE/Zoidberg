@@ -40,7 +40,6 @@ class CheckPoints(object):
         self._remotecmd = None
         self._beaker_name = None
         self._host_pass = None
-        # self._ksfile = None
 
     @property
     def remotecmd(self):
@@ -89,14 +88,6 @@ class CheckPoints(object):
     @host_pass.setter
     def host_pass(self, val):
         self._host_pass = val
-
-    # @property
-    # def ksfile(self):
-    #     return self._ksfile
-    #
-    # @ksfile.setter
-    # def ksfile(self, val):
-    #     self._ksfile = val
 
     ######################################################################
     # public methods used both by CheckPoints and UpgradeProcess
@@ -1064,6 +1055,19 @@ class CheckPoints(object):
             raise RuntimeError(
                 "The source build is 4.0, no need to check.")
 
+        log.info("Get rhvm fqdn...")
+        if '-4.0-' in self._source_build:
+            key = "4.0_rhvm_fqdn"
+        elif '-4.1-' in self._source_build:
+            key = "4.1_rhvm_fqdn"
+        elif '-4.2-' in self._source_build:
+            key = "4.2_rhvm_fqdn"
+        else:
+            log.error("The version of host src build is not 4.0 or 4.1 or 4.2")
+            return
+        self._rhvm_fqdn = CONST.RHVM_DATA_MAP.get(key)
+        self._rhvm = RhevmAction(self._rhvm_fqdn)
+
         if not self._rhvm.check_update_available(self._host_name):
             log.info("Can not update rhvh again after upgrade.")
             return True
@@ -1089,7 +1093,6 @@ class CheckPoints(object):
             log.error("Upgrade incorrect when no enough space left.")
             return False
 
-    # added by jiawu, tier2
     # 1-check kdump.service =active
     def kdump_check(self):
         return self._check_kdump_status()

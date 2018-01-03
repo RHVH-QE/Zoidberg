@@ -162,7 +162,7 @@ class UpgradeProcess(CheckPoints):
         elif '-4.2-' in self._source_build:
             key = "4.2_rhvm_fqdn"
         else:
-            log.error("The version of host src build is not 4.0 or 4.1")
+            log.error("The version of host src build is not 4.0 or 4.1 or 4.2")
             return
         self._rhvm_fqdn = CONST.RHVM_DATA_MAP.get(key)
         log.info("Get rhvm fqdn finished.")
