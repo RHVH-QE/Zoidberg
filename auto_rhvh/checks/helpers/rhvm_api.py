@@ -222,7 +222,7 @@ class RhevmAction:
     def deactive_host(self, host_name):
         api_url_base = self.api_url.format(
             rhevm_fqdn=self.rhevm_fqdn, item='hosts')
-        host_id = self.list_host(host_name)['id']
+        host_id = self.list_host("name", host_name)['id']
         api_url = api_url_base + "/%s/deactivate" % host_id
 
         r = self.req.post(
@@ -231,6 +231,7 @@ class RhevmAction:
             verify=self.rhevm_cert,
             data="<action/>")
         ret = r.json()
+        print ret
         if ret['status'] != 'complete':
             raise RuntimeError(ret['fault']['detail'])
 
@@ -295,6 +296,7 @@ class RhevmAction:
             raise RuntimeError("Can not list hosts from %s" % self.rhevm_fqdn)
 
         hosts = r.json()
+        
         if hosts:
             for host in hosts['host']:
                 if host.get(key) == value:
@@ -518,21 +520,46 @@ class RhevmAction:
             raise RuntimeError("Failed to create storage domain "
                                "%s as\n%s" % (sd_name, r.text))
 
+    # The function don't work , no resources about host_storage.
     def list_host_storage(self, host_name):
         api_url_base = self.api_url.format(
             rhevm_fqdn=self.rhevm_fqdn, item="hosts")
 
-        host_id = self.list_host(host_name)['id']
-        api_url = api_url_base + '/{}'.format(host_id) + '/storage'
+        host_id = self.list_host("name", host_name).get('id')
+        api_url = api_url_base + '/{}'.format(host_id) + '/storages'
 
         r = self.req.get(api_url, headers=self.headers, verify=self.rhevm_cert)
 
         if r.status_code != 200:
-            raise RuntimeError("Failed to list the strages of host "
+            raise RuntimeError("Failed to list the stroges of host "
                                "%s as\n%s" % (host_name, r.text))
 
-        sts = r.json()
-        return sts
+        return r.json()
+
+    def list_dc_storage(self, dc_name):
+        api_url_base = self.api_url.format(
+            rhevm_fqdn=self.rhevm_fqdn, item="datacenters")
+
+        dc_id = self.list_datacenter(dc_name)['id']
+        api_url = api_url_base + '/{}'.format(dc_id) + '/storagedomains'
+
+        r = self.req.get(api_url, headers=self.headers, verify=self.rhevm_cert)
+
+        if r.status_code != 200:
+            raise RuntimeError("Failed to list the storagedomains of"
+                               " %s as\n%s" % (dc_name, r.text))
+        sds = r.json()
+
+        sd_list = []
+        master_type = []
+
+        if sds:
+            for sd in sds['storage_domain']:
+                sd_list.append(sd.get('name'))
+                master_type.append(sd.get('master'))
+
+        #return dict(zip(sd_list, master_type))
+        return dict(map(lambda x,y:[x,y], sd_list, master_type))
 
     def attach_sd_to_datacenter(self, sd_name, dc_name):
         api_url_base = self.api_url.format(
@@ -594,7 +621,7 @@ class RhevmAction:
     ##########################################
     # VM related functions
     ##########################################
-    def create_vm(self, vm_name, tpl_name="blank", cluster="default"):
+    def create_vm(self, vm_name, tpl_name="Blank", cluster_name="default"):
         api_url_base = self.api_url.format(
             rhevm_fqdn=self.rhevm_fqdn, item="vms")
 
@@ -611,7 +638,7 @@ class RhevmAction:
         </vm>
        '''
         body = new_vm_body.format(
-            vm_name=vm_name, tpl_name=tpl_name, cluster_name=cluster)
+            vm_name=vm_name, cluster_name=cluster_name, tpl_name=tpl_name)
 
         r = self.req.post(
             api_url_base,
@@ -619,8 +646,8 @@ class RhevmAction:
             headers=self.headers,
             verify=self.rhevm_cert)
 
-        if r.status_code != 202:
-            raise RuntimeError("Failed to create viratual machine")
+        if r.status_code != 201:
+            raise RuntimeError("Failed to create virtual machine")
         else:
             return r.json()["id"]
 
@@ -946,7 +973,7 @@ class RhevmAction:
     # Disk related functions
     # https://rhvm41-vlan50-1.lab.eng.pek2.redhat.com/ovirt-engine/apidoc/#services-disks
     ##########################################
-    def create_float_image_disk(self, sd_name, disk_name, size):
+    def create_float_image_disk(self, sd_name, disk_name, disk_size):
         api_url = self.api_url.format(rhevm_fqdn=self.rhevm_fqdn, item="disks")
 
         new_disk_post_body = '''
@@ -955,13 +982,13 @@ class RhevmAction:
             <storage_domain id="{sd_id}"/>
           </storage_domains>
           <name>{disk_name}</name>
-          <provisioned_size>{size}</provisioned_size>
+          <provisioned_size>{disk_size}</provisioned_size>
           <format>cow</format>
         </disk>
         '''
         sd_id = self.list_storage_domain(sd_name)['id']
         body = new_disk_post_body.format(
-            sd_id=sd_id, disk_name=disk_name, size=size)
+            sd_id=sd_id, disk_name=disk_name, disk_size=disk_size)
 
         r = self.req.post(
             api_url, data=body, headers=self.headers, verify=self.rhevm_cert)
@@ -1065,18 +1092,6 @@ class RhevmAction:
 
 
 if __name__ == '__main__':
-    rhvm = RhevmAction("ovirt42-vlan50-1.lab.eng.pek2.redhat.com")
+    pass
+    # rhvm = RhevmAction("rhvm42-vlan50-1.lab.eng.pek2.redhat.com")
     # rhvm.add_datacenter("upgrade_test")
-    # rhvm.list_datacenter("upgrade_test")
-    # rhvm.remove_datacenter("upgrade_test")
-    # rhvm.add_cluster("upgrade_test1", "upgrade_test", "Intel Conroe Family")
-    # rhvm.list_cluster("upgrade_test")
-    # rhvm.update_cluster_cpu("upgrade_test", "AMD Opteron G1")
-    rhvm.update_cluster_cpu("upgrade_test", "Intel Conroe Family")
-    # rhvm.remove_cluster("upgrade_test")
-    # rhvm.add_host("10.73.75.235", "atu_amd", "redhat", "atu_amd")
-    # rhvm.remove_datacenter("upgrade_test")
-    # rhvm.remove_host("atu_amd")
-    # rhvm.upgrade_host("test")
-    # rhvm.update_network("test", "vlan", "50")
-    # rhvm.del_host_events("dell-per510-01")
