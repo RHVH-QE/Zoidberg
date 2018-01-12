@@ -197,6 +197,8 @@ class UpgradeProcess(CheckPoints):
             ret3 = self._remotecmd.run_cmd(cmd3, timeout=CONST.FABRIC_TIMEOUT)
             ret4 = self._remotecmd.run_cmd(cmd4, timeout=CONST.FABRIC_TIMEOUT)
 
+            time.sleep(30)
+
             cmd5 = "ip a s"
             ret5 = self._remotecmd.run_cmd(cmd5, timeout=CONST.FABRIC_TIMEOUT)
             log.info('The vlan ip info of "%s" is %s', cmd5, ret5[1])
