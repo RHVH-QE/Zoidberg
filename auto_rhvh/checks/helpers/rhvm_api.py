@@ -264,13 +264,12 @@ class RhevmAction:
     def remove_host(self, host_name):
         api_url_base = self.api_url.format(
             rhevm_fqdn=self.rhevm_fqdn, item="hosts")
-        host = self.list_host(key="name", value=host_name)
-
+        host = self.list_host("name", host_name)
         if host:
             host_id = host.get('id')
 
             if host.get('status') != 'maintenance':
-                self.deactive_host(host_id)
+                self.deactive_host(host_name)
                 sleep(10)
 
             api_url = api_url_base + '/%s' % host_id
@@ -787,7 +786,7 @@ class RhevmAction:
         api_url_base = self.api_url.format(
             rhevm_fqdn=self.rhevm_fqdn, item="vms")
 
-        host_id = self.list_host(host_name)['id']
+        host_id = self.list_host("name", host_name)['id']
         vm_id = self.list_vm(vm_name)['id']
         api_url = api_url_base + '/{}'.format(vm_id) + '/diskattachments'
 
@@ -1027,7 +1026,7 @@ class RhevmAction:
           </lun_storage>
         </disk>
         '''
-        host_id = self.list_host(host_name)['id']
+        host_id = self.list_host("name", host_name)['id']
         body = new_disk_post_body.format(
             disk_name=disk_name,
             host_id=host_id,

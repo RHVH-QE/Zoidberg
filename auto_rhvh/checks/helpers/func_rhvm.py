@@ -2,7 +2,6 @@ import time
 import logging
 from fabric.api import settings, env, run
 from rhvm_api import RhevmAction
-from remote_cmd import RemoteCmd
 
 log = logging.getLogger('bender')
 
@@ -307,7 +306,7 @@ if __name__ == "__main__":
     rhvm = RHVM("rhvm42-vlan50-1.lab.eng.pek2.redhat.com", "yzhao_dc1",
                 "yzhao_cluster1", "10.66.8.176", "yzhao_host1", "redhat")
     rhvm.set_rhvm()
-    # rhvm.create_datacenter_and_cluster_host(False, "Intel", None, "ovirtmgmt")
+    rhvm.create_datacenter_and_cluster_host(False, "Intel", None, "ovirtmgmt")
     # rhvm.create_nfs_storage_domain("yzhao_data", "data", "10.66.148.11", "redhat", "/home/jiawu/nfs2", "yzhao_host1", "yzhao_dc1")
     # rhvm.create_nfs_storage_domain("yzhao_iso", "iso", "10.66.148.11", "redhat", "/home/jiawu/nfs1", "yzhao_host1", "yzhao_dc1")
     #rhvm.create_float_disk("yzhao_disk1", "nfs", 21474836480, "yzhao_data", "yzhao_host1")  # 20G
@@ -315,5 +314,5 @@ if __name__ == "__main__":
     #rhvm.attach_floatdisk_to_vm(1, "yzhao_vm", "yzhao_disk1")
     #rhvm.start_vm("yzhao_vm")
 
-    rhvm.clean_after_check("yzhao_vm", "yzhao_host1", "yzhao_cluster1",
-                           "yzhao_dc1")
+    #rhvm.clean_after_check("yzhao_vm", "yzhao_host1", "yzhao_cluster1",
+    #                       "yzhao_dc1")
