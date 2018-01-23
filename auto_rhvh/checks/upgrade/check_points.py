@@ -244,6 +244,21 @@ class CheckPoints(object):
         log.info("Mv rpm packages file %s finished.", packages_files)
         return True
 
+    def _collect_service_status(self, flag):
+        log.info('Collect %s build services status on host', flag)
+
+        if flag == 'old':
+            cmd = "systemctl list-units --type=service | awk '{print $1}' > /var/old_build"
+            ret = self._remotecmd.run_cmd(cmd, timeout=CONST.ENTER_SYSTEM_TIMEOUT)
+        elif flag == 'new':
+            cmd = "systemctl list-units --type=service | awk '{print $1}' > /var/new_build"
+            ret = self._remotecmd.run_cmd(cmd, timeout=CONST.ENTER_SYSTEM_TIMEOUT)
+        else:
+            log.info("%s is wrong", flag)
+
+        log.info('Collect %s build services status on host finished', flag)
+        return True
+
     ##########################################
     # check methods of check points
     ##########################################
@@ -589,7 +604,7 @@ class CheckPoints(object):
     def _check_iptables_status(self):
         log.info("Start to check iptables status.")
 
-        cmd = "systemctl status iptables | grep 'Active: active' --color=never"
+        cmd = "systemctl status iptables.service | grep 'Active: active' --color=never"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0]:
             log.error(
@@ -608,16 +623,15 @@ class CheckPoints(object):
     def _check_firewalld_status(self):
         log.info("Start to check firewalld status.")
 
-        cmd = "systemctl status firewalld | grep 'Active: active' --color=never"
+        cmd = "systemctl status firewalld.service | grep 'Active' | awk '{print $2}'"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         log.info('The result of "%s" is %s', cmd, ret[1])
 
-        if "Active: active" in ret[1]:
-            log.info('firewalld is active.')
-            return False
-        else:
-            log.info('firewalld is not active.')
+        if "inactive" in ret[1]:
             return True
+        else:
+            log.info('firewalld is not inactive.')
+            return False
 
     def _start_ntpd(self):
         log.info("Start ntpd and enable ntpd...")
@@ -1118,3 +1132,127 @@ class CheckPoints(object):
 
         log.info("System work normally.")
         return True
+
+    def katello_check(self):
+        log.info("Start to check katello-agent after upgrade.")
+
+        cmd = "rpm -qa | grep katello-agent --color=never"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check katello failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        katello_num = len(ret[1].splitlines())
+
+        cmd = "ps -aux | grep goferd --color=never"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check goferd failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        goferd_num = len(ret[1].splitlines())
+
+        if katello_num > 1 and goferd_num > 1:
+            return True
+        else:
+            return False
+
+    def imgbased_log_check(self):
+        log.info("Start to check imgbased.log directory.")
+
+        cmd = "ls -l  /var/log/imgbased.log"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Check imgbased.log directory failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+
+        if "No such file or directory" not in ret[1] and "-rw" in ret[1]:
+            log.info('imgbased.log directory is correct')
+            return True
+        else:
+            log.info('imgbased.log directory is wrong')
+            return False
+
+    def diff_services_check(self):
+        log.info("Start to diff all the active services after upgrade.")
+
+        if not self._collect_service_status('new'):
+            return False
+
+        cmd = "diff /var/old_build /var/new_build"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Diff all the active services failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+        log.info('The result of "%s" is %s', cmd, ret[1])
+
+        diff_num = len(ret[1].splitlines())
+
+        if diff_num == 0:
+            return True
+        else:
+            log.info('There are %d active services are different.', diff_num)
+            return False
+
+    def libguestfs_tool_check(self):
+        log.info("Start to check libguestfs-test-tool.")
+
+        cmd1 = "export LIBGUESTFS_BACKEND=direct"
+        ret1 = self._remotecmd.run_cmd(cmd1, timeout=CONST.FABRIC_TIMEOUT)
+
+        time.sleep(5)
+
+        cmd = "libguestfs-test-tool > /var/libguestfs_test_tool.log"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error(
+                'Run libguestfs-test-tool failed. The result of "%s" is %s',
+                cmd, ret[1])
+            return False
+
+        if self._remotecmd.check_strs_in_file(
+            "TEST FINISHED OK", "/var/libguestfs_test_tool.log",
+            timeout=CONST.FABRIC_TIMEOUT):
+            return True
+        else:
+            log.info('Check failed, the result of "%s" is %s', cmd, ret[1])
+            return False
+
+    def systemd_tmpfiles_clean_check(self):
+        log.info("Start to check systemd-tmpfiles-clean.service status.")
+
+        cmd = "systemctl status systemd-tmpfiles-clean.service | grep 'Active' | awk '{print $2}'"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            return False
+
+        if "inactive" in ret[1]:
+            return True
+        else:
+            log.error("systemd-tmpfiles-clean service is %s.", ret[1])
+            return False
+
+    def port_16514_check(self):
+        log.info("Start to check firewalld.service and port 16514 status.")
+        if not self._check_firewalld_status():
+            return False
+
+        cmd = "iptables -L | grep 16514 --color=never | awk '{print $1}'"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            return False
+
+        if "ACCEPT" in ret[1]:
+            return True
+        else:
+            log.error("Port 16514 status is %s.", ret[1])
+            return False

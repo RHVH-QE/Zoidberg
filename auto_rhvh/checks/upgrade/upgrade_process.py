@@ -493,6 +493,8 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._check_cockpit_connection():
             return False
+        if not self._collect_service_status('old'):
+            return False
         if not self._rhvm_upgrade():
             return False
         if not self._enter_system(flag="auto")[0]:
