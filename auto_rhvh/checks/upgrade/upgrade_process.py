@@ -428,14 +428,12 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._check_cockpit_connection():
             return False
-
         if not self._install_rpms():
             return False
         if not self._mv_rpm_packages_on_host():
             return False
         if not self._set_locale_on_host():
             return False
-
         if not self._yum_install():
             return False
         if not self._enter_system()[0]:

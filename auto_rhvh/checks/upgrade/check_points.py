@@ -139,7 +139,7 @@ class CheckPoints(object):
         check_infos = self._check_infos[flag]
 
         cmdmap = {
-            "imgbased_ver": "rpm -qa |grep --color=never imgbased",
+            "imgbased_ver": "rpm -qa |grep --color=never ^imgbased",
             "update_ver": "rpm -qa |grep --color=never update",
             "imgbase_w": "imgbase w",
             "imgbase_layout": "imgbase layout",
