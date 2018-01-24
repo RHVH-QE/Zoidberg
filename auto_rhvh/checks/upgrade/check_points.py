@@ -1206,12 +1206,7 @@ class CheckPoints(object):
     def libguestfs_tool_check(self):
         log.info("Start to check libguestfs-test-tool.")
 
-        cmd1 = "export LIBGUESTFS_BACKEND=direct"
-        ret1 = self._remotecmd.run_cmd(cmd1, timeout=CONST.FABRIC_TIMEOUT)
-
-        time.sleep(5)
-
-        cmd = "libguestfs-test-tool > /var/libguestfs_test_tool.log"
+        cmd = "LIBGUESTFS_BACKEND=direct libguestfs-test-tool"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0]:
             log.error(
@@ -1219,9 +1214,7 @@ class CheckPoints(object):
                 cmd, ret[1])
             return False
 
-        if self._remotecmd.check_strs_in_file(
-            "TEST FINISHED OK", "/var/libguestfs_test_tool.log",
-            timeout=CONST.FABRIC_TIMEOUT):
+        if "TEST FINISHED OK" in ret[1]:
             return True
         else:
             log.info('Check failed, the result of "%s" is %s', cmd, ret[1])
