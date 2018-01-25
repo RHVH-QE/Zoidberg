@@ -278,12 +278,10 @@ class CheckPoints(object):
             return False
 
         for i in range(len(new_ver_nums)):
-            if int(old_ver_nums[i]) > int(new_ver_nums[i]):
-                log.error(
-                    "The old version number is bigger than the new version number."
-                )
-                return False
-        return True
+            if int(new_ver_nums[i]) > int(old_ver_nums[i]):
+                return True
+        log.error("The old version number is bigger than the new version number.")
+        return False
 
     def _check_update_ver(self):
         old_update_ver = self._check_infos.get("old").get("update_ver")
