@@ -7,7 +7,7 @@ import os
 from .kickstarts import KickStartFiles
 from .beaker import Beaker, inst_watcher
 from .cobbler import Cobbler
-from .constants import PROJECT_ROOT, CURRENT_IP_PORT, ARGS_TPL, CB_PROFILE, COVERAGE_TEST
+from .constants import CURRENT_IP_PORT, ARGS_TPL, CB_PROFILE
 from .util_result_index import cache_logs_summary
 from reports import ResultsToPolarion
 from checks import HOSTS
@@ -81,21 +81,6 @@ class JobRunner(object):
                         '--extra-vars="version: {}"'.format(version)
             subprocess.Popen(tower_cmd, shell=True)
 
-    def _create_coverge_path(self):
-        if not COVERAGE_TEST:
-            return
-
-        if self.target_build:
-            build = self.target_build
-        else:
-            build = self.build_url.split('/')[-2]
-
-        src_data_path = os.path.join(
-            PROJECT_ROOT, 'logs', 'coverage', build, 'source_data')
-
-        if not os.path.exists(src_data_path):
-            os.makedirs(src_data_path)
-
     @property
     def ksins(self):
         k = KickStartFiles()
@@ -109,7 +94,6 @@ class JobRunner(object):
         return self.ksins.get_job_queue()
 
     def go(self):
-        self._create_coverge_path()
         self._set_repos()
         for m, ksl in self.job_queue.items():
             for kt in ksl:

@@ -91,7 +91,7 @@ class KickStartFiles(object):
 
             if 'ati' in ks and COVERAGE_TEST:
                 coverage_snippet = COVERAGE_SNIPPET.format(
-                    self.liveimg.split('/')[-2])
+                    self.liveimg.split('/')[-2] + '/source_data')
                 sed_cmd = SED_COVERGE.format(coverage_snippet, ks_out)
                 os.system(sed_cmd)
 
