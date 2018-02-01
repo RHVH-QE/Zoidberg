@@ -88,9 +88,9 @@ easy_install coverage\\
 export COVERAGE_FILE=/boot/.coverage.install\\
 coverage run -p -m --branch --source=/usr/lib/python2.7/site-packages/imgbased imgbased layout --init\\
 filename=`find /boot -name .coverage.install*`\\
-curl -X POST http://10.73.73.23:7789/upload/{} \\\
+curl -s -X POST http://10.73.73.23:7789/upload/{} \\\
 -F "file=@${{filename}}" \\\
--H "Content-Type: multipart/form-data"\\
+-H "Content-Type: multipart/form-data" > /dev/null\\
 }}\\
 coverage_check\\"""
 
