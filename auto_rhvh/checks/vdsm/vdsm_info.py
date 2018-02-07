@@ -616,9 +616,14 @@ class VdsmInfo(object):
             self.disk_info["disk1"].update({"lun_target": lun_target})
 
     def get(self):
-        self._get_rhvm_info()
-        self._get_network_info()
-        self._get_host_info()
-        self._get_storage_info()
-        self._get_disk_info()
-        self._get_vm_info()
+        try:
+            self._get_rhvm_info()
+            self._get_network_info()
+            self._get_host_info()
+            self._get_storage_info()
+            self._get_disk_info()
+            self._get_vm_info()
+        except Exception as e:
+            log.exception(e)
+            return False
+        return True

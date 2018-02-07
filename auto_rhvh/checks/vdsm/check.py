@@ -26,7 +26,7 @@ class CheckVdsm(CheckComm):
     # After checking, remove the cluster, datacenter
     #################################################
     def _teardown_after_check(self, env_work):
-        return env_work.teardown()
+        env_work.teardown()
 
     def run_cases(self):
         cks = {}
@@ -87,13 +87,14 @@ class CheckVdsm(CheckComm):
         self._vdsminfo.ksfile = self._ksfile
         self._vdsminfo.remotecmd = self._remotecmd
 
-        self._vdsminfo.get()
+        return self._vdsminfo.get()
 
     def go_check(self):
         self.remotecmd.disconnect()
 
         # Get all related information
-        self._get_vdsm_info()
+        if not self._get_vdsm_info():
+            return {}
 
         # Env setup
         ew = EnvWork(self._vdsminfo)
