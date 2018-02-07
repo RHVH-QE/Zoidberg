@@ -32,10 +32,8 @@ class CheckVdsm(CheckComm):
         cks = {}
         try:
             # get checkpoint cases map
-            disorder_checkpoint_cases_map = self.casesmap.get_checkpoint_cases_map(
+            checkpoint_cases_map = self.casesmap.get_checkpoint_cases_map(
                 self.ksfile, self.beaker_name)
-            checkpoint_cases_map_list = sorted(
-                disorder_checkpoint_cases_map.items(), key=lambda item: item[0])
 
             # make checkpoints instance
             self._checkpoints.vdsminfo = self._vdsminfo
@@ -45,9 +43,7 @@ class CheckVdsm(CheckComm):
 
             # run check
             log.info("Start to run check points, please wait...")
-            for l in checkpoint_cases_map_list:
-                checkpoint = l[0]
-                cases = l[1]
+            for checkpoint, cases in checkpoint_cases_map.items():
                 self.run_checkpoint(checkpoint, cases, cks)
         except Exception as e:
             log.exception(e)
