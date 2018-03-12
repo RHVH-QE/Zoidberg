@@ -6,8 +6,8 @@ RHVM_INFO = {
     "rhvm40_vlan50_fqdn": "rhvm40-vlan50-2.lab.eng.pek2.redhat.com",
     "rhvm41_vlan20_fqdn": "rhvm41-vlan20-2.lab.eng.pek2.redhat.com",
     "rhvm41_vlan50_fqdn": "rhvm41-vlan50-2.lab.eng.pek2.redhat.com",
-    "rhvm42_vlan20_fqdn": "rhvm42-vlan20-2.lab.eng.pek2.redhat.com",
-    "rhvm42_vlan50_fqdn": "rhvm42-vlan50-2.lab.eng.pek2.redhat.com"
+    "rhvm42_vlan20_fqdn": "vm-74-225.lab.eng.pek2.redhat.com",
+    "rhvm42_vlan50_fqdn": "vm-73-209.lab.eng.pek2.redhat.com"
 }
 
 #
