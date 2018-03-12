@@ -1,0 +1,30 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+
+pyyaml = "*"
+redis = "*"
+flask = "*"
+flask-cors = "*"
+attrs = "*"
+ordered-set = "*"
+requests = "*"
+fabric = "*"
+pymongo = "*"
+celery = "*"
+gevent = "*"
+
+
+[dev-packages]
+
+pylint = "*"
+
+
+[requires]
+
+python_version = "2.7"
