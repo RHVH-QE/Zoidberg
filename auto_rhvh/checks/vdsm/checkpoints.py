@@ -79,7 +79,7 @@ class CheckPoints(object):
     ##########################################
     # CheckPoint ca0_create_new_host_check
     ##########################################
-    def ca0_create_new_host_check(self):
+    def create_new_host_check(self):
         log.info("Checking host can be added...")
         try:
             host_ip = self._vdsminfo.host_info["host_ip"]
@@ -110,7 +110,7 @@ class CheckPoints(object):
     ##########################################
     # CheckPoint cl3_fcoe_service_check
     ##########################################
-    def cl3_fcoe_service_check(self):
+    def fcoe_service_check(self):
         log.info("Checking the fcoe related service is running")
         ck_services = ["fcoe.service", "lldpad.service", "lldpad.service"]
         for ck_service in ck_services:
@@ -158,7 +158,7 @@ class CheckPoints(object):
     ##########################################
     # CheckPoint cl1_create_local_sd_check
     ##########################################
-    def cl1_create_local_sd_check(self):
+    def create_local_sd_check(self):
         log.info("Checking local storage domain can be created and attached...")
         try:
             host_name = self._vdsminfo.host_info['host_name']
@@ -204,7 +204,7 @@ class CheckPoints(object):
     ##########################################
     # CheckPoint cn1_create_nfs_sd_check
     ##########################################
-    def cn1_create_nfs_sd_check(self):
+    def create_nfs_sd_check(self):
         log.info("Checking nfs storage domain can be created...")
         try:
             host_name = self._vdsminfo.host_info['host_name']
@@ -235,7 +235,7 @@ class CheckPoints(object):
     ##########################################
     # CheckPoint cn2_create_iso_sd_check
     ##########################################
-    def cn2_create_iso_sd_check(self):
+    def create_iso_sd_check(self):
         log.info("Checking iso storage domain can be created...")
         try:
             host_name = self._vdsminfo.host_info['host_name']
@@ -319,7 +319,7 @@ class CheckPoints(object):
     ##########################################
     # CheckPoint cf1_create_fc_sd_check
     ##########################################
-    def cf1_create_fc_sd_check(self):
+    def create_fc_sd_check(self):
         log.info("Checking the fc storage domain can be created...")
         try:
             host_name = self._vdsminfo.host_info['host_name']
@@ -351,7 +351,7 @@ class CheckPoints(object):
     ##########################################
     # CheckPoint cf1_create_scsi_sd_check
     ##########################################
-    def cs1_create_scsi_sd_check(self):
+    def create_scsi_sd_check(self):
         log.info("Checking the scsi storage domain can be created...")
         try:
             host_name = self._vdsminfo.host_info['host_name']
@@ -426,7 +426,7 @@ class CheckPoints(object):
     ##########################################
     # CheckPoint cv1_create_vm_with_disk_check
     ##########################################
-    def cv1_create_vm_with_disk_check(self):
+    def create_vm_with_disk_check(self):
         log.info("Checking the disk can be added to vm...")
         try:
             cluster_name = self._vdsminfo.rhvm_info["cluster_name"]
@@ -447,7 +447,7 @@ class CheckPoints(object):
     ###############################################
     # CheckPoint cv1_attach_second_disk_to_vm_check
     ###############################################
-    def cv2_attach_second_disk_to_vm_check(self):
+    def attach_second_disk_to_vm_check(self):
         log.info("Checking the second disk can be added to vm...")
         try:
             # Create the float disk
@@ -504,7 +504,7 @@ class CheckPoints(object):
     ##########################################
     # CheckPoint cv2_vm_life_cycle_check
     ##########################################
-    def cv3_vm_life_cycle_check(self):
+    def vm_life_cycle_check(self):
         log.info("Checking the vm lifecycle...")
         try:
             vm_name = self._vdsminfo.vm_info["vm_name"]
@@ -532,7 +532,7 @@ class CheckPoints(object):
     ##########################################
     # CheckPoint cv3_delete_vm_check
     ##########################################
-    def cv9_delete_vm_check(self):
+    def delete_vm_check(self):
         log.info("Checking the vm can be deleted...")
         try:
             vm_name = self._vdsminfo.vm_info["vm_name"]
@@ -548,7 +548,7 @@ class CheckPoints(object):
     ##########################################
     # CheckPoint cz1_maintenance_host_check
     ##########################################
-    def cz1_maintenance_host_check(self):
+    def maintenance_host_check(self):
         log.info("Checking the host can be maintenanced...")
         try:
             host_name = self._vdsminfo.host_info["host_name"]
@@ -564,7 +564,7 @@ class CheckPoints(object):
     ##########################################
     # CheckPoint cz2_remove_host_check
     ##########################################
-    def cz2_remove_host_check(self):
+    def remove_host_check(self):
         log.info("Checking the host can be removed...")
         try:
             host_name = self._vdsminfo.host_info["host_name"]

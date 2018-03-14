@@ -83,6 +83,21 @@ python /tmp/clean_disk
 """.format(
     srv_ip=CURRENT_IP_PORT[0], srv_port=CURRENT_IP_PORT[1])
 
+COVERAGE_SNIPPET = """coverage_check(){{\\
+easy_install coverage\\
+export COVERAGE_FILE=/boot/.coverage.install\\
+coverage run -p -m --branch --source=/usr/lib/python2.7/site-packages/imgbased imgbased layout --init\\
+filename=`find /boot -name .coverage.install*`\\
+curl -s -X POST http://10.73.73.23:7789/upload/{} \\\
+-F "file=@${{filename}}" \\\
+-H "Content-Type: multipart/form-data" > /dev/null\\
+}}\\
+coverage_check\\"""
+
+SED_COVERGE = """sed -i '/^imgbase/c\\
+{}
+' {}
+"""
 
 NOPXE_URL = "http://lab-01.rhts.eng.pek2.redhat.com:8000/nopxe/{0}"
 

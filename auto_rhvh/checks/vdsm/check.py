@@ -26,16 +26,14 @@ class CheckVdsm(CheckComm):
     # After checking, remove the cluster, datacenter
     #################################################
     def _teardown_after_check(self, env_work):
-        return env_work.teardown()
+        env_work.teardown()
 
     def run_cases(self):
         cks = {}
         try:
             # get checkpoint cases map
-            disorder_checkpoint_cases_map = self.casesmap.get_checkpoint_cases_map(
+            checkpoint_cases_map = self.casesmap.get_checkpoint_cases_map(
                 self.ksfile, self.beaker_name)
-            checkpoint_cases_map_list = sorted(
-                disorder_checkpoint_cases_map.items(), key=lambda item: item[0])
 
             # make checkpoints instance
             self._checkpoints.vdsminfo = self._vdsminfo
@@ -45,9 +43,7 @@ class CheckVdsm(CheckComm):
 
             # run check
             log.info("Start to run check points, please wait...")
-            for l in checkpoint_cases_map_list:
-                checkpoint = l[0]
-                cases = l[1]
+            for checkpoint, cases in checkpoint_cases_map.items():
                 self.run_checkpoint(checkpoint, cases, cks)
         except Exception as e:
             log.exception(e)
@@ -87,13 +83,14 @@ class CheckVdsm(CheckComm):
         self._vdsminfo.ksfile = self._ksfile
         self._vdsminfo.remotecmd = self._remotecmd
 
-        self._vdsminfo.get()
+        return self._vdsminfo.get()
 
     def go_check(self):
         self.remotecmd.disconnect()
 
         # Get all related information
-        self._get_vdsm_info()
+        if not self._get_vdsm_info():
+            return {}
 
         # Env setup
         ew = EnvWork(self._vdsminfo)

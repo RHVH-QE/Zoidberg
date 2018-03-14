@@ -3,6 +3,7 @@ import install_cases as INSTALL
 import upgrade_cases as UPGRADE
 import vdsm_cases as VDSM
 from operator import itemgetter
+from collections import OrderedDict
 
 
 class CasesMap(object):
@@ -22,7 +23,7 @@ class CasesMap(object):
         return self._testcase_map
 
     def _get_testcase_map(self, test_level):
-        testcase_map = {}
+        testcase_map = OrderedDict()
 
         if test_level & COMM.DEBUG_TIER:
             testcase_map.update(COMM.DEBUG_TIER_TESTCASE_MAP)
@@ -108,7 +109,7 @@ class CasesMap(object):
         return ks_mashine_map
 
     def get_checkpoint_cases_map(self, ks, mc):
-        checkpoint_cases_map = {}
+        checkpoint_cases_map = OrderedDict()
         for key, value in self.testcase_map.items():
             if set((ks, mc)) < set(value):
                 checkpoint = value[2]

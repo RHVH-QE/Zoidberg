@@ -10,7 +10,8 @@ from pykickstart.parser import Script
 from pykickstart.constants import KS_SCRIPT_PRE, KS_SCRIPT_POST
 
 from constants import KS_FILES_DIR, KS_FILES_AUTO_DIR, \
-    POST_SCRIPT_01, POST_SCRIPT_02, PRE_SCRIPT_01
+    POST_SCRIPT_01, POST_SCRIPT_02, PRE_SCRIPT_01, \
+    COVERAGE_TEST, COVERAGE_SNIPPET, SED_COVERGE
 from checks import HOSTS
 
 loger = logging.getLogger('bender')
@@ -87,6 +88,12 @@ class KickStartFiles(object):
 
             os.system("sed '/liveimg --url=/ c\{}' {} > {}".format(
                 new_live_img, ks_, ks_out))
+
+            if 'ati' in ks and COVERAGE_TEST:
+                coverage_snippet = COVERAGE_SNIPPET.format(
+                    self.liveimg.split('/')[-2] + '/source_data')
+                sed_cmd = SED_COVERGE.format(coverage_snippet, ks_out)
+                os.system(sed_cmd)
 
             if 'atv_bonda' not in ks:
                 post_script = self._generate_ks_script(
