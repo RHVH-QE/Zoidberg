@@ -77,7 +77,7 @@ VDSM_TIER_TESTCASE_MAP = {  # sequential cases for each scenario
 RHVM_INFO = {
     "rhvm40_vlan50_fqdn": "rhvm40-vlan50-2.lab.eng.pek2.redhat.com",
     "rhvm40_vlan20_fqdn": "rhvm40-vlan20-2.lab.eng.pek2.redhat.com",
-    "rhvm41_vlan50_fqdn": "rhvm41-vlan50-2.lab.eng.pek2.redhat.com",
+    "rhvm41_vlan50_fqdn": "vm-74-187.lab.eng.pek2.redhat.com",
     "rhvm41_vlan20_fqdn": "rhvm41-vlan20-2.lab.eng.pek2.redhat.com"
 }
 
