@@ -43,8 +43,8 @@ UPGRADE_TIER2_TESTCASE_MAP = {
 }
 
 RHVM_DATA_MAP = {
-    "4.0_rhvm_fqdn": "rhvm40-vlan50-1.lab.eng.pek2.redhat.com",
-    "4.1_rhvm_fqdn": "rhvm41-vdsm-auto.lab.eng.pek2.redhat.com",
+    "4.0_rhvm_fqdn": "rhvm40-vlan50-2.lab.eng.pek2.redhat.com",
+    "4.1_rhvm_fqdn": "vm-74-201.lab.eng.pek2.redhat.com",
 }
 
 CHECK_NEW_LVS = True
