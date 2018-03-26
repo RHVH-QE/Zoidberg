@@ -31,7 +31,7 @@ network --device=em2 --bootproto=dhcp
 network --hostname=ati_iscsi_01.test.redhat.com
 
 ### Partitioning ###
-ignoredisk --drives=/dev/disk/by-id/scsi-36b8ca3a0e7899a001dfd500516473f47,/dev/disk/by-id/scsi-360a9800050334c33424b4a4b306a2d66
+ignoredisk --drives=/dev/disk/by-id/scsi-36b8ca3a0e7899a001dfd500516473f47
 zerombr
 clearpart --all
 bootloader --location=mbr

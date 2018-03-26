@@ -89,7 +89,7 @@ expected_data['network'] = {
         'DEVICE': 'enp2s0',
         'BOOTPROTO': 'static',
         'IPADDR': '10.66.148.9',
-        'NETMASK': '255.255.252.0',
+        'PREFIX': '22',
         'GATEWAY': '10.66.151.254',
         'IPV6ADDR': '2620:52:0:4294:222:19ff:fe27:54c7/64',
         'ONBOOT': 'yes'

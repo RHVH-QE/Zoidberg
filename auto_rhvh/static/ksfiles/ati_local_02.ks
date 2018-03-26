@@ -29,7 +29,7 @@ reboot
 
 # This ks is specific to dell-per515-01, which is a multipath iSCSI machine, but only use the big local disk
 ### Network ###
-network --device=em2 --bootproto=dhcp
+network --device=enp2s0 --bootproto=dhcp
 network --hostname=ati_local_02.test.redhat.com
 
 ### Partitioning ###
