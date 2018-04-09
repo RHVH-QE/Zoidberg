@@ -28,6 +28,7 @@ reboot
 # This ks is specific to dell-per515-01, which is a multipath iSCSI machine, use the iSCSI luns
 ### Network ###
 network --device=em2 --bootproto=dhcp
+network --device=bond0 --bootproto=dhcp --bondslaves=p3p1,p3p2 --bondopts=mode=active-backup,primary=p3p1,miimon=100
 network --hostname=ati_iscsi_01.test.redhat.com
 
 ### Partitioning ###
@@ -60,6 +61,16 @@ EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_iscsi_01.json')
 os.mkdir(AUTO_TEST_DIR)
     
 expected_data = {}
+
+expected_data['network'] = {
+    'bond': {
+        'DEVICE': 'bond0',
+        'TYPE': 'Bond',
+        'BONDING_OPTS': 'mode=active-backup primary=p3p1 miimon=100',
+        'ONBOOT': 'yes',
+        'slaves': ['p3p1', 'p3p2']
+    }
+}
 
 expected_data['partition'] = {
     '/boot': {

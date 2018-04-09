@@ -31,7 +31,7 @@ reboot
 # This ks is specific to dell-per515-01, which is a multipath iSCSI machine, use the iSCSI luns
 ### Network ###
 network --device=em2 --bootproto=dhcp
-#network --device=bond0 --bootproto=dhcp --bondslaves=em1,em2 --bondopts=mode=active-backup,primary=em2,miimon=100
+network --device=bond0 --bootproto=dhcp --bondslaves=p3p1,p3p2 --bondopts=mode=active-backup,primary=p3p1,miimon=100
 network --device=p2p1 --bootproto=dhcp --vlanid=50
 network --hostname=ati_iscsi_02.test.redhat.com
 

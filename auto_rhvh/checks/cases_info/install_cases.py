@@ -12,6 +12,7 @@ INSTALL_TIER1_TESTCASE_MAP = {
     'RHEVM-23942': ('ati_iscsi_01.ks', DELL_PER515_01, 'PartitionCheck.custom_swap_check'),
     'RHEVM-24689': ('ati_iscsi_01.ks', DELL_PER515_01, 'PartitionCheck.custom_var_crash_check'),
     'RHEVM-24163': ('ati_iscsi_01.ks', DELL_PER515_01, 'GeneralCheck.node_check'),
+    'RHEVM-23948': ('ati_iscsi_01.ks', DELL_PER515_01, 'NetworkCheck.bond_check'),
     'RHEVM-24161': ('ati_local_01.ks', DELL_PET105_01, 'GeneralCheck.node_check'),
 }
 
