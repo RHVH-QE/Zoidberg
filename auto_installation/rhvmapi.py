@@ -298,7 +298,8 @@ class RhevmAction:
     def _update_available_check(self, host_id):
         rhvm_version = self.rhevm_fqdn.split('-')[0]
 
-        if rhvm_version == "rhvm41":
+        # if rhvm_version == "rhvm41":
+        if rhvm_version != "rhvm40":
             api_url_base = self.api_url.format(
                 rhevm_fqdn=self.rhevm_fqdn, item="hosts")
             api_url = api_url_base + '/%s' % host_id + '/upgradecheck'
@@ -316,7 +317,8 @@ class RhevmAction:
 
         count_max = 13
         sleep_time = 300
-        if rhvm_version == "rhvm41":
+        # if rhvm_version == "rhvm41":
+        if rhvm_version != "rhvm40":
             count_max = 10
             sleep_time = 30
 
