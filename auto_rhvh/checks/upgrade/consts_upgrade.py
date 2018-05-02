@@ -22,6 +22,6 @@ ENTER_SYSTEM_TIMEOUT = 600
 
 RHVM_DATA_MAP = {
     "4.0_rhvm_fqdn": "rhvm40-vlan50-2.lab.eng.pek2.redhat.com",
-    "4.1_rhvm_fqdn": "vm-74-201.lab.eng.pek2.redhat.com",
+    "4.1_rhvm_fqdn": "vm-74-187.lab.eng.pek2.redhat.com",
     "4.2_rhvm_fqdn": "rhvm42-vlan50-2.lab.eng.pek2.redhat.com",
 }
