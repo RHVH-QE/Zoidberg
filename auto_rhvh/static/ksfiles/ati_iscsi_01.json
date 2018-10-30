@@ -1,0 +1,83 @@
+{
+    "partition": {
+        "volgroup": {
+            "lvm": true, 
+            "reserved-percent": 2, 
+            "name": "rhvh"
+        }, 
+        "/var/log": {
+            "lvm": true, 
+            "discard": true, 
+            "size": "8192", 
+            "name": "var_log", 
+            "fstype": "ext4"
+        }, 
+        "swap": {
+            "lvm": true, 
+            "recommended": true, 
+            "name": "swap"
+        }, 
+        "/var": {
+            "lvm": true, 
+            "discard": true, 
+            "size": "20000", 
+            "name": "var", 
+            "fstype": "ext4"
+        }, 
+        "/var/log/audit": {
+            "lvm": true, 
+            "discard": true, 
+            "size": "2048", 
+            "name": "var_log_audit", 
+            "fstype": "ext4"
+        }, 
+        "/var/crash": {
+            "lvm": true, 
+            "discard": true, 
+            "size": "10240", 
+            "name": "var_crash", 
+            "fstype": "ext4"
+        }, 
+        "/boot": {
+            "lvm": false, 
+            "device_wwid": "/dev/mapper/360a9800050334c33424b41762d726954p1", 
+            "size": 1024, 
+            "fstype": "ext4", 
+            "device_alias": "/dev/mapper/360a9800050334c33424b41762d726954p1"
+        }, 
+        "/home": {
+            "lvm": true, 
+            "discard": true, 
+            "size": "1024", 
+            "name": "home", 
+            "fstype": "ext4"
+        }, 
+        "/tmp": {
+            "lvm": true, 
+            "discard": true, 
+            "size": "1024", 
+            "name": "tmp", 
+            "fstype": "ext4"
+        }, 
+        "/": {
+            "name": "root", 
+            "fstype": "ext4", 
+            "lvm": true, 
+            "discard": true, 
+            "grow": true, 
+            "size": "200000"
+        }
+    }, 
+    "network": {
+        "bond": {
+            "DEVICE": "bond0", 
+            "slaves": [
+                "p3p1", 
+                "p3p2"
+            ], 
+            "TYPE": "Bond", 
+            "ONBOOT": "yes", 
+            "BONDING_OPTS": "mode=active-backup primary=p3p1 miimon=100"
+        }
+    }
+}

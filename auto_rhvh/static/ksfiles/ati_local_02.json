@@ -1,0 +1,8 @@
+{
+    "selinux": "disabled", 
+    "grubby": "crashkernel=250", 
+    "keyboard": {
+        "vckeymap": "de", 
+        "xlayouts": "de"
+    }
+}

@@ -1,0 +1,61 @@
+{
+    "lang": "en_US.UTF-8",
+    "network": {
+        "nic": {
+            "DEVICE": "enp6s1f0",
+            "BOOTPROTO": "dhcp",
+            "ONBOOT": "no"
+        },
+        "hostname": "ati_local_01.test.redhat.com",
+        "static": {
+            "IPADDR": "10.66.148.9",
+            "ONBOOT": "yes",
+            "NETMASK": "255.255.252.0",
+            "BOOTPROTO": "static",
+            "DEVICE": "enp2s0",
+            "IPV6ADDR": "2620:52:0:4294:222:19ff:fe27:54c7/64",
+            "GATEWAY": "10.66.151.254"
+        }
+    },
+    "selinux": "enforcing",
+    "partition": {
+        "volgroup": {
+            "lvm": true,
+            "name": "rhvh"
+        },
+        "/var": {
+            "lvm": true,
+            "size": "10",
+            "percent": true,
+            "name": "var",
+            "fstype": "ext4"
+        },
+        "/": {
+            "lvm": true,
+            "size": "85",
+            "percent": true,
+            "name": "root",
+            "fstype": "ext4"
+        },
+        "swap": {
+            "lvm": true,
+            "percent": true,
+            "name": "swap",
+            "size": "5"
+        }
+    },
+    "user": {
+        "name": "test"
+    },
+    "keyboard": {
+        "vckeymap": "us",
+        "xlayouts": "us"
+    },
+    "timezone": {
+        "ntpservers": "clock02.util.phx2.redhat.com",
+        "timezone": "Asia/Shanghai"
+    },
+    "kdump": {
+        "reserve-mb": "200"
+    }
+}

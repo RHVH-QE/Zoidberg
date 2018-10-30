@@ -41,26 +41,5 @@ autopart --type=thinp
 
 ### Post deal ###
 %post --erroronfail
-compose_expected_data(){
-python << ES
-import json
-import os
-
-AUTO_TEST_DIR = '/boot/autotest'
-EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_fc_02.json')
-
-os.mkdir(AUTO_TEST_DIR)
-
-expected_data = {"data": None}
-
-with open(EXPECTED_DATA_FILE, 'wb') as json_file:
-    json_file.write(
-        json.dumps(
-            expected_data, indent=4))
-
-ES
-}
-
 imgbase layout --init
-compose_expected_data
 %end

@@ -1,0 +1,73 @@
+{
+    "selinux": "permissive", 
+    "partition": {
+        "volgroup": {
+            "lvm": true, 
+            "name": "rhvh"
+        }, 
+        "/lv_data": {
+            "name": "lv_data", 
+            "fstype": "xfs", 
+            "maxsize": "10000", 
+            "lvm": true, 
+            "discard": false, 
+            "grow": true, 
+            "size": "5000"
+        }, 
+        "/std_data": {
+            "fstype": "xfs", 
+            "maxsize": "10000", 
+            "device_wwid": "/dev/mapper/360a9800050334c33424b41762d726954p2", 
+            "lvm": false, 
+            "device_alias": "/dev/mapper/360a9800050334c33424b41762d726954p2", 
+            "grow": true, 
+            "size": "5000"
+        }, 
+        "swap": {
+            "lvm": false, 
+            "recommended": true, 
+            "device_wwid": "/dev/mapper/360a9800050334c33424b41762d745551p1", 
+            "device_alias": "/dev/mapper/360a9800050334c33424b41762d745551p1"
+        }, 
+        "/home": {
+            "lvm": true, 
+            "discard": true, 
+            "size": "5000", 
+            "name": "home", 
+            "fstype": "xfs"
+        }, 
+        "/var/crash": {
+            "lvm": true, 
+            "discard": true, 
+            "size": "20000", 
+            "name": "var_crash", 
+            "fstype": "xfs"
+        }, 
+        "/boot": {
+            "lvm": false, 
+            "device_wwid": "/dev/mapper/360a9800050334c33424b41762d726954p1", 
+            "size": "1024", 
+            "fstype": "ext4", 
+            "device_alias": "/dev/mapper/360a9800050334c33424b41762d726954p1"
+        }, 
+        "/thin_data": {
+            "name": "thin_data", 
+            "fstype": "xfs", 
+            "maxsize": "10000", 
+            "lvm": true, 
+            "discard": true, 
+            "grow": true, 
+            "size": "5000"
+        }, 
+        "bootdevice": "/dev/mapper/360a9800050334c33424b41762d726954"
+    }, 
+    "network": {
+        "vlan": {
+            "DEVICE": "p2p1.50", 
+            "BOOTPROTO": "dhcp", 
+            "TYPE": "Vlan", 
+            "ONBOOT": "yes", 
+            "VLAN_ID": "50"
+        }
+    }
+}

@@ -43,30 +43,6 @@ autopart --type=thinp
 
 ### Post deal ###
 %post --erroronfail
-compose_expected_data(){
-python << ES
-import json
-import os
-
-AUTO_TEST_DIR = '/boot/autotest'
-EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_local_02.json')
-
-os.mkdir(AUTO_TEST_DIR)
-
-expected_data = {}
-
-expected_data['keyboard'] = {'vckeymap': 'de', 'xlayouts': 'de'}
-expected_data['selinux'] = 'disabled'
-expected_data['grubby'] = 'crashkernel=250'
-
-with open(EXPECTED_DATA_FILE, 'wb') as json_file:
-    json_file.write(
-        json.dumps(
-            expected_data, indent=4))
-
-ES
-}
-
 grubby_test(){
 kernel=$(grubby --info=0 | grep '^kernel')
 kernel=${kernel#*=}
@@ -75,5 +51,4 @@ grubby --args=crashkernel=250 --update-kernel $kernel
 
 imgbase layout --init
 grubby_test
-compose_expected_data
 %end

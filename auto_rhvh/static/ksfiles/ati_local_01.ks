@@ -57,87 +57,9 @@ logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --perc
 
 ### Post deal ###
 %post --erroronfail
-compose_expected_data(){
-python << ES
-import json
-import commands
-import os
-    
-AUTO_TEST_DIR = '/boot/autotest'
-EXPECTED_DATA_FILE = os.path.join(AUTO_TEST_DIR, 'ati_local_01.json')
-
-os.mkdir(AUTO_TEST_DIR)
-
-#run ip cmd to get nic status during installation
-cmd = "nmcli -t -f DEVICE,STATE dev |grep 'enp6s1f0:connected'"
-status = commands.getstatusoutput(cmd)[0]
-
-expected_data = {}
-
-expected_data['lang'] = 'en_US.UTF-8'
-expected_data['timezone'] = {
-    'timezone': 'Asia/Shanghai',
-    'ntpservers': 'clock02.util.phx2.redhat.com'
-}
-expected_data['keyboard'] = {'vckeymap': 'us', 'xlayouts': 'us'}
-expected_data['kdump'] = {'reserve-mb': '200'}
-expected_data['user'] = {'name': 'test'}
-expected_data['selinux'] = 'enforcing'
-
-expected_data['network'] = {
-    'static': {
-        'DEVICE': 'enp2s0',
-        'BOOTPROTO': 'static',
-        'IPADDR': '10.66.148.9',
-        'NETMASK': '255.255.252.0',
-        'GATEWAY': '10.66.151.254',
-        'IPV6ADDR': '2620:52:0:4294:222:19ff:fe27:54c7/64',
-        'ONBOOT': 'yes'
-    },
-    'nic': {
-        'DEVICE': 'enp6s1f0',
-        'BOOTPROTO': 'dhcp',
-        'status': status,
-        'ONBOOT': 'no'
-    },
-    'hostname': 'ati_local_01.test.redhat.com'
-}
-
-expected_data['partition'] = {
-    'volgroup': {
-        'lvm': True,
-        'name': 'rhvh'
-    },
-    '/': {
-        'lvm': True,
-        'name': 'root',
-        'fstype': 'ext4',
-        'percent': True,
-        'size': '85'
-    },
-    '/var': {
-        'lvm': True,
-        'name': 'var',
-        'fstype': 'ext4',
-        'percent': True,
-        'size': '10'
-    },
-    'swap': {
-        'lvm': True,
-        'name': 'swap',
-        'percent': True,
-        'size': '5'
-    }
-}
-
-with open(EXPECTED_DATA_FILE, 'wb') as json_file:
-    json_file.write(
-        json.dumps(
-            expected_data, indent=4))
-
-ES
-}
-
 imgbase layout --init
-compose_expected_data
+nmcli -t -f DEVICE,STATE dev |grep 'enp6s1f0:connected'
+if [ $? -eq 0 ]; then
+    touch /boot/nicup
+fi
 %end

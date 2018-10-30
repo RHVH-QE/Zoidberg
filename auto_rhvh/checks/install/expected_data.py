@@ -1,3 +1,4 @@
+import os
 import json
 
 
@@ -6,8 +7,9 @@ class ExpectedData(object):
     """
 
     def __init__(self, expected_data_file):
-        with open(expected_data_file, 'rb') as fp:
-            self._expected_data = json.load(fp)
+        if os.path.exists(expected_data_file):
+            with open(expected_data_file, 'rb') as fp:
+                self._expected_data = json.load(fp)
 
     @property
     def expected_partition(self):
@@ -35,6 +37,9 @@ class ExpectedData(object):
         """
         return self._expected_data.get('partition')
 
+    def set_expected_vgname(self, vgname):
+        self._expected_data['partition']['volgroup']['name'] = vgname
+
     @property
     def expected_network(self):
         """
@@ -42,7 +47,6 @@ class ExpectedData(object):
         'nic': {
             'DEVICE':
             'BOOTPROTO':
-            'status':
             'ONBOOT':
         },        
         'static': {

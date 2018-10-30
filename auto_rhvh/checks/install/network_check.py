@@ -106,9 +106,9 @@ class NetworkCheck(object):
     def nic_stat_dur_install_check(self):
         device_data_map = self.expected_network.get('nic')
         nic_device = device_data_map.get('DEVICE')
-        nic_status_dur_install = device_data_map.get('status')
 
-        ck01 = not nic_status_dur_install
+        cmd = "test -e /boot/nicup"
+        ck01 = self.remotecmd.run_cmd(cmd)
         ck02 = self._check_device_ifcfg_value(device_data_map)
         ck03 = self._check_device_connected(
             [nic_device], expected_result='false')

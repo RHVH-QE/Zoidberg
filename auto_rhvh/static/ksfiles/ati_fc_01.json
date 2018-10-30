@@ -1,0 +1,99 @@
+{
+    "partition": {
+        "/var": {
+            "lvm": true, 
+            "discard": true, 
+            "size": "15360", 
+            "name": "var", 
+            "fstype": "ext4"
+        }, 
+        "/var/log": {
+            "lvm": true, 
+            "discard": true, 
+            "size": "8192", 
+            "name": "var_log", 
+            "fstype": "ext4"
+        }, 
+        "/tmp": {
+            "lvm": true, 
+            "discard": true, 
+            "size": "1024", 
+            "name": "tmp", 
+            "fstype": "ext4"
+        }, 
+        "/var/log/audit": {
+            "lvm": true, 
+            "discard": true, 
+            "size": "2048", 
+            "name": "var_log_audit", 
+            "fstype": "ext4"
+        }, 
+        "/boot": {
+            "lvm": false, 
+            "device_wwid": "/dev/mapper/36005076300810b3e0000000000000022p1", 
+            "size": "1024", 
+            "fstype": "ext4", 
+            "device_alias": "/dev/mapper/mpatha1"
+        }, 
+        "/home": {
+            "lvm": true, 
+            "discard": true, 
+            "size": "1024", 
+            "name": "home", 
+            "fstype": "ext4"
+        }, 
+        "/": {
+            "name": "root", 
+            "fstype": "ext4", 
+            "lvm": true, 
+            "discard": true, 
+            "grow": true, 
+            "size": "6144"
+        }, 
+        "volgroup": {
+            "lvm": true, 
+            "name": ""
+        }, 
+        "pool_meta": {
+            "lvm": true, 
+            "name": "pool00_tmeta", 
+            "size": "1024"
+        }, 
+        "swap": {
+            "lvm": true, 
+            "recommended": true, 
+            "name": "swap"
+        }, 
+        "/var/crash": {
+            "lvm": true, 
+            "discard": true, 
+            "size": "10240", 
+            "name": "var_crash", 
+            "fstype": "ext4"
+        }
+    }, 
+    "network": {
+        "dhcp": {
+            "DEVICE": "em2", 
+            "BOOTPROTO": "dhcp", 
+            "ONBOOT": "yes"
+        }, 
+        "vlan": {
+            "DEVICE": "bond0.50", 
+            "BOOTPROTO": "dhcp", 
+            "TYPE": "Vlan", 
+            "ONBOOT": "yes", 
+            "VLAN_ID": "50"
+        }, 
+        "bond": {
+            "DEVICE": "bond0", 
+            "slaves": [
+                "p1p1", 
+                "p1p2"
+            ], 
+            "TYPE": "Bond", 
+            "ONBOOT": "yes", 
+            "BONDING_OPTS": "mode=active-backup primary=p1p1 miimon=100"
+        }
+    }
+}

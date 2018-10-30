@@ -10,8 +10,8 @@ from .expected_data import ExpectedData
 log = logging.getLogger('bender')
 
 
-AUTO_TEST_DIR = '/boot/autotest'
-LOCAL_DIR = os.path.join(os.path.dirname(__file__), "expected_data")
+EXPECTED_DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(
+    os.path.dirname(__file__))), "static", "ksfiles")
 
 
 class CheckInstall(CheckComm):
@@ -21,31 +21,17 @@ class CheckInstall(CheckComm):
         self._expected_data = None
 
     def _get_expected_data(self):
-        expected_data_name = self.ksfile.replace('.ks', '.json')
-        remote_file = os.path.join(AUTO_TEST_DIR, expected_data_name)
-        local_file = os.path.join(LOCAL_DIR, expected_data_name)
-        log.info("Start to get %s", remote_file)
+        expected_data_file = os.path.join(
+            EXPECTED_DATA_DIR, self.ksfile.replace('.ks', '.json'))
+        self._expected_data = ExpectedData(expected_data_file)
+        if self.ksfile == 'ati_fc_01.ks':
+            cmd = 'vgs --noheadings -o vg_name'
+            ret = self.remotecmd.run_cmd(cmd)
+            self._expected_data.set_expected_vgname(ret[1])
 
-        try:
-
-            if not os.path.exists(LOCAL_DIR):
-                os.makedirs(LOCAL_DIR)
-            else:
-                if os.path.exists(local_file):
-                    os.system('rm -f {}'.format(local_file))
-
-            self.remotecmd.get_remote_file(remote_file,
-                                           local_file)
-
-            self._expected_data = ExpectedData(local_file)
-
-            log.info("Got %s", expected_data_name)
-
-        except Exception as e:
-            log.error(e)
-            return False
-
-        return True
+    def _remote_reconnect(self):
+        cmd = 'lvs -a'
+        self.remotecmd.run_cmd(cmd)
 
     def call_func_by_name(self, name=''):
         class_name, method_name = name.split('.')
@@ -63,11 +49,9 @@ class CheckInstall(CheckComm):
 
     def go_check(self):
         self.remotecmd.disconnect()
-        if self._get_expected_data():
-            cks = self.run_cases()
-        else:
-            cks = {}
-        return cks
+        self._remote_reconnect()
+        self._get_expected_data()
+        return self.run_cases()
 
 
 if __name__ == '__main__':
