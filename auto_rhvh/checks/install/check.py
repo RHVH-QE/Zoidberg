@@ -27,7 +27,8 @@ class CheckInstall(CheckComm):
         if self.ksfile == 'ati_fc_01.ks':
             cmd = 'vgs --noheadings -o vg_name'
             ret = self.remotecmd.run_cmd(cmd)
-            self._expected_data.set_expected_vgname(ret[1])
+            self._expected_data.set_expected_vgname(
+                ret[1].split('\r\n')[-1].strip())
 
     def _remote_reconnect(self):
         cmd = 'lvs -a'

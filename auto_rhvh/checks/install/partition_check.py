@@ -251,7 +251,7 @@ class PartitionCheck(object):
         for cmd in [cmd1, cmd2]:
             ret = self.remotecmd.run_cmd(cmd, timeout=300)
             if ret[0]:
-                size.append(ret[1].strip())
+                size.append(ret[1].split('\r\n')[-1].strip())
             else:
                 return False
 
