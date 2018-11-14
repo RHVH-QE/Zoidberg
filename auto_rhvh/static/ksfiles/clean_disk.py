@@ -5,6 +5,7 @@ import re
 class CleanDisks(object):
     '''
     '''
+
     def __init__(self):
         self._vg_list = None
         self._pv_list = None
@@ -16,19 +17,19 @@ class CleanDisks(object):
         cmd = "vgs -o vg_name --noheadings"
         (status, output) = commands.getstatusoutput(cmd)
         if status != 0:
-            print 'Failed to run cmd "%s"' % cmd
+            print('Failed to run cmd "{}"'.format(cmd))
         else:
             self._vg_list = [x.strip() for x in output.split('\n')]
-            print "vg list is %s" % self._vg_list
+            print("vg list is {}".format(self._vg_list))
 
     def _get_pvs(self):
         cmd = "pvs -o pv_name --noheadings"
         (status, output) = commands.getstatusoutput(cmd)
         if status != 0:
-            print 'Failed to run cmd "%s"' % cmd
+            print('Failed to run cmd "{}"'.format(cmd))
         else:
             self._pv_list = [x.strip() for x in output.split('\n')]
-            print "pv list is %s" % self._pv_list
+            print("pv list is {}".format(self._pv_list))
 
     def _remove_vgs(self):
         self._get_vgs()
@@ -46,7 +47,7 @@ class CleanDisks(object):
         cmd = "sfdisk -d | grep -v 'start=\s*0,'|awk '{if($1 ~/dev/) print $1}{if($5 ~/dev/) print $5}'"
         (status, output) = commands.getstatusoutput(cmd)
         if status != 0:
-            print 'Failed to run cmd "%s".' % cmd
+            print('Failed to run cmd "{}".'.format(cmd))
         else:
             self._sfdisk = [x.strip() for x in output.split('\n')]
 
@@ -54,26 +55,26 @@ class CleanDisks(object):
         cmd = "lsblk -rp -o NAME,TYPE --noheadings | grep -E 'disk|mpath|part' | sort -n | uniq"
         (status, output) = commands.getstatusoutput(cmd)
         if status != 0:
-            print 'Failed to run cmd "%s".' % cmd
+            print('Failed to run cmd "{}".'.format(cmd))
         else:
             self._lsblk = [x.strip() for x in output.split('\n')]
 
     def _zero_mbr(self, dev):
         cmd = "dd if=/dev/zero of={dev} bs=512 count=1".format(dev=dev)
         output = commands.getstatusoutput(cmd)[1]
-        print "%s\n%s" % (cmd, output)
+        print("{}\n{}".format(cmd, output))
 
     def _clear_part(self, part):
         cmd = "dd if=/dev/zero of={part} bs=1M count=1".format(part=part)
         output = commands.getstatusoutput(cmd)[1]
-        print "%s\n%s" % (cmd, output)
+        print("{}\n{}".format(cmd, output))
 
     def _del_dev_mapper(self):
         # To remove /dev/mapper/*
         cmd = "ls /dev/mapper"
         status, output = commands.getstatusoutput(cmd)
         if status != 0:
-            print 'Failed to run cmd "%s".' % cmd
+            print('Failed to run cmd "{}".'.format(cmd))
             return
 
         device_list = [x.strip() for x in output.split()]
@@ -81,7 +82,7 @@ class CleanDisks(object):
             if not (re.match(r'live', device) or re.match(r'control', device)):
                 cmd = "dmsetup remove /dev/mapper/{} -f".format(device)
                 output = commands.getstatusoutput(cmd)[1]
-                print "%s\n%s" % (cmd, output)
+                print("{}\n{}".format(cmd, output))
 
     def _dd_disks(self, clear_part_flag=True):
         self._get_sfdisk()
@@ -103,6 +104,7 @@ class CleanDisks(object):
 
     def clean_in_post(self):
         self._dd_disks()
+
 
 if __name__ == '__main__':
     clean = CleanDisks()

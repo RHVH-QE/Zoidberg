@@ -30,10 +30,6 @@ class CheckInstall(CheckComm):
             self._expected_data.set_expected_vgname(
                 ret[1].split('\r\n')[-1].strip())
 
-    def _remote_reconnect(self):
-        cmd = 'lvs -a'
-        self.remotecmd.run_cmd(cmd)
-
     def call_func_by_name(self, name=''):
         class_name, method_name = name.split('.')
         temp = class_name.lower()[:-5]
@@ -49,8 +45,8 @@ class CheckInstall(CheckComm):
         return method()
 
     def go_check(self):
-        self.remotecmd.disconnect()
-        self._remote_reconnect()
+        if self.ksfile != 'ati_local_01.ks':
+            self.remotecmd.disconnect()
         self._get_expected_data()
         return self.run_cases()
 
