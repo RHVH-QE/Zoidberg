@@ -45,8 +45,7 @@ class CheckInstall(CheckComm):
         return method()
 
     def go_check(self):
-        if self.ksfile != 'ati_local_01.ks':
-            self.remotecmd.disconnect()
+        self.remotecmd.disconnect()
         self._get_expected_data()
         return self.run_cases()
 

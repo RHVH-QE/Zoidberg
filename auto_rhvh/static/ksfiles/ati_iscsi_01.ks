@@ -17,6 +17,8 @@ auth --enableshadow --passalgo=sha512
 
 ### Misc ###
 services --enabled=sshd
+firewall --disabled
+selinux --disabled
 
 ### Installation mode ###
 install
@@ -50,5 +52,12 @@ logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --size
 
 ### Post deal ###
 %post --erroronfail
+grubby_test(){
+kernel=$(grubby --info=0 | grep '^kernel')
+kernel=${kernel#*=}
+grubby --args=crashkernel=250 --update-kernel $kernel
+}
+
 imgbase layout --init
+grubby_test
 %end

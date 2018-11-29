@@ -8,16 +8,24 @@ timezone Asia/Shanghai --utc --ntpservers=clock02.util.phx2.redhat.com
 keyboard --vckeymap=us --xlayouts='us'
 
 ### Kdump ###
+%addon com_redhat_kdump --enable --reserve-mb=200
+%end
 
 ### Security ###
+%addon org_fedora_oscap
+content-type=scap-security-guide
+profile=standard
+%end
 
 ### User ###
 rootpw --plaintext redhat
 auth --enableshadow --passalgo=sha512
+user --name=test --password=redhat --plaintext
 
 ### Misc ###
 services --enabled=sshd
 selinux --enforcing
+firewall --enabled
 
 ### Installation mode ###
 install

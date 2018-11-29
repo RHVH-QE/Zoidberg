@@ -1,23 +1,20 @@
 {
-    "lang": "en_US.UTF-8",
     "network": {
         "nic": {
-            "DEVICE": "enp6s1f0",
+            "DEVICE": "em1",
             "BOOTPROTO": "dhcp",
             "ONBOOT": "no"
         },
-        "hostname": "ati_local_01.test.redhat.com",
         "static": {
-            "IPADDR": "10.66.148.9",
+            "IPADDR": "10.73.75.181",
             "ONBOOT": "yes",
             "NETMASK": "255.255.252.0",
             "BOOTPROTO": "static",
-            "DEVICE": "enp2s0",
-            "IPV6ADDR": "2620:52:0:4294:222:19ff:fe27:54c7/64",
-            "GATEWAY": "10.66.151.254"
+            "DEVICE": "em2",
+            "IPV6ADDR": "2620:52:0:4948:a9e:1ff:fe63:2c6e/64",
+            "GATEWAY": "10.73.75.254"
         }
     },
-    "selinux": "enforcing",
     "partition": {
         "volgroup": {
             "lvm": true,
@@ -44,18 +41,8 @@
             "size": "5"
         }
     },
-    "user": {
-        "name": "test"
-    },
     "keyboard": {
-        "vckeymap": "us",
-        "xlayouts": "us"
-    },
-    "timezone": {
-        "ntpservers": "clock02.util.phx2.redhat.com",
-        "timezone": "Asia/Shanghai"
-    },
-    "kdump": {
-        "reserve-mb": "200"
+        "vckeymap": "de",
+        "xlayouts": "de"
     }
 }
