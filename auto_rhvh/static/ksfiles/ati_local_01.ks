@@ -37,7 +37,7 @@ zerombr
 clearpart --all
 bootloader --location=mbr
 reqpart --add-boot
-part pv.01 --size=20000
+part pv.01 --size=200000
 volgroup rhvh pv.01
 logvol swap --fstype=swap --name=swap --vgname=rhvh --percent=5
 logvol none --name=pool --vgname=rhvh --thinpool --size=1 --grow
