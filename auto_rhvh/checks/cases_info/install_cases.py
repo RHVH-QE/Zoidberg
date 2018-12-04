@@ -52,9 +52,9 @@ INSTALL_TIER2_TESTCASE_MAP = {
     'RHEVM-23949': ('ati_local_01.ks', DELL_PER515_02, 'NetworkCheck.nic_stat_dur_install_check'),
     'RHEVM-23955': ('ati_local_01.ks', DELL_PER515_02, 'NetworkCheck.static_network_check'),
     'RHEVM-23888': ('ati_local_01.ks', DELL_PER515_02, 'KeyboardCheck.keyboard_check'),
-    'RHEVM-24186': ('ati_local_01.ks', DELL_PER515_02, 'GeneralCheck.fips_check'),
+    'RHEVM-24186': ('ati_local_02.ks', DELL_PET105_01, 'GeneralCheck.fips_check'),
 }
 
 KS_PRESSURE_MAP = {'ati_fc_02.ks': '3'}
 
-KS_KERPARAMS_MAP = {'ati_local_01.ks': 'fips=1'}
+KS_KERPARAMS_MAP = {'ati_local_02.ks': 'fips=1'}
