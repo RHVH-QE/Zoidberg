@@ -1,4 +1,4 @@
-from common import DELL_PER510_01, DELL_PER515_01, DELL_PER515_02
+from common import DELL_PET105_01, DELL_PER510_01, DELL_PER515_01, DELL_PER515_02
 
 # one kickstart file can only be run on a single machine
 INSTALL_TIER1_TESTCASE_MAP = {
