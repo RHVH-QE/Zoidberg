@@ -1,6 +1,7 @@
 import logging
 import attr
 import re
+import time
 
 log = logging.getLogger('bender')
 
@@ -62,7 +63,12 @@ class PartitionCheck(object):
         else:
             cmd = "expr $(fdisk -s {}) / 1024".format(part.get('device_wwid'))
 
+        # To workaround fdisk fail of no such file or directory
         ret = self.remotecmd.run_cmd(cmd, timeout=300)
+        if not ret[0] and 'fdisk' in cmd:
+            cmd = "expr $(fdisk -s {}) / 1024".format(part.get('device_alias'))
+            ret = self.remotecmd.run_cmd(cmd, timeout=300)
+
         if ret[0]:
             for line in ret[1].split('\r\n'):
                 if re.match(r'\d+$', line):

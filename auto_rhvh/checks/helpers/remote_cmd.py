@@ -56,7 +56,7 @@ class RemoteCmd(object):
                 log.info('Run cmd "%s" succeeded', cmd)
                 return True, ret
             else:
-                log.error('Run cmd "%s" failed', cmd)
+                log.error('Run cmd "%s" failed, ret is "%s"', cmd, ret)
                 return False, ret
         except Exception as e:
             log.error('Run cmd "%s" failed with exception "%s"', cmd, e)
