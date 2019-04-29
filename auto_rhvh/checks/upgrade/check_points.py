@@ -866,7 +866,7 @@ class CheckPoints(object):
             return False
         ret_old_build = str(ret_old_build[1])
 
-        log.info("ret_old_build: ", ret_old_build[1])
+        log.info("ret_old_build: ", ret_old_build)
 
         cmd = "sed -i '/^menuentry.*" + ret_old_build + "/,/^}/d' /etc/grub2.cfg \
         /boot/grub2/grub.cfg"
