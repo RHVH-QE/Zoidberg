@@ -740,7 +740,7 @@ class CheckPoints(object):
         return ret01 and ret02
 
     def _check_boot_dmesg_log(self):
-        log.info("Start to check /var/log/boot.log and /var/log/dmesg.")
+        log.info("Start to check /var/log/boot.log")
 
         cmd = "egrep -i 'error|fail' /var/log/boot.log --color=never"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
@@ -751,16 +751,16 @@ class CheckPoints(object):
         else:
             ret01 = True
 
-        cmd = "egrep -i 'error|fail' /var/log/dmesg --color=never"
-        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
-        log.info('The result of "%s" is %s', cmd, ret[1])
-        if ret[1].strip(' ') != '':
-            log.info('There are error or fail info in /var/log/dmesg')
-            ret02 = False
-        else:
-            ret02 = True
+        # cmd = "egrep -i 'error|fail' /var/log/dmesg --color=never"
+        # ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        # log.info('The result of "%s" is %s', cmd, ret[1])
+        # if ret[1].strip(' ') != '':
+        #     log.info('There are error or fail info in /var/log/dmesg')
+        #     ret02 = False
+        # else:
+        #     ret02 = True
 
-        return ret01 and ret02
+        return ret01
 
     def _check_separate_volumes(self):
         log.info("Start to check /var /var/log /var/log/audit /tmp /home on separate volumes .")
@@ -866,8 +866,13 @@ class CheckPoints(object):
             return False
         ret_old_build = str(ret_old_build[1])
 
+        log.info("ret_old_build: ", ret_old_build[1])
+
         cmd = "sed -i '/^menuentry.*" + ret_old_build + "/,/^}/d' /etc/grub2.cfg \
         /boot/grub2/grub.cfg"
+
+        log.info("cmd is: ", cmd)
+
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0]:
             log.error("Failed to delete old_build info on /etc/grub2.cfg \
@@ -1001,7 +1006,7 @@ class CheckPoints(object):
     def avc_denied_check(self):
         log.info("Start to check avc denied errors.")
 
-        cmd = "grep 'avc:  denied' /var/log/audit/audit.log"
+        cmd = "grep 'avc:  denied' /var/log/audit/audit.log --color=never"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0]:
             log.error(
@@ -1011,7 +1016,18 @@ class CheckPoints(object):
 
         if ret[1].strip(' ') != '':
             log.error("The result of avc denied check is %s, not null", ret[1])
-            return False
+            cmd1 = "grep 'avc:  denied' /var/log/audit/audit.log --color=never | grep 'comm="runcon"' --color=never"
+            cmd2 = "grep 'avc:  denied' /var/log/audit/audit.log --color=never | grep 'comm="chroot"' --color=never"
+            ret1 = self._remotecmd.run_cmd(cmd1, timeout=CONST.FABRIC_TIMEOUT)
+            ret2 = self._remotecmd.run_cmd(cmd2, timeout=CONST.FABRIC_TIMEOUT)
+            if not ret1[0] or not ret2[0]:
+                return False
+
+            denied_num = len(ret[1].splitlines())
+            runcon_num = len(ret1[1].splitlines())
+            chroot_num = len(ret2[1].splitlines())
+            if runcon_num + chroot_num < denied_num:
+                return False
 
         log.info("The result of '%s' is null", cmd)
 
@@ -1154,7 +1170,7 @@ class CheckPoints(object):
         log.info('The result of "%s" is %s', cmd, ret[1])
         goferd_num = len(ret[1].splitlines())
 
-        if katello_num > 1 and goferd_num > 1:
+        if katello_num >= 1 and goferd_num > 1:
             return True
         else:
             return False
@@ -1233,9 +1249,11 @@ class CheckPoints(object):
             return False
 
     def port_16514_check(self):
-        log.info("Start to check firewalld.service and port 16514 status.")
-        if not self._check_firewalld_status():
-            return False
+        # log.info("Start to check firewalld.service and port 16514 status.")
+        # if not self._check_firewalld_status():
+        #     return False
+
+        log.info("Start to check port 16514 status.")
 
         cmd = "iptables -L | grep 16514 --color=never | awk '{print $1}'"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
