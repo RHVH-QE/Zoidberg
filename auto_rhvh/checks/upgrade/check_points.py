@@ -265,12 +265,17 @@ class CheckPoints(object):
     def _check_imgbased_ver(self):
         old_imgbased_ver = self._check_infos.get("old").get("imgbased_ver")
         new_imgbased_ver = self._check_infos.get("new").get("imgbased_ver")
+
+        log.info("Check imgbased ver:\n  old_ver=%s\n  new_ver=%s",
+                 old_imgbased_ver, new_imgbased_ver)
+
+        # if the new ver equals to the old ver, the case should pass
+        if old_imgbased_ver == new_imgbased_ver:
+            return True
+
+        # if the new ver not equals to the old ver, it should be newer
         old_ver_nums = old_imgbased_ver.split('-')[1].split('.')
         new_ver_nums = new_imgbased_ver.split('-')[1].split('.')
-
-        log.info("Check imgbased ver:\n  old_ver_num=%s\n  new_ver_num=%s",
-                 old_ver_nums, new_ver_nums)
-
         if len(old_ver_nums) != len(new_ver_nums):
             log.error(
                 "The lengths of old version number and new version number are not equal."
