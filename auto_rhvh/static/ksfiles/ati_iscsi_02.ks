@@ -32,7 +32,7 @@ reboot
 ### Network ###
 network --device=em2 --bootproto=dhcp
 network --device=p2p1 --bootproto=dhcp --vlanid=50
-network --hostname=ati_iscsi_02.test.redhat.com
+network --hostname=ati-iscsi-02.test.redhat.com
 
 ### Partitioning ###
 ignoredisk --drives=/dev/disk/by-id/scsi-36b8ca3a0e7899a001dfd500516473f47

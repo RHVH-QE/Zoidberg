@@ -29,7 +29,7 @@ reboot
 ### Network ###
 network --device=em2 --bootproto=static --ip=10.73.75.181 --netmask=255.255.252.0 --gateway=10.73.75.254 --ipv6=2620:52:0:4948:a9e:1ff:fe63:2c6e/64
 network --device=em1 --bootproto=dhcp --activate --onboot=no
-network --hostname=ati_local_01.test.redhat.com
+network --hostname=ati-local-01.test.redhat.com
 
 ### Partitioning ###
 ignoredisk --only-use=sda
