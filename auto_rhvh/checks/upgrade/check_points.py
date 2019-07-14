@@ -1013,13 +1013,7 @@ class CheckPoints(object):
 
         cmd = "grep 'avc:  denied' /var/log/audit/audit.log --color=never"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
-        if not ret[0]:
-            log.error(
-                'Check avc denied errors failed. The result of "%s" is %s',
-                cmd, ret[1])
-            return False
-
-        if ret[1].strip(' ') != '':
+        if ret[0]:
             log.error("The result of avc denied check is %s, not null", ret[1])
             cmd1 = "grep 'avc:  denied' /var/log/audit/audit.log --color=never | grep 'comm=\"runcon\"' --color=never"
             cmd2 = "grep 'avc:  denied' /var/log/audit/audit.log --color=never | grep 'comm=\"chroot\"' --color=never"

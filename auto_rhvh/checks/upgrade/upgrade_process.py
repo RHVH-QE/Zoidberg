@@ -10,8 +10,8 @@ from check_points import CheckPoints
 
 log = logging.getLogger('bender')
 
-class UpgradeProcess(CheckPoints):
 
+class UpgradeProcess(CheckPoints):
 
     ##########################################
     # upgrade process
@@ -135,6 +135,19 @@ class UpgradeProcess(CheckPoints):
             return False
 
         log.info("Set host to a locale finished.")
+        return True
+
+    def _remove_audit_log(self):
+        log.info("Remove audit log for checking avc denied errors after upgrade.")
+
+        cmd = "test -e {name} && mv {name} {name}.bak".format(
+            name="/var/log/audit/audit.log")
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to remove audit log.")
+            return False
+
+        log.info("Remove audit log finished.")
         return True
 
     def _get_host_cpu_type(self):
@@ -408,6 +421,8 @@ class UpgradeProcess(CheckPoints):
         if not self._check_cockpit_connection():
             return False
         if not self._install_rpms():
+            return False
+        if not self._remove_audit_log():
             return False
         if not self._yum_update():
             return False
