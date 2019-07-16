@@ -115,6 +115,7 @@ class CheckPoints(object):
         log.info("Reboot and log into system...")
 
         if flag == "manual":
+            self.remotecmd.disconnect()
             cmd = "systemctl reboot"
             self.remotecmd.run_cmd(cmd, timeout=10)
 
@@ -248,11 +249,11 @@ class CheckPoints(object):
         log.info('Collect %s build services status on host', flag)
 
         if flag == 'old':
-            cmd = "systemctl list-units --type=service | awk '{print $1}' > /var/old_build"
-            ret = self._remotecmd.run_cmd(cmd, timeout=CONST.ENTER_SYSTEM_TIMEOUT)
+            cmd = "systemctl list-units --type=service | awk '{print $1}' | grep '.service' > /var/old_build"
+            self._remotecmd.run_cmd(cmd, timeout=CONST.ENTER_SYSTEM_TIMEOUT)
         elif flag == 'new':
-            cmd = "systemctl list-units --type=service | awk '{print $1}' > /var/new_build"
-            ret = self._remotecmd.run_cmd(cmd, timeout=CONST.ENTER_SYSTEM_TIMEOUT)
+            cmd = "systemctl list-units --type=service | awk '{print $1}' | grep '.service' > /var/new_build"
+            self._remotecmd.run_cmd(cmd, timeout=CONST.ENTER_SYSTEM_TIMEOUT)
         else:
             log.info("%s is wrong", flag)
 
@@ -853,8 +854,8 @@ class CheckPoints(object):
             return False
         else:
             ret_pv = ret_pv[1].split('\r\n')
-            for i in (1, 0):
-                cmd = "lvremove " + str(ret_vg[1]) + "/" + ret_pv[i]
+            for i in (-1, -2):
+                cmd = "lvremove " + str(ret_vg[1].splitlines()[-1]) + "/" + ret_pv[i]
                 ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
                 if not ret[0]:
                     log.error('Run cmd "%s" failed, the result is %s', cmd, ret[1])
@@ -869,14 +870,14 @@ class CheckPoints(object):
         ret_old_build = self._remotecmd.run_cmd(old_build_cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret_old_build[0]:
             return False
-        ret_old_build = str(ret_old_build[1])
+        ret_old_build = str(ret_old_build[1].splitlines()[-1])
 
-        log.info("ret_old_build: ", ret_old_build)
+        log.info("ret_old_build: %s", ret_old_build)
 
         cmd = "sed -i '/^menuentry.*" + ret_old_build + "/,/^}/d' /etc/grub2.cfg \
         /boot/grub2/grub.cfg"
 
-        log.info("cmd is: ", cmd)
+        log.info("cmd is: %s", cmd)
 
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0]:
@@ -1201,20 +1202,12 @@ class CheckPoints(object):
 
         cmd = "diff /var/old_build /var/new_build"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
-        if not ret[0]:
-            log.error(
-                'Diff all the active services failed. The result of "%s" is %s',
-                cmd, ret[1])
-            return False
         log.info('The result of "%s" is %s', cmd, ret[1])
-
-        diff_num = len(ret[1].splitlines())
-
-        if diff_num == 0:
-            return True
-        else:
-            log.info('There are %d active services are different.', diff_num)
+        if not ret[0]:
+            log.error('Active services after upgrade are different.')
             return False
+
+        return True
 
     def libguestfs_tool_check(self):
         log.info("Start to check libguestfs-test-tool.")
