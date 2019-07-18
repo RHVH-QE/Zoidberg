@@ -855,7 +855,7 @@ class CheckPoints(object):
         else:
             ret_pv = ret_pv[1].split('\r\n')
             for i in (-1, -2):
-                cmd = "lvremove " + str(ret_vg[1].splitlines()[-1]) + "/" + ret_pv[i]
+                cmd = "lvremove -y " + str(ret_vg[1].splitlines()[-1]) + "/" + ret_pv[i]
                 ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
                 if not ret[0]:
                     log.error('Run cmd "%s" failed, the result is %s', cmd, ret[1])
@@ -1127,8 +1127,8 @@ class CheckPoints(object):
 
     # 2-remove vg/lv, delete old layer info on /etc/grub2.cfg
     def delete_imgbase_check(self):
-        ck01 = self._change_grub_file()
-        ck02 = self._remove_lv()
+        ck01 = self._remove_lv()
+        ck02 = self._change_grub_file()
         if not ck01 or not ck02:
             log.error("Cannot remove vg/lv successfully.")
             return False
