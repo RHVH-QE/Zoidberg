@@ -1127,8 +1127,8 @@ class CheckPoints(object):
 
     # 2-remove vg/lv, delete old layer info on /etc/grub2.cfg
     def delete_imgbase_check(self):
-        ck01 = self._remove_lv()
-        ck02 = self._change_grub_file()
+        ck01 = self._change_grub_file()
+        ck02 = self._remove_lv()
         if not ck01 or not ck02:
             log.error("Cannot remove vg/lv successfully.")
             return False
