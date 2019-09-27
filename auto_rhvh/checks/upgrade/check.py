@@ -108,6 +108,11 @@ class CheckUpgrade(CheckComm):
             if not ret:
                 raise RuntimeError("Failed to run upgrade.")
 
+            try:
+                self._remotecmd.get_remote_file("/var/log/imgbased.log", self.log_path)
+            except ValueError:
+                pass
+
             if not self._check_points._collect_infos('new'):
                 raise RuntimeError("Failed to collect new infos.")
 

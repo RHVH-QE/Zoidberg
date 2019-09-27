@@ -139,7 +139,7 @@ class JobRunner(object):
                         self.results_logs.get_actual_logger(ks)
 
                         log.info("ip is %s", ret)
-                        ck = self.create_check(ret, m, ks)
+                        ck = self.create_check(ret, m, ks, self.results_logs.current_log_path)
                         if not ck:
                             continue
 
@@ -155,7 +155,7 @@ class JobRunner(object):
         cache_logs_summary()
         self.rd_conn.set("running", "0")
 
-    def create_check(self, host_ip, m, ks):
+    def create_check(self, host_ip, m, ks, log_path):
         if ks.find("ati") == 0:
             self.test_flag = "install"
             ck = CheckInstall()
@@ -179,6 +179,8 @@ class JobRunner(object):
         ck.casesmap = self.casesmap
         ck.host_string = host_ip
         ck.host_pass = 'redhat'
+        ck.log_path = log_path
+
 
         return ck
 

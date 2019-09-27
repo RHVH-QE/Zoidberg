@@ -14,6 +14,7 @@ class CheckComm(object):
         self._ksfile = None
         self._source_build = None
         self._target_build = None
+        self._log_path = None
 
     @property
     def casesmap(self):
@@ -62,6 +63,14 @@ class CheckComm(object):
     @target_build.setter
     def target_build(self, val):
         self._target_build = val
+
+    @property
+    def log_path(self):
+        return self._log_path
+
+    @log_path.setter
+    def log_path(self, val):
+        self._log_path = val
 
     def call_func_by_name(self, name=''):
         func = getattr(self, name.lower(), None)
