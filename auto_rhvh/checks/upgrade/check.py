@@ -105,13 +105,10 @@ class CheckUpgrade(CheckComm):
             elif "yum_vlan" in self.ksfile:
                 ret = self._upgrade_process.yum_update_vlan_process()
 
+            self._upgrade_process.upload_upgrade_log(self.log_path)
+
             if not ret:
                 raise RuntimeError("Failed to run upgrade.")
-
-            try:
-                self._remotecmd.get_remote_file("/var/log/imgbased.log", self.log_path)
-            except ValueError:
-                pass
 
             if not self._check_points._collect_infos('new'):
                 raise RuntimeError("Failed to collect new infos.")

@@ -363,28 +363,32 @@ class UpgradeProcess(CheckPoints):
             else:
                 break
 
-    def _yum_update(self):
+    def _yum_upgrade(self, yum_cmd):
+        if yum_cmd == 'update':
+            cmd = "yum -y update > /root/yum_upgrade.log"
+        elif yum_cmd == 'install':
+            cmd = "yum -y install {} > /root/yum_upgrade.log".format(self._update_rpm_path)
+        else:
+            log.error("yum cmd is {} not in [update, install]!".format(yum_cmd))
+            return False
+
         log.info(
-            "Run yum update cmd, please wait...(you could check /root/yum_update.log on host)"
+            "Run yum {} cmd, please wait...(you could check /root/yum_upgrade.log on host)".format(yum_cmd)
         )
-
-        cmd = "yum -y update > /root/yum_update.log"
-        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.YUM_UPDATE_TIMEOUT)
-
-        log.info("Run yum update cmd finished.")
-        return ret[0]
-
-    def _yum_install(self):
-        log.info(
-            "Run yum install cmd, please wait...(you could check /root/yum_install.log on host)"
-        )
-
-        cmd = "yum -y install {} > /root/yum_install.log".format(
-            self._update_rpm_path)
+        result = True
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.YUM_INSTALL_TIMEOUT)
+        if not ret[0]:
+            result = False
+        else:
+            ret = self._remotecmd.run_cmd("cat /root/yum_upgrade.log", timeout=CONST.FABRIC_TIMEOUT)
+            if not ret[0]:
+                result = False
+            else:
+                if re.search('failed', ret[1], re.IGNORECASE):
+                    result = False
 
-        log.info("Run yum install cmd finished.")
-        return ret[0]
+        log.info("Run yum {} cmd finished.".format(yum_cmd))
+        return result
 
     def _rhvm_upgrade(self):
         log.info("Run rhvm upgrade, please wait...")
@@ -407,6 +411,15 @@ class UpgradeProcess(CheckPoints):
         log.info("Already fill up space, %s...", ret[1])
         return True
 
+    def upload_upgrade_log(self, local_path):
+        cmd = "mount | grep 'var_log ' || " \
+            "mount /dev/mapper/`ls -al /dev/mapper | grep -e 'var_log '| awk '{print $9}'` /var/log"
+        self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        try:
+            self._remotecmd.get_remote_file("/var/log/imgbased.log", local_path)
+        except ValueError:
+            pass
+
     def yum_update_process(self):
         log.info("Start to upgrade rhvh via yum update cmd...")
 
@@ -424,7 +437,7 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._remove_audit_log():
             return False
-        if not self._yum_update():
+        if not self._yum_upgrade('update'):
             return False
         if not self._enter_system()[0]:
             return False
@@ -449,7 +462,7 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._set_locale_on_host():
             return False
-        if not self._yum_install():
+        if not self._yum_upgrade('install'):
             return False
         if not self._enter_system()[0]:
             return False
@@ -529,7 +542,7 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._collect_service_status('old'):
             return False
-        if not self._yum_update():
+        if not self._yum_upgrade('update'):
             return False
         if not self._enter_system()[0]:
             return False
