@@ -79,7 +79,7 @@ fi
 #python /tmp/anamon --server {srv_ip} --port {srv_port} --stage pre
 
 fetch /tmp/clean_disk http://{srv_ip}:{srv_port}/static/ksfiles/clean_disk.py
-python /tmp/clean_disk
+/usr/libexec/platform-python /tmp/clean_disk
 """.format(
     srv_ip=CURRENT_IP_PORT[0], srv_port=CURRENT_IP_PORT[1])
 
