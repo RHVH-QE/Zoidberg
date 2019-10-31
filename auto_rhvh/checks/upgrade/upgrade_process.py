@@ -364,23 +364,30 @@ class UpgradeProcess(CheckPoints):
                 break
 
     def _yum_upgrade(self, yum_cmd):
+        # Should deactive host on rhvm before upgrade
+        self._rhvm.deactive_host(self._host_name)
+
         if yum_cmd == 'update':
             cmd = "yum -y update > /root/yum_upgrade.log"
         elif yum_cmd == 'install':
-            cmd = "yum -y install {} > /root/yum_upgrade.log".format(self._update_rpm_path)
+            cmd = "yum -y install {} > /root/yum_upgrade.log".format(
+                self._update_rpm_path)
         else:
-            log.error("yum cmd is {} not in [update, install]!".format(yum_cmd))
+            log.error(
+                "yum cmd is {} not in [update, install]!".format(yum_cmd))
             return False
 
         log.info(
-            "Run yum {} cmd, please wait...(you could check /root/yum_upgrade.log on host)".format(yum_cmd)
+            "Run yum {} cmd, please wait...(you could check /root/yum_upgrade.log on host)".format(
+                yum_cmd)
         )
         result = True
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.YUM_INSTALL_TIMEOUT)
         if not ret[0]:
             result = False
         else:
-            ret = self._remotecmd.run_cmd("cat /root/yum_upgrade.log", timeout=CONST.FABRIC_TIMEOUT)
+            ret = self._remotecmd.run_cmd(
+                "cat /root/yum_upgrade.log", timeout=CONST.FABRIC_TIMEOUT)
             if not ret[0]:
                 result = False
             else:
@@ -416,7 +423,8 @@ class UpgradeProcess(CheckPoints):
             "mount /dev/mapper/`ls -al /dev/mapper | grep -e 'var_log '| awk '{print $9}'` /var/log"
         self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         try:
-            self._remotecmd.get_remote_file("/var/log/imgbased.log", local_path)
+            self._remotecmd.get_remote_file(
+                "/var/log/imgbased.log", local_path)
         except ValueError:
             pass
 

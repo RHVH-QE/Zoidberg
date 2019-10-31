@@ -234,6 +234,7 @@ class RhevmAction:
         print ret
         if ret['status'] != 'complete':
             raise RuntimeError(ret['fault']['detail'])
+        sleep(10)
 
     def add_host(self, ip, host_name, password, cluster_name='Default'):
         api_url = self.api_url.format(rhevm_fqdn=self.rhevm_fqdn, item="hosts")
@@ -270,7 +271,6 @@ class RhevmAction:
 
             if host.get('status') != 'maintenance':
                 self.deactive_host(host_name)
-                sleep(10)
 
             api_url = api_url_base + '/%s' % host_id
 
