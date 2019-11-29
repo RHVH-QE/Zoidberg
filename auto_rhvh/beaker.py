@@ -28,7 +28,7 @@ class WatchInstallation(object):
                     cb.remove_system(self.ch_name)
                 self.redis_conn.publish(self.ch_name, msg['data'])
                 break
-            elif (time.time() - now > 1200):
+            elif (time.time() - now > 1800):
                 log.error("provision job is time-out after 20min")
                 self.redis_conn.publish(self.ch_name, 'fail')
                 break
