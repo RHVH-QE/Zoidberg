@@ -33,7 +33,7 @@ network --device=em2 --bootproto=dhcp
 network --hostname=fctest.redhat.com
 
 ### Partitioning ###
-ignoredisk --only-use=/dev/disk/by-id/scsi-36005076300810b3e0000000000000022
+ignoredisk --only-use=/dev/disk/by-id/36005076300810b3e00000000000002a6
 zerombr
 clearpart --all
 bootloader --location=mbr

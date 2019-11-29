@@ -46,7 +46,7 @@
         },
         "/boot": {
             "lvm": false,
-            "device_wwid": "/dev/mapper/36005076300810b3e0000000000000022p1",
+            "device_wwid": "/dev/mapper/36005076300810b3e00000000000002a6p1",
             "size": "1024",
             "fstype": "ext4",
             "device_alias": "/dev/mapper/mpatha1"
