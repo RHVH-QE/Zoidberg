@@ -14,7 +14,7 @@ HOSTS = {
     },
     DELL_PER510_01: {
         "nic": {
-            "macaddress-em2": "78:2b:cb:47:93:5e"
+            "macaddress-eno2": "78:2b:cb:47:93:5e"
         },
         "hostname": "",
         "static_ip": ""

@@ -17,8 +17,8 @@ class TimezoneCheck(object):
         ck01 = self.remotecmd.check_strs_in_file(
             '/etc/chrony.conf', [ntp], timeout=300)
 
-        ck02 = self.remotecmd.check_strs_in_cmd_output(
-            'systemctl status chronyd', ['running'], timeout=300)
+        ck02 = self.remotecmd.run_cmd(
+            'systemctl status chronyd | egrep "Active:.*running"', timeout=300)
 
         return ck01 and ck02
 

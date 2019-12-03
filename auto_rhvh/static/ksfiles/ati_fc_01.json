@@ -90,7 +90,7 @@
     },
     "network": {
         "dhcp": {
-            "DEVICE": "em2",
+            "DEVICE": "eno2",
             "BOOTPROTO": "dhcp",
             "ONBOOT": "yes"
         },
@@ -104,13 +104,13 @@
         "bond": {
             "DEVICE": "bond0",
             "slaves": [
-                "p1p1",
-                "p1p2"
+                "enp6s0f0",
+                "enp6s0f1"
             ],
             "TYPE": "Bond",
             "ONBOOT": "yes",
-            "BONDING_OPTS": "mode=active-backup primary=p1p1 miimon=100"
+            "BONDING_OPTS": "mode=active-backup primary=enp6s0f0 miimon=100"
         },
-        "hostname": "ati-fc-01.test.redhat.com"
+        "hostname": "ati_fc_01.test.redhat.com"
     }
 }
