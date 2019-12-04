@@ -74,12 +74,12 @@
         "bond": {
             "DEVICE": "bond0",
             "slaves": [
-                "p3p1",
-                "p3p2"
+                "enp1s0f0",
+                "enp1s0f1"
             ],
             "TYPE": "Bond",
             "ONBOOT": "yes",
-            "BONDING_OPTS": "mode=active-backup primary=p3p1 miimon=100"
+            "BONDING_OPTS": "mode=active-backup primary=enp1s0f0 miimon=100"
         }
     }
 }

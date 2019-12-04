@@ -13,7 +13,6 @@ keyboard --vckeymap=us --xlayouts='us'
 
 ### User ###
 rootpw --plaintext redhat
-auth --enableshadow --passalgo=sha512
 
 ### Misc ###
 services --enabled=sshd
@@ -21,7 +20,6 @@ firewall --disabled
 selinux --disabled
 
 ### Installation mode ###
-install
 #liveimg url will be substitued by autoframework
 liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-host-4.1-20170202.0/redhat-virtualization-host-4.1-20170202.0.x86_64.liveimg.squashfs
 text
@@ -29,12 +27,12 @@ reboot
 
 # This ks is specific to dell-per515-01, which is a multipath iSCSI machine, use the iSCSI luns
 ### Network ###
-network --device=em2 --bootproto=dhcp
-network --device=bond0 --bootproto=dhcp --bondslaves=p3p1,p3p2 --bondopts=mode=active-backup,primary=p3p1,miimon=100
-network --hostname=ati-iscsi-01.test.redhat.com
+network --device=eno2 --bootproto=dhcp
+network --device=bond0 --bootproto=dhcp --bondslaves=enp1s0f0,enp1s0f1 --bondopts=mode=active-backup,primary=enp1s0f0,miimon=100
+network --hostname=ati_iscsi_01.test.redhat.com
 
 ### Partitioning ###
-ignoredisk --drives=/dev/disk/by-id/scsi-36b8ca3a0e7899a001dfd500516473f47
+#ignoredisk --drives=/dev/disk/by-id/scsi-36b8ca3a0e7899a001dfd500516473f47
 zerombr
 clearpart --all
 bootloader --location=mbr
