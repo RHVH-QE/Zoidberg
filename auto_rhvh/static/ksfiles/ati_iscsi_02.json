@@ -1,73 +1,87 @@
 {
-    "selinux": "permissive", 
+    "selinux": "permissive",
     "partition": {
         "volgroup": {
-            "lvm": true, 
+            "lvm": true,
             "name": "rhvh"
-        }, 
+        },
         "/lv_data": {
-            "name": "lv_data", 
-            "fstype": "xfs", 
-            "maxsize": "10000", 
-            "lvm": true, 
-            "discard": false, 
-            "grow": true, 
+            "name": "lv_data",
+            "fstype": "xfs",
+            "maxsize": "10000",
+            "lvm": true,
+            "discard": false,
+            "grow": true,
             "size": "5000"
-        }, 
+        },
         "/std_data": {
-            "fstype": "xfs", 
-            "maxsize": "10000", 
-            "device_wwid": "/dev/mapper/360a9800050334c33424b41762d726954p2", 
-            "lvm": false, 
-            "device_alias": "/dev/mapper/360a9800050334c33424b41762d726954p2", 
-            "grow": true, 
+            "fstype": "xfs",
+            "maxsize": "10000",
+            "device_wwid": "/dev/mapper/360a9800050334c33424b41762d726954p2",
+            "lvm": false,
+            "device_alias": "/dev/mapper/360a9800050334c33424b41762d726954p2",
+            "grow": true,
             "size": "5000"
-        }, 
+        },
         "swap": {
-            "lvm": false, 
-            "recommended": true, 
-            "device_wwid": "/dev/mapper/360a9800050334c33424b41762d745551p1", 
+            "lvm": false,
+            "recommended": true,
+            "device_wwid": "/dev/mapper/360a9800050334c33424b41762d745551p1",
             "device_alias": "/dev/mapper/360a9800050334c33424b41762d745551p1"
-        }, 
+        },
         "/home": {
-            "lvm": true, 
-            "discard": true, 
-            "size": "5000", 
-            "name": "home", 
+            "lvm": true,
+            "discard": true,
+            "size": "5000",
+            "name": "home",
             "fstype": "xfs"
-        }, 
+        },
         "/var/crash": {
-            "lvm": true, 
-            "discard": true, 
-            "size": "20000", 
-            "name": "var_crash", 
+            "lvm": true,
+            "discard": true,
+            "size": "20000",
+            "name": "var_crash",
             "fstype": "xfs"
-        }, 
+        },
         "/boot": {
-            "lvm": false, 
-            "device_wwid": "/dev/mapper/360a9800050334c33424b41762d726954p1", 
-            "size": "1024", 
-            "fstype": "ext4", 
+            "lvm": false,
+            "device_wwid": "/dev/mapper/360a9800050334c33424b41762d726954p1",
+            "size": "1024",
+            "fstype": "ext4",
             "device_alias": "/dev/mapper/360a9800050334c33424b41762d726954p1"
-        }, 
+        },
         "/thin_data": {
-            "name": "thin_data", 
-            "fstype": "xfs", 
-            "maxsize": "10000", 
-            "lvm": true, 
-            "discard": true, 
-            "grow": true, 
+            "name": "thin_data",
+            "fstype": "xfs",
+            "maxsize": "10000",
+            "lvm": true,
+            "discard": true,
+            "grow": true,
             "size": "5000"
-        }, 
+        },
         "bootdevice": "/dev/mapper/360a9800050334c33424b41762d726954"
-    }, 
+    },
     "network": {
         "vlan": {
-            "DEVICE": "p2p1.50", 
-            "BOOTPROTO": "dhcp", 
-            "TYPE": "Vlan", 
-            "ONBOOT": "yes", 
+            "DEVICE": "enp2s0f0.50",
+            "BOOTPROTO": "dhcp",
+            "TYPE": "Vlan",
+            "ONBOOT": "yes",
             "VLAN_ID": "50"
+        },
+        "nic": {
+            "DEVICE": "eno1",
+            "BOOTPROTO": "dhcp",
+            "ONBOOT": "no"
+        },
+        "static": {
+            "IPADDR": "10.73.74.201",
+            "ONBOOT": "yes",
+            "NETMASK": "255.255.252.0",
+            "BOOTPROTO": "static",
+            "DEVICE": "eno2",
+            "IPV6ADDR": "2620:52:0:4948:a9e:1ff:fe63:2cb3/64",
+            "GATEWAY": "10.73.75.254"
         }
     }
 }

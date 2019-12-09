@@ -3,6 +3,7 @@ DELL_PER510_01 = 'dell-per510-01.lab.eng.pek2.redhat.com'
 DELL_OP790_01 = 'dell-op790-01.qe.lab.eng.nay.redhat.com'
 DELL_PER515_01 = 'dell-per515-01.lab.eng.pek2.redhat.com'
 DELL_PER515_02 = 'dell-per515-02.lab.eng.pek2.redhat.com'
+DELL_PER740_28 = 'dell-per740-28.lab.eng.pek2.redhat.com'
 
 HOSTS = {
     DELL_PET105_01: {
@@ -36,6 +37,13 @@ HOSTS = {
     DELL_PER515_02: {
         "nic": {
             "macaddress-em2": "08:9e:01:63:2c:6e"
+        },
+        "hostname": "",
+        "static_ip": ""
+    },
+    DELL_PER740_28: {
+        "nic": {
+            "macaddress-eno1": "dc:f4:01:e4:f1:7c"
         },
         "hostname": "",
         "static_ip": ""

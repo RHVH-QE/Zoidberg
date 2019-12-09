@@ -13,13 +13,11 @@ keyboard --vckeymap=us --xlayouts='us'
 
 ### User ###
 rootpw --plaintext redhat
-auth --enableshadow --passalgo=sha512
 
 ### Misc ###
 services --enabled=sshd
 
 ### Installation mode ###
-install
 #liveimg url will substitued by autoframework
 liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-host-4.1-20170120.0/redhat-virtualization-host-4.1-20170120.0.x86_64.liveimg.squashfs
 text
@@ -27,11 +25,11 @@ reboot
 
 # This ks is specific to dell-per510-01, which is a multipath FC machine, use the FC luns
 ### Network ###
-network --device=em2 --bootproto=dhcp
-network --hostname=ati-fc-02.test.redhat.com
+network --device=eno2 --bootproto=dhcp
+network --hostname=ati_fc_02.test.redhat.com
 
 ### Partitioning ###
-ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244
+#ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244
 zerombr
 clearpart --all
 bootloader --location=mbr
