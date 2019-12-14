@@ -4,25 +4,18 @@
             "lvm": true,
             "name": "rhvh"
         },
-        "/var": {
+        "/lv_data": {
             "lvm": true,
-            "size": "10",
+            "size": "1318",
             "percent": true,
-            "name": "var",
-            "fstype": "ext4"
-        },
-        "/": {
-            "lvm": true,
-            "size": "85",
-            "percent": true,
-            "name": "root",
-            "fstype": "ext4"
+            "name": "lv_data",
+            "fstype": "xfs"
         },
         "swap": {
             "lvm": true,
             "percent": true,
             "name": "swap",
-            "size": "5"
+            "size": "659"
         }
     },
     "keyboard": {

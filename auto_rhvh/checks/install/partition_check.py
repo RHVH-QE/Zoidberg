@@ -52,10 +52,9 @@ class PartitionCheck(object):
 
         if part.get('lvm'):
             if part.get('percent'):
-                cmd = 'python -c "print int(' \
-                    "round($(lvs --noheadings -o size --unit=m --nosuffix {}/{}) * 100 / " \
-                    '$(vgs --noheadings -o size --unit=m --nosuffix {})))"'.format(
-                        vgname, part.get('name'), vgname)
+                cmd = '/usr/libexec/platform-python -c "print(int(' \
+                    '$(lvs --noheadings -o size --unit=g --nosuffix {}/{}) * 100))"'.format(
+                        vgname, part.get('name'))
             else:
                 cmd = "lvs --noheadings -o size --unit=m --nosuffix {}/{} | " \
                     "sed -r 's/\s*([0-9]+)\..*/\\1/'".format(
