@@ -37,13 +37,13 @@ reqpart --add-boot
 part pv.01 --size=200000
 volgroup rhvh pv.01
 ## percent size= (vgsize -  all explicitly defined sizes) * percent / 1024
-## swap size = (200000 - 1 - 50000 - 15000) * 5% / 1024 = 6.59G
-## lv_data size = (200000 - 1 - 50000 - 15000) * 10% / 1024 = 13.18G
+## swap size = (200000 - 100000) * 5% / 1024 = 4.88G
+## / size = (200000 - 100000) * 50% / 1024 = 48.82G
+## /var size = (200000 - 100000) * 20% / 1024 = 19.53G
 logvol swap --fstype=swap --name=swap --vgname=rhvh --percent=5
-logvol /lv_data --fstype=xfs --name=lv_data --vgname=rhvh --percent=10
-logvol none --name=pool --vgname=rhvh --thinpool --size=1 --grow
-logvol / --fstype=ext4 --name=root --vgname=rhvh --thin --poolname=pool --size=50000 --grow
-logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --size=15000
+logvol none --name=pool --vgname=rhvh --thinpool --size=100000 --grow
+logvol / --fstype=ext4 --name=root --vgname=rhvh --thin --poolname=pool --percent=50
+logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --percent=20
 
 ### Pre deal ###
 
