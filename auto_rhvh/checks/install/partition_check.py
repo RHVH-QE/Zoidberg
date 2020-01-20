@@ -141,8 +141,10 @@ class PartitionCheck(object):
                     pattern = r'^{}-{}\s+{}\s+{}'.format(
                         lvpre, part_name.replace('-', '--'), fstype, key)
             else:
-                part_device = part.get('device_alias')
-                pattern = r'^{}\s+{}\s+{}'.format(part_device, fstype, key)
+                part_device_wwid = part.get('device_wwid')
+                part_device_alias = part.get('device_alias')
+                pattern = r'^({}|{})\s+{}\s+{}'.format(part_device_wwid,
+                                                       part_device_alias, fstype, key)
 
             cmd = "df --output=source,fstype,target | egrep '{}'".format(
                 pattern)

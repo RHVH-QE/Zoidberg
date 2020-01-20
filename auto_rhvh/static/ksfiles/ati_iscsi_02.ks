@@ -30,9 +30,10 @@ reboot
 
 # This ks is specific to dell-per515-01, which is a multipath iSCSI machine, use the iSCSI luns
 ### Network ###
-network --device=em2 --bootproto=dhcp
+network --device=em2 --bootproto=static --ip=10.73.74.201 --netmask=255.255.252.0 --gateway=10.73.75.254 --ipv6=2620:52:0:4948:a9e:1ff:fe63:2cb3/64
+network --device=em1 --bootproto=dhcp --activate --onboot=no
 network --device=p2p1 --bootproto=dhcp --vlanid=50
-network --hostname=ati-iscsi-02.test.redhat.com
+network --hostname=ati_iscsi_02.test.redhat.com
 
 ### Partitioning ###
 ignoredisk --drives=/dev/disk/by-id/scsi-36b8ca3a0e7899a001dfd500516473f47
@@ -58,4 +59,8 @@ logvol /thin_data --fstype=xfs --name=thin_data --vgname=rhvh --thin --poolname=
 ### Post deal ###
 %post --erroronfail
 imgbase layout --init
+nmcli -t -f DEVICE,STATE dev |grep 'em1:connected'
+if [ $? -eq 0 ]; then
+    touch /boot/nicup
+fi
 %end

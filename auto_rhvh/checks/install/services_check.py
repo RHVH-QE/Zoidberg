@@ -9,5 +9,5 @@ class ServicesCheck(object):
     expected_services = attr.ib()
 
     def sshd_check(self):
-        return self.remotecmd.check_strs_in_cmd_output(
-            'systemctl status sshd', ['running'], timeout=300)
+        return self.remotecmd.run_cmd(
+            'systemctl status sshd | egrep "Active:.*running"', timeout=300)
