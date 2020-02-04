@@ -5,6 +5,7 @@ DELL_PER515_01 = 'dell-per515-01.lab.eng.pek2.redhat.com'
 DELL_PER515_02 = 'dell-per515-02.lab.eng.pek2.redhat.com'
 DELL_PER740_28 = 'dell-per740-28.lab.eng.pek2.redhat.com'
 IBM_X365M5_04 = 'ibm-x3650m5-04.lab.eng.pek2.redhat.com'
+DELL_PER7425_03 = 'dell-per7425-03.lab.eng.pek2.redhat.com'
 
 HOSTS = {
     DELL_PET105_01: {
@@ -52,6 +53,13 @@ HOSTS = {
     IBM_X365M5_04: {
         "nic": {
             "macaddress-eno1": "08:94:ef:21:c0:4d"
+        },
+        "hostname": "",
+        "static_ip": ""
+    },
+    DELL_PER7425_03: {
+        "nic": {
+            "macaddress-em1": "20:04:0f:fb:79:90"
         },
         "hostname": "",
         "static_ip": ""

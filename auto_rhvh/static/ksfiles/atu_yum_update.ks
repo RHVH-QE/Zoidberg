@@ -1,4 +1,4 @@
-### KS for upgrade yum update test on dell-pet105-01
+### KS for upgrade yum update test on DELL_PER7425_03
 
 ### Language ###
 lang en_US.UTF-8
@@ -28,10 +28,9 @@ text
 reboot
 
 ### Network ###
-network --device=enp2s0 --bootproto=dhcp
+network --device=em1 --bootproto=dhcp
 
 ### Partitioning ###
-ignoredisk --only-use=sda
 zerombr
 clearpart --all
 bootloader --location=mbr
