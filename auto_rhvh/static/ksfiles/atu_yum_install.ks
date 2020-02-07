@@ -15,7 +15,8 @@ keyboard --vckeymap=us --xlayouts='us'
 
 ### User ###
 rootpw --plaintext redhat
-auth --enableshadow --passalgo=sha512
+#auth --enableshadow --passalgo=sha512
+user --name=test --password=redhat --plaintext
 
 ### Misc ###
 services --enabled=sshd
@@ -28,10 +29,11 @@ text
 reboot
 
 ### Network ###
-network --device=em2 --bootproto=dhcp
+#network --device=em2 --bootproto=dhcp
+network --device=eno2 --bootproto=dhcp
 
 ### Partitioning ###
-ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244
+#ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244
 zerombr
 clearpart --all
 bootloader --location=mbr

@@ -1,13 +1,13 @@
-[rhel73]
-name=RHEL73
-baseurl=http://download.eng.bos.redhat.com/released/RHEL-7/7.6/Server/x86_64/os/
+[rhel81os]
+name=RHEL81os
+baseurl=http://download.eng.pek2.redhat.com/rhel-8/rel-eng/RHEL-8/RHEL-8.1.0-20191015.0/compose/BaseOS/x86_64/os/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0
 
-[rhel73more]
-name=RHEL73more
-baseurl=http://download.eng.bos.redhat.com/released/RHEL-7/7.6/Server-optional/x86_64/os/
+[rhel81appstream]
+name=RHEL81appstream
+baseurl=http://download.eng.pek2.redhat.com/rhel-8/rel-eng/RHEL-8/RHEL-8.1.0-20191015.0/compose/AppStream/x86_64/os/
 enabled=1
 skip_if_unavailable=1
 gpgcheck=0

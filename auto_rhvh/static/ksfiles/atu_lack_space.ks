@@ -15,7 +15,7 @@ keyboard --vckeymap=us --xlayouts='us'
 
 ### User ###
 rootpw --plaintext redhat
-auth --enableshadow --passalgo=sha512
+#auth --enableshadow --passalgo=sha512
 
 ### Misc ###
 services --enabled=sshd
@@ -28,10 +28,10 @@ text
 reboot
 
 ### Network ###
-network --device=enp2s0 --bootproto=dhcp
+network --device=eno1 --bootproto=dhcp
 
 ### Partitioning ###
-ignoredisk --only-use=sda
+#ignoredisk --only-use=sda
 zerombr
 clearpart --all
 bootloader --location=mbr

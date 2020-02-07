@@ -156,9 +156,9 @@ class UpgradeProcess(CheckPoints):
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if ret[0]:
             if "AMD" in ret[1]:
-                cpu_type = "AMD Opteron G1"
+                cpu_type = "AMD EPYC"
             elif "Intel" in ret[1]:
-                cpu_type = "Intel Conroe Family"
+                cpu_type = "Intel Nehalem Family"
             else:
                 cpu_type = None
         else:
@@ -174,8 +174,10 @@ class UpgradeProcess(CheckPoints):
             key = "4.1_rhvm_fqdn"
         elif '-4.2-' in self._source_build:
             key = "4.2_rhvm_fqdn"
+        elif '-4.4.' in self._source_build:
+            key = "4.3_rhvm_fqdn"
         else:
-            log.error("The version of host src build is not 4.0 or 4.1 or 4.2")
+            log.error("The version of host src build is not 4.0 or 4.1 or 4.2 or 4.4.x")
             return
         self._rhvm_fqdn = CONST.RHVM_DATA_MAP.get(key)
         log.info("Get rhvm fqdn finished.")
@@ -200,13 +202,13 @@ class UpgradeProcess(CheckPoints):
             self._host_ip = self._host_string
         else:
             # ifup p1p1.50, bond0.50 and slaves, due to one bug 1475728 in rhvh 4.1 #
-            cmd1 = "ifup p1p1"
-            cmd2 = "ifup p1p1.50"
+            cmd1 = "nmcli connection up id enp6s0f0" #"ifup p1p1"
+            cmd2 = "nmcli connection up id enp6s0f0.50" #"ifup p1p1.50"
             ret1 = self._remotecmd.run_cmd(cmd1, timeout=CONST.FABRIC_TIMEOUT)
             ret2 = self._remotecmd.run_cmd(cmd2, timeout=CONST.FABRIC_TIMEOUT)
 
-            cmd3 = "ifup p1p2"
-            cmd4 = "ifup bond0.50"
+            cmd3 = "nmcli connection up id enp6s0f1" #"ifup p1p2"
+            cmd4 = "nmcli connection up id bond0.50" #"ifup bond0.50"
             ret3 = self._remotecmd.run_cmd(cmd3, timeout=CONST.FABRIC_TIMEOUT)
             ret4 = self._remotecmd.run_cmd(cmd4, timeout=CONST.FABRIC_TIMEOUT)
 

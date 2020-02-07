@@ -15,7 +15,8 @@ keyboard --vckeymap=us --xlayouts='us'
 
 ### User ###
 rootpw --plaintext redhat
-auth --enableshadow --passalgo=md5
+#auth --enableshadow --passalgo=md5
+user --name=test --password=redhat --plaintext
 
 ### Misc ###
 services --enabled=sshd
@@ -28,11 +29,13 @@ text
 reboot
 
 ### Network ###
-network --device=em2 --bootproto=dhcp
-network --device=bond0 --bootproto=dhcp --bondslaves=p1p1,p1p2 --bondopts=mode=active-backup,primary=p1p1,miimon=100 --vlanid=50
+#network --device=em2 --bootproto=dhcp
+#network --device=bond0 --bootproto=dhcp --bondslaves=p1p1,p1p2 --bondopts=mode=active-backup,primary=p1p1,miimon=100 --vlanid=50
+network --device=eno2 --bootproto=dhcp
+network --device=bond0 --bootproto=dhcp --bondslaves=enp6s0f0,enp6s0f1 --bondopts=mode=active-backup,primary=enp6s0f0,miimon=100 --vlanid=50
 
 ### Partitioning ###
-ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244
+#ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244
 zerombr
 clearpart --all
 bootloader --location=mbr
