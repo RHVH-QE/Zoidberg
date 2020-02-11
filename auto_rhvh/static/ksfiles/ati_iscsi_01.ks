@@ -29,7 +29,7 @@ reboot
 ### Network ###
 network --device=eno2 --bootproto=dhcp
 network --device=bond0 --bootproto=dhcp --bondslaves=enp1s0f0,enp1s0f1 --bondopts=mode=active-backup,primary=enp1s0f0,miimon=100
-network --hostname=ati_iscsi_01.test.redhat.com
+network --hostname=ati-iscsi-01.test.redhat.com
 
 ### Partitioning ###
 #ignoredisk --drives=/dev/disk/by-id/scsi-36b8ca3a0e7899a001dfd500516473f47

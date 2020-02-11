@@ -111,6 +111,6 @@
             "ONBOOT": "yes",
             "BONDING_OPTS": "mode=active-backup primary=enp6s0f0 miimon=100"
         },
-        "hostname": "ati_fc_01.test.redhat.com"
+        "hostname": "ati-fc-01.test.redhat.com"
     }
 }

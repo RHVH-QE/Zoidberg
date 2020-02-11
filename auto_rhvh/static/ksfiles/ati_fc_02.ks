@@ -26,7 +26,7 @@ reboot
 # This ks is specific to dell-per510-01, which is a multipath FC machine, use the FC luns
 ### Network ###
 network --device=eno2 --bootproto=dhcp
-network --hostname=ati_fc_02.test.redhat.com
+network --hostname=ati-fc-02.test.redhat.com
 
 ### Partitioning ###
 #ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244

@@ -26,7 +26,7 @@ reboot
 # This ks is specific to Dell PowerEdge R740
 ### Network ###
 network --device=eno1 --bootproto=dhcp
-network --hostname=ati_local_01.test.redhat.com
+network --hostname=ati-local-01.test.redhat.com
 
 ### Partitioning ###
 #ignoredisk --only-use=sda
