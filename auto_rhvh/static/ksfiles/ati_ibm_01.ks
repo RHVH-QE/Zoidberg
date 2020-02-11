@@ -26,7 +26,7 @@ reboot
 # This ks is specific to dell-per510-01, which is a multipath FC machine, use the FC luns
 ### Network ###
 network --device=eno1 --bootproto=dhcp
-network --hostname=ati_ibm_01.test.redhat.com
+network --hostname=ati-ibm-01.test.redhat.com
 
 ### Partitioning ###
 ignoredisk --only-use=sda
