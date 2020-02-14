@@ -60,7 +60,8 @@ class PartitionCheck(object):
                     "sed -r 's/\s*([0-9]+)\..*/\\1/'".format(
                         vgname, part.get('name'))
         else:
-            cmd = "expr $(fdisk -s {}) / 1024".format(part.get('device_wwid'))
+            cmd = "test -e {} && expr $(fdisk -s {}) / 1024 || expr $(fdisk -s {}) / 1024".format(
+                part.get('device_wwid'), part.get('device_wwid'), part.get('device_alias'))
 
         # To workaround fdisk fail of no such file or directory
         ret = self.remotecmd.run_cmd(cmd, timeout=300)
@@ -181,10 +182,11 @@ class PartitionCheck(object):
                     device = "/dev/mapper/{}-{}".format(
                         vgname.replace('-', '--'),
                         part.get('name').replace('-', '--'))
+                    cmd = "blkid {}".format(device)
                 else:
-                    device = part.get('device_wwid')
+                    cmd = "blkid {} || blkid {}".format(
+                        part.get('device_wwid'), part.get('device_alias'))
 
-                cmd = "blkid {}".format(device)
                 strs = [part.get('label')]
                 ret = self.remotecmd.check_strs_in_cmd_output(
                     cmd, strs, timeout=300)
