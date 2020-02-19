@@ -21,28 +21,28 @@
             "discard": true,
             "size": "15360",
             "name": "var",
-            "fstype": "ext4"
+            "fstype": "xfs"
         },
         "/var/log": {
             "lvm": true,
             "discard": true,
             "size": "8192",
             "name": "var_log",
-            "fstype": "ext4"
+            "fstype": "xfs"
         },
         "/tmp": {
             "lvm": true,
             "discard": true,
             "size": "1024",
             "name": "tmp",
-            "fstype": "ext4"
+            "fstype": "xfs"
         },
         "/var/log/audit": {
             "lvm": true,
             "discard": true,
             "size": "2048",
             "name": "var_log_audit",
-            "fstype": "ext4"
+            "fstype": "xfs"
         },
         "/boot": {
             "lvm": false,
@@ -56,11 +56,11 @@
             "discard": true,
             "size": "1024",
             "name": "home",
-            "fstype": "ext4"
+            "fstype": "xfs"
         },
         "/": {
             "name": "root",
-            "fstype": "ext4",
+            "fstype": "xfs",
             "lvm": true,
             "discard": true,
             "grow": true,
@@ -85,7 +85,7 @@
             "discard": true,
             "size": "10240",
             "name": "var_crash",
-            "fstype": "ext4"
+            "fstype": "xfs"
         }
     },
     "network": {
