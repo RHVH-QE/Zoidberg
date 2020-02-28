@@ -1,0 +1,58 @@
+{
+    "partition": {
+        "volgroup": {
+            "lvm": true,
+            "name": "rhvh"
+        },
+        "/": {
+            "name": "root",
+            "fstype": "ext4",
+            "lvm": true,
+            "discard": true,
+            "grow": true,
+            "size": "6000"
+        },
+        "/var": {
+            "lvm": true,
+            "discard": true,
+            "size": "15360",
+            "name": "var",
+            "fstype": "ext4"
+        },
+        "/var/log": {
+            "lvm": true,
+            "discard": true,
+            "size": "8192",
+            "name": "var_log",
+            "fstype": "ext4"
+        },
+        "/var/log/audit": {
+            "lvm": true,
+            "discard": true,
+            "size": "2048",
+            "name": "var_log_audit",
+            "fstype": "ext4"
+        },
+        "/home": {
+            "lvm": true,
+            "discard": true,
+            "size": "1024",
+            "name": "home",
+            "fstype": "ext4"
+        },
+        "/tmp": {
+            "lvm": true,
+            "discard": true,
+            "size": "1024",
+            "name": "tmp",
+            "fstype": "ext4"
+        },
+        "/var/crash": {
+            "lvm": true,
+            "discard": true,
+            "size": "10240",
+            "name": "var_crash",
+            "fstype": "ext4"
+        }
+    }
+}
