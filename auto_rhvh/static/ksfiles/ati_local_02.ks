@@ -42,7 +42,7 @@ logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --fsop
 logvol /var/log --fstype=ext4 --name=var_log --vgname=rhvh --thin --poolname=pool --fsoptions="defaults,discard" --size=8192
 logvol /var/log/audit --fstype=ext4 --name=var_log_audit --vgname=rhvh --thin --poolname=pool --fsoptions="defaults,discard" --size=2048
 logvol /home --fstype=ext4 --name=home --vgname=rhvh --thin --poolname=pool --fsoptions="defaults,discard" --size=1024
-logvol /tmp --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --fsoptions="defaults,discard" --size=1024
+logvol /tmp --fstype=ext4 --name=tmp --vgname=rhvh --thin --poolname=pool --fsoptions="defaults,discard" --size=1024
 
 ### Pre deal ###
 
