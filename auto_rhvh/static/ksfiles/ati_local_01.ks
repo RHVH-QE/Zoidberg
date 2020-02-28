@@ -23,13 +23,12 @@ liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-h
 text
 reboot
 
-# This ks is specific to Dell PowerEdge R740
+# This ks is specific to dell-per740-28
 ### Network ###
 network --device=eno1 --bootproto=dhcp
 network --hostname=ati-local-01.test.redhat.com
 
 ### Partitioning ###
-#ignoredisk --only-use=sda
 zerombr
 clearpart --all
 bootloader --location=mbr
