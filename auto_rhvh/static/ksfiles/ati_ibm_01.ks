@@ -23,7 +23,7 @@ liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-h
 text
 reboot
 
-# This ks is specific to dell-per510-01, which is a multipath FC machine, use the FC luns
+# This ks is specific to ibm-x3650m5-05
 ### Network ###
 network --device=eno1 --bootproto=dhcp
 network --hostname=ati-ibm-01.test.redhat.com
