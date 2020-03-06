@@ -251,7 +251,7 @@ class PartitionCheck(object):
         return self.remotecmd.check_strs_in_cmd_output(cmd, ['GRUB'], timeout=300)
 
     def vgfree_check(self):
-        cmd = "vgs --units=m --rows | grep {name} | sed 's/{name}//' | sed 's/m// | " \
+        cmd = "vgs --units=m --rows | grep {name} | sed 's/{name}//' | sed 's/m//' | " \
             "sed -r 's/\s*([0-9]+)\..*/\\1/'"
         cmd1 = cmd.format(name='VSize')
         cmd2 = cmd.format(name='VFree')

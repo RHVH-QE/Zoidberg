@@ -1,4 +1,4 @@
-from common import DELL_PER510_01, DELL_PER515_01, DELL_PER740_28, IBM_X365M5_04
+from common import DELL_PER510_01, DELL_PER515_01, DELL_PER740_28, IBM_X365M5_05
 
 # one kickstart file can only be run on a single machine
 INSTALL_TIER1_TESTCASE_MAP = {
@@ -54,7 +54,7 @@ INSTALL_TIER2_TESTCASE_MAP = {
     'RHEVM-23888': ('ati_local_01.ks', DELL_PER740_28, 'KeyboardCheck.keyboard_check'),
     'RHEVM-26408': ('ati_local_01.ks', DELL_PER740_28, 'GeneralCheck.fips_check'),
     'RHEVM-26402': ('ati_local_01.ks', DELL_PER740_28, 'GeneralCheck.node_check'),
-    'RHEVM-26400': ('ati_ibm_01.ks', IBM_X365M5_04, 'GeneralCheck.node_check'),
+    'RHEVM-26400': ('ati_ibm_01.ks', IBM_X365M5_05, 'GeneralCheck.node_check'),
 }
 
 KS_PRESSURE_MAP = {'ati_fc_02.ks': '3'}
