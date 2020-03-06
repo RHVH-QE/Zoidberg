@@ -24,7 +24,7 @@ class CheckInstall(CheckComm):
         expected_data_file = os.path.join(
             EXPECTED_DATA_DIR, self.ksfile.replace('.ks', '.json'))
         self._expected_data = ExpectedData(expected_data_file)
-        if self.ksfile == 'ati_fc_01.ks':
+        if self.ksfile in ['ati_fc_01.ks', 'ati_ibm_01.ks']:
             cmd = 'vgs --noheadings -o vg_name'
             ret = self.remotecmd.run_cmd(cmd)
             self._expected_data.set_expected_vgname(

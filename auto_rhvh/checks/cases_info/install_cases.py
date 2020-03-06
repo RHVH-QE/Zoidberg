@@ -55,8 +55,10 @@ INSTALL_TIER2_TESTCASE_MAP = {
     'RHEVM-26408': ('ati_local_01.ks', DELL_PER740_28, 'GeneralCheck.fips_check'),
     'RHEVM-26402': ('ati_local_01.ks', DELL_PER740_28, 'GeneralCheck.node_check'),
     'RHEVM-26400': ('ati_ibm_01.ks', IBM_X365M5_05, 'GeneralCheck.node_check'),
+    'RHEVM-26958': ('ati_ibm_01.ks', IBM_X365M5_05, 'PartitionCheck.partitions_check')
 }
 
 KS_PRESSURE_MAP = {'ati_fc_02.ks': '3'}
 
-KS_KERPARAMS_MAP = {'ati_local_01.ks': 'fips=1'}
+KS_KERPARAMS_MAP = {'ati_local_01.ks': 'fips=1',
+                    'ati_ibm_01.ks': 'node_storage=minimal'}

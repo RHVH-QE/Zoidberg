@@ -1,0 +1,35 @@
+{
+    "partition": {
+        "/boot": {
+            "lvm": false,
+            "device_wwid": "/dev/sda1",
+            "size": "1024",
+            "fstype": "ext4",
+            "device_alias": "/dev/sda1"
+        },
+        "volgroup": {
+            "lvm": true,
+            "name": ""
+        },
+        "/": {
+            "name": "root",
+            "fstype": "xfs",
+            "lvm": true,
+            "discard": true,
+            "grow": true,
+            "size": "6144"
+        },
+        "/var": {
+            "lvm": true,
+            "discard": true,
+            "size": "8192",
+            "name": "var",
+            "fstype": "xfs"
+        },
+        "swap": {
+            "lvm": true,
+            "recommended": true,
+            "name": "swap"
+        }
+    }
+}
