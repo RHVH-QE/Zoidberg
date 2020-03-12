@@ -105,15 +105,23 @@ class CheckUpgrade(CheckComm):
             elif "yum_vlan" in self.ksfile:
                 ret = self._upgrade_process.yum_update_vlan_process()
 
-            self._upgrade_process.upload_upgrade_log(self.log_path)
+            if "lack_space" in self.ksfile:
+                log.info("lack space upgrade, no need to load imgbased.log.")
+                if not ret:
+                    raise RuntimeError("Failed to fill up space before upgrading rhvh.")
+                
+                log.info("Start to run cases, please wait...")
+                cks = self.run_cases()
+            else:
+                self._upgrade_process.upload_upgrade_log(self.log_path)
 
-            if not ret:
-                raise RuntimeError("Failed to run upgrade.")
+                if not ret:
+                    raise RuntimeError("Failed to run upgrade.")
 
-            if not self._check_points._collect_infos('new'):
-                raise RuntimeError("Failed to collect new infos.")
+                if not self._check_points._collect_infos('new'):
+                    raise RuntimeError("Failed to collect new infos.")
 
-            cks = self.run_cases()
+                cks = self.run_cases()
         except Exception as e:
             log.error(e)
         finally:
