@@ -13,7 +13,7 @@ KERNEL_SPACE_RPM_URL = ("http://download.eng.pek2.redhat.com/pub/rhel/rel-eng/RH
 
 FABRIC_TIMEOUT = 300
 YUM_UPDATE_TIMEOUT = 1200
-YUM_INSTALL_TIMEOUT = 1200
+YUM_INSTALL_TIMEOUT = 2400
 CHK_HOST_ON_RHVM_STAT_MAXCOUNT = 20
 CHK_HOST_ON_RHVM_STAT_INTERVAL = 60
 ENTER_SYSTEM_MAXCOUNT = 10
@@ -25,4 +25,5 @@ RHVM_DATA_MAP = {
     "4.1_rhvm_fqdn": "vm-198-141.lab.eng.pek2.redhat.com",
     "4.2_rhvm_fqdn": "bootp-73-199-145.lab.eng.pek2.redhat.com",
     "4.3_rhvm_fqdn": "bootp-73-199-39.lab.eng.pek2.redhat.com",
+    "4.4_rhvm_fqdn": "vm-197-64.lab.eng.pek2.redhat.com",
 }

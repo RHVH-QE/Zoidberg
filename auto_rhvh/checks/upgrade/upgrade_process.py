@@ -175,7 +175,7 @@ class UpgradeProcess(CheckPoints):
         elif '-4.2-' in self._source_build:
             key = "4.2_rhvm_fqdn"
         elif '-4.4.' in self._source_build:
-            key = "4.3_rhvm_fqdn"
+            key = "4.4_rhvm_fqdn"
         else:
             log.error("The version of host src build is not 4.0 or 4.1 or 4.2 or 4.4.x")
             return
@@ -266,6 +266,47 @@ class UpgradeProcess(CheckPoints):
         log.info("Add %s route on host finished.", target_ip)
         return True
 
+    def _change_vlan_route_metric(self):
+        
+        log.info("Start to change default vlan route metric on host...")
+
+        cmd = "ip route | grep --color=never default | grep bond0.50 | head -1"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Get default vlan route failed.")
+            return False
+        log.info('The default vlan route is "%s"', ret[1])
+
+        default_vlan_route = ret[1]
+        #gateway = ret[1].split()[2]
+        nic = ret[1].split()[4]
+        str_before_metric = ret[1].split("metric")[0]
+        new_vlan_route = str_before_metric + "metric 100"
+        
+        #delete the default vlan route
+        cmd = "ip route del {vlan_route} ".format(vlan_route=default_vlan_route)
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Delete default vlan route %s failed.", default_vlan_route)
+            return False
+
+        #add a new vlan route, only the metric is different from default vlan route
+        cmd = "ip route add {new_vlan_route}".format(new_vlan_route=new_vlan_route)
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Add vlan route %s failed.", cmd)
+            return False
+
+        #create route file
+        cmd = "echo '{new_vlan_route}' > /etc/sysconfig/network-scripts/route-{nic}".format(new_vlan_route=new_vlan_route, nic=nic)
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Create route-%s file failed.", nic)
+            return False
+
+        log.info("Add %s vlan route on host finished.", new_vlan_route)
+        return True
+    
     def _del_vlan_route(self):
         log.info("Start to delete the default vlan route...")
 
