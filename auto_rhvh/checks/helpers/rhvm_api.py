@@ -425,10 +425,11 @@ class RhevmAction:
                     "Failed to execute upgrade on host %s" % host_name)
 
             # check upgrade status
-            description = 'Host {} upgrade was completed successfully'.format(
-                host_name)
+            # description = 'Host {} upgrade was completed successfully'.format(
+            #     host_name)
+            description = 'Upgrade was successful and host {} will be rebooted'.format(host_name)
             count = 0
-            while (count < 4):
+            while (count < 8):
                 sleep(300)
                 if self.get_host_event_by_des(host_name, description):
                     log.info(description)

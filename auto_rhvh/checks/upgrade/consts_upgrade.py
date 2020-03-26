@@ -25,5 +25,5 @@ RHVM_DATA_MAP = {
     "4.1_rhvm_fqdn": "vm-198-141.lab.eng.pek2.redhat.com",
     "4.2_rhvm_fqdn": "bootp-73-199-145.lab.eng.pek2.redhat.com",
     "4.3_rhvm_fqdn": "bootp-73-199-39.lab.eng.pek2.redhat.com",
-    "4.4_rhvm_fqdn": "vm-197-64.lab.eng.pek2.redhat.com",
+    "4.4_rhvm_fqdn": "vm-197-82.lab.eng.pek2.redhat.com",
 }
