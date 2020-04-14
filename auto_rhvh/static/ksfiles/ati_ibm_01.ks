@@ -10,6 +10,10 @@ keyboard --vckeymap=us --xlayouts='us'
 ### Kdump ###
 
 ### Security ###
+%addon org_fedora_oscap
+content-type=scap-security-guide
+profile=xccdf_org.ssgproject.content_profile_rhvh-vpp
+%end
 
 ### User ###
 rootpw --plaintext redhat

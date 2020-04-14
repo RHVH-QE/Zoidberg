@@ -11,12 +11,6 @@ keyboard --vckeymap=us --xlayouts='us'
 %addon com_redhat_kdump --enable --reserve-mb=200
 %end
 
-### Security ###
-#%addon org_fedora_oscap
-#content-type=scap-security-guide
-#profile=standard
-#%end
-
 ### User ###
 rootpw --plaintext redhat
 user --name=test --password=redhat --plaintext
