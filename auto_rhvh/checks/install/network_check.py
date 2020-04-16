@@ -108,7 +108,7 @@ class NetworkCheck(object):
         nic_device = device_data_map.get('DEVICE')
 
         cmd = "test -e /boot/nicup"
-        ck01 = self.remotecmd.run_cmd(cmd)
+        ck01 = self.remotecmd.run_cmd(cmd)[0]
         ck02 = self._check_device_ifcfg_value(device_data_map)
         ck03 = self._check_device_connected(
             [nic_device], expected_result='false')
