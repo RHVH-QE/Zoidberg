@@ -26,6 +26,9 @@ liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-h
 text
 reboot
 
+### RHSM ###
+rhsm --organization="" --activation-key="" --connect-to-insights --server-hostname="subscription.rhsm.stage.redhat.com" --rhsm-baseurl="https://cdn.stage.redhat.com"
+
 # This ks is specific to dell-per515-01, which is a multipath iSCSI machine, use the iSCSI luns
 ### Network ###
 network --device=eno2 --bootproto=static --ip=10.73.74.201 --netmask=255.255.252.0 --gateway=10.73.75.254 --ipv6=2620:52:0:4948:a9e:1ff:fe63:2cb3/64
@@ -51,6 +54,7 @@ logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --size
 logvol /home --fstype=xfs --name=home --vgname=rhvh --thin --poolname=pool --size=5000 --fsoptions="discard"
 logvol /var/crash --fstype=xfs --name=var_crash --vgname=rhvh --thin --poolname=pool --size=20000 --fsoptions="discard"
 logvol /thin_data --fstype=xfs --name=thin_data --vgname=rhvh --thin --poolname=pool --size=5000 --grow --maxsize=10000 --fsoptions="discard"
+
 
 ### Pre deal ###
 

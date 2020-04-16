@@ -136,3 +136,7 @@ class ExpectedData(object):
     @property
     def expected_general(self):
         return None
+
+    @property
+    def expected_rhsm(self):
+        return None

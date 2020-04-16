@@ -49,6 +49,7 @@ INSTALL_TIER2_TESTCASE_MAP = {
     'RHEVM-23944': ('ati_iscsi_02.ks', DELL_PER515_01, 'NetworkCheck.static_network_check'),
     'RHEVM-23949': ('ati_iscsi_02.ks', DELL_PER515_01, 'NetworkCheck.nic_stat_dur_install_check'),
     'RHEVM-23955': ('ati_iscsi_02.ks', DELL_PER515_01, 'NetworkCheck.static_network_check'),
+    'RHEVM-27103': ('ati_iscsi_02.ks', DELL_PER515_01, 'RhsmCheck.subscription_check'),
     'RHEVM-23941': ('ati_local_01.ks', DELL_PER740_28, 'PartitionCheck.partitions_check'),
     'RHEVM-23888': ('ati_local_01.ks', DELL_PER740_28, 'KeyboardCheck.keyboard_check'),
     'RHEVM-26408': ('ati_local_01.ks', DELL_PER740_28, 'GeneralCheck.fips_check'),
