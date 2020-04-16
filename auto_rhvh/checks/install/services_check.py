@@ -10,4 +10,4 @@ class ServicesCheck(object):
 
     def sshd_check(self):
         return self.remotecmd.run_cmd(
-            'systemctl status sshd | egrep "Active:.*running"', timeout=300)
+            'systemctl status sshd | egrep "Active:.*running"', timeout=300)[0]
