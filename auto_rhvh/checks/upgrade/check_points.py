@@ -605,6 +605,19 @@ class CheckPoints(object):
         return True
 
     # added by huzhao, tier2 cases
+    def _check_userspace_service_status(self):
+        log.info("Start to check userspace service status...")
+
+        #check the node_exporter service status 
+        cmd = "systemctl status node_exporter"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0] or "inactive (dead)" in ret[1] or "active (running)" not in ret[1]:
+            log.error('Check node_exporter status failed. The result of "%s" is %s', cmd, ret[1])
+            return False
+
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        return True
+
     def _check_iptables_status(self):
         log.info("Start to check iptables status.")
 
@@ -1009,6 +1022,11 @@ class CheckPoints(object):
         return self._check_user_space_rpm()
 
     # added by huzhao, tier2 check points
+    def usr_space_service_status_check(self):
+        if "-4.0-" in self._source_build:
+            raise RuntimeError("The source build is 4.0, no need to check userspace service status.")
+        return self._check_userspace_service_status()
+        
     def avc_denied_check(self):
         log.info("Start to check avc denied errors.")
 

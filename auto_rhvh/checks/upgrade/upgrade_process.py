@@ -125,6 +125,53 @@ class UpgradeProcess(CheckPoints):
         log.info("Delete repo file %s finished.", repo_file)
         return True
 
+    def _install_userspace_svc_node_exporter(self):
+        if "-4.0-" in self._source_build:
+            return True
+
+        log.info("Start to install userspace service node_exporter...")
+        install_svc_log = "/root/node_exporter.log"
+
+        #setup the node_exporter repo
+        cmd_setRepo = "curl -s https://packagecloud.io/install/repositories/prometheus-rpm/release/script.rpm.sh | sudo bash > {}".format(install_svc_log)
+        ret_setRepo = self._remotecmd.run_cmd(cmd_setRepo, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_setRepo[0]:
+            log.error("Setup node_exporter repo failed. Please check %s.", install_svc_log)
+            return False
+
+        #install the node_exporter service
+        cmd_install = "yum install -y node_exporter >> {}".format(install_svc_log)
+        ret_install = self._remotecmd.run_cmd(cmd_install, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_install[0]:
+            log.error("Install userspace service node_exporter failed. Please check %s.", install_svc_log)
+            return False
+
+        log.info("Install userspace service node_exporter succeeded.")
+
+        #start the node_exporter service
+        cmd_start = "systemctl start node_exporter"
+        ret_start = self._remotecmd.run_cmd(cmd_start, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_start[0]:
+            log.error(
+                'Start userspace service node_exporter failed. The result of "%s" is %s',
+                cmd_start, ret_start[1])
+            return False
+        log.info('The result of "%s" is %s', cmd_start, ret_start[1])
+
+        #check the node_exporter service status 
+        cmd_status = "systemctl status node_exporter"
+        ret_status = self._remotecmd.run_cmd(cmd_status, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_status[0] or "active (running)" not in ret_status[1]:
+            log.error('Check node_exporter status failed. The result of "%s" is %s', cmd_status, ret_status[1])
+            return False
+        log.info('The result of "%s" is %s', cmd_status, ret_status[1])
+
+        #delete the node_exporter repo
+        if not self._del_repo_on_host(repo_file="prometheus-rpm_release.repo"):
+            return False
+
+        return True
+
     def _set_locale_on_host(self):
         log.info("Set host to a locale that uses commas for decimals...")
 
@@ -204,14 +251,13 @@ class UpgradeProcess(CheckPoints):
             # ifup p1p1.50, bond0.50 and slaves, due to one bug 1475728 in rhvh 4.1 #
             cmd1 = "nmcli connection up id enp6s0f0" #"ifup p1p1"
             cmd2 = "nmcli connection up id enp6s0f0.50" #"ifup p1p1.50"
+            cmd3 = "nmcli connection up id enp6s0f1" #"ifup p1p2"
+            cmd4 = "nmcli connection up id 'VLAN connection bond0.50'" #"ifup bond0.50"
+
             ret1 = self._remotecmd.run_cmd(cmd1, timeout=CONST.FABRIC_TIMEOUT)
             ret2 = self._remotecmd.run_cmd(cmd2, timeout=CONST.FABRIC_TIMEOUT)
-
-            cmd3 = "nmcli connection up id enp6s0f1" #"ifup p1p2"
-            cmd4 = "nmcli connection up id bond0.50" #"ifup bond0.50"
             ret3 = self._remotecmd.run_cmd(cmd3, timeout=CONST.FABRIC_TIMEOUT)
             ret4 = self._remotecmd.run_cmd(cmd4, timeout=CONST.FABRIC_TIMEOUT)
-
             time.sleep(30)
 
             cmd5 = "ip a s"
@@ -486,6 +532,8 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._install_rpms():
             return False
+        if not self._install_userspace_svc_node_exporter():
+            return False
         if not self._remove_audit_log():
             return False
         if not self._yum_upgrade('update'):
@@ -535,6 +583,8 @@ class UpgradeProcess(CheckPoints):
         if not self._check_cockpit_connection():
             return False
         if not self._rhvm_upgrade():
+            return False
+        if not self._check_host_status_on_rhvm():
             return False
         if not self._enter_system(flag="auto")[0]:
             return False
@@ -596,6 +646,8 @@ class UpgradeProcess(CheckPoints):
         if not self._yum_upgrade('update'):
             return False
         if not self._enter_system()[0]:
+            return False
+        if not self._check_cockpit_connection():
             return False
 
         log.info("Upgrading rhvh with vlan via yum update finished.")
