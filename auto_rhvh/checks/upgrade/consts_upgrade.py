@@ -26,3 +26,14 @@ RHVM_DATA_MAP = {
     #"4.2_rhvm_fqdn": "bootp-73-199-145.lab.eng.pek2.redhat.com",
     "4.2_rhvm_fqdn": "bootp-73-199-109.lab.eng.pek2.redhat.com",
 }
+
+#upgrade from rhvh4.2 to latest rhvh4.2.x, services only on the old layer but not on the new layer
+RHVH42_SERVICES = {"imgbase-generate-iqn.service",
+                    "selinux-policy-migrate-local-changes@targeted.service",
+                    "sshd-keygen.service"}
+
+#upgrade from rhvh4.2 to latest rhvh4.3.x, services only on the old layer but not on the new layer
+RHVH43_SERVICES = {"imgbase-clean-grub.service", "imgbase-config-vdsm.service", "imgbase-copy-bootfiles.service",
+                    "imgbase-fix-new-kernel.service", "imgbase-generate-iqn.service", "imgbase-relabel-dev.service",
+                    "selinux-policy-migrate-local-changes@targeted.service", "sshd-keygen.service",
+                    "systemd-hwdb-update.service", "systemd-journal-catalog-update.service", "systemd-update-done.service"}

@@ -32,6 +32,7 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-24391": ('atu_yum_update.ks', DELL_PER7425_03, 'imgbased_log_check'),
     # "RHEVM-24039": ('atu_yum_update.ks', DELL_PER7425_03, 'port_16514_check'),
     "RHEVM-24040": ('atu_yum_update.ks', DELL_PER7425_03, 'systemd_tmpfiles_clean_check'),
+    "RHEVM-26979": ('atu_yum_update.ks', DELL_PER7425_03, 'usr_space_service_status_check'),
     "RHEVM-24016": ('atu_lack_space.ks', DELL_PER7425_03, 'no_space_update_check'),
     "RHEVM-24004": ('atu_yum_install.ks', DELL_PER510_01, 'boot_dmesg_log_check'),
     "RHEVM-24028": ('atu_yum_install.ks', DELL_PER510_01, 'reinstall_rpm_check'),

@@ -604,6 +604,19 @@ class CheckPoints(object):
 
         return True
 
+    def _check_userspace_service_status(self):
+        log.info("Start to check userspace service status...")
+
+        #check the node_exporter service status 
+        cmd = "systemctl status node_exporter"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0] or "inactive (dead)" in ret[1] or "active (running)" not in ret[1]:
+            log.error('Check node_exporter status failed. The result of "%s" is %s', cmd, ret[1])
+            return False
+
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        return True
+
     # added by huzhao, tier2 cases
     def _check_iptables_status(self):
         log.info("Start to check iptables status.")
@@ -1008,6 +1021,11 @@ class CheckPoints(object):
                 "The source build is 4.0, no need to check user space rpm.")
         return self._check_user_space_rpm()
 
+    def usr_space_service_status_check(self):
+        if "-4.0-" in self._source_build:
+            raise RuntimeError("The source build is 4.0, no need to check userspace service status.")
+        return self._check_userspace_service_status()
+
     # added by huzhao, tier2 check points
     def avc_denied_check(self):
         log.info("Start to check avc denied errors.")
@@ -1196,16 +1214,41 @@ class CheckPoints(object):
 
     def diff_services_check(self):
         log.info("Start to diff all the active services after upgrade.")
-
+        target_ver_num = self._target_build.split("-host-")[-1]
+        
         if not self._collect_service_status('new'):
             return False
 
         cmd = "diff /var/old_build /var/new_build"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         log.info('The result of "%s" is %s', cmd, ret[1])
-        if not ret[0]:
-            log.error('Active services after upgrade are different.')
-            return False
+
+        cmd_srv_old = "diff /var/old_build /var/new_build | grep -E '< .+' | sed 's/^..//g'"
+        ret_srv_old = self._remotecmd.run_cmd(cmd_srv_old, timeout=CONST.FABRIC_TIMEOUT)
+        log.info('The services on old layer but not found in new layer are "%s"', ret_srv_old[1])
+
+        cmd_srv_new = "diff /var/old_build /var/new_build | grep -E '> .+' | sed 's/^..//g'"
+        ret_srv_new = self._remotecmd.run_cmd(cmd_srv_new, timeout=CONST.FABRIC_TIMEOUT)
+        log.info('The services on old layer but not found in new layer are "%s"', ret_srv_new[1])
+
+        srv_only_in_old_layer = ret_srv_old[1]
+        for srv in srv_only_in_old_layer.splitlines():
+            if ("lvm2-pvscan" in srv):
+                if ("lvm2-pvscan" not in ret_srv_new[1]):
+                    log.error('Active services %s not found after upgrade.', srv)
+                    return False
+            else:
+                if ("4.2" in target_ver_num):
+                    if (srv not in CONST.RHVH42_SERVICES):
+                        log.error('Active services %s not found after upgrade.', srv)
+                        return False
+                elif ("4.3." in target_ver_num):
+                    if (srv not in CONST.RHVH43_SERVICES):
+                        log.error('Active services %s not found after upgrade.', srv)
+                        return False
+                else:
+                    log.error('Unprocessable target version %s. Please modify the diff_services_check function.', target_ver_num)
+                    return False
 
         return True
 
