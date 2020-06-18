@@ -153,16 +153,16 @@ class UpgradeProcess(CheckPoints):
         ret_start = self._remotecmd.run_cmd(cmd_start, timeout=CONST.FABRIC_TIMEOUT)
         if not ret_start[0]:
             log.error(
-                'Start userspace service node_exporter failed. The result of "%s" is %s',
+                'Start userspace service node_exporter failed. The result of "%s" is "%s"',
                 cmd_start, ret_start[1])
             return False
         log.info('The result of "%s" is %s', cmd_start, ret_start[1])
 
         #check the node_exporter service status 
-        cmd_status = "systemctl status node_exporter"
+        cmd_status = "systemctl status node_exporter | grep active"
         ret_status = self._remotecmd.run_cmd(cmd_status, timeout=CONST.FABRIC_TIMEOUT)
         if not ret_status[0] or "active (running)" not in ret_status[1]:
-            log.error('Check node_exporter status failed. The result of "%s" is %s', cmd_status, ret_status[1])
+            log.error('Check node_exporter status failed. The result of "%s" is "%s"', cmd_status, ret_status[1])
             return False
         log.info('The result of "%s" is %s', cmd_status, ret_status[1])
 
@@ -202,8 +202,10 @@ class UpgradeProcess(CheckPoints):
         cmd = 'lscpu | grep "Model name"'
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if ret[0]:
-            if "AMD" in ret[1]:
+            if "AMD EPYC" in ret[1]:
                 cpu_type = "AMD EPYC"
+            elif "AMD" in ret[1]:
+                cpu_type = "AMD Opteron G5"
             elif "Intel" in ret[1]:
                 cpu_type = "Intel Nehalem Family"
             else:
@@ -537,6 +539,8 @@ class UpgradeProcess(CheckPoints):
         if not self._remove_audit_log():
             return False
         if not self._yum_upgrade('update'):
+            return False
+        if not self._check_host_status_on_rhvm():
             return False
         if not self._enter_system()[0]:
             return False

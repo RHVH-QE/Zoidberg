@@ -28,7 +28,7 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-24034": ('atu_yum_update.ks', DELL_PER7425_03, 'sysstat_check'),
     "RHEVM-24038": ('atu_yum_update.ks', DELL_PER7425_03, 'ovirt_imageio_daemon_check'),
     "RHEVM-24035": ('atu_yum_update.ks', DELL_PER7425_03, 'kdump_check'),
-    "RHEVM-24402": ('atu_yum_update.ks', DELL_PER7425_03, 'katello_check'),
+    #"RHEVM-24402": ('atu_yum_update.ks', DELL_PER7425_03, 'katello_check'),#This case does not apply to RHVH4.4 according to Bug 1425032
     "RHEVM-24391": ('atu_yum_update.ks', DELL_PER7425_03, 'imgbased_log_check'),
     ## "RHEVM-24039": ('atu_yum_update.ks', DELL_PER7425_03, 'port_16514_check'),
     "RHEVM-24040": ('atu_yum_update.ks', DELL_PER7425_03, 'systemd_tmpfiles_clean_check'),

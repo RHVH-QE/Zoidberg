@@ -609,13 +609,13 @@ class CheckPoints(object):
         log.info("Start to check userspace service status...")
 
         #check the node_exporter service status 
-        cmd = "systemctl status node_exporter"
+        cmd = "systemctl status node_exporter | grep active"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0] or "inactive (dead)" in ret[1] or "active (running)" not in ret[1]:
-            log.error('Check node_exporter status failed. The result of "%s" is %s', cmd, ret[1])
+            log.error('Check node_exporter status failed. The result of "%s" is "%s"', cmd, ret[1])
             return False
 
-        log.info('The result of "%s" is %s', cmd, ret[1])
+        log.info('The result of "%s" is "%s"', cmd, ret[1])
         return True
 
     def _check_iptables_status(self):
@@ -673,7 +673,9 @@ class CheckPoints(object):
     def _check_ntpd_status(self):
         log.info("Start to check ntpd status.")
 
-        cmd = "systemctl status ntpd | grep 'Active: active' --color=never"
+        #RHVH-4.4.x  In RHEL 8, the NTP protocol is implemented only by the chronyd daemon, provided by the chrony package.
+        #The ntp daemon is no longer available. If you used ntp on your RHEL 7 system, you might need to migrate to chrony. 
+        ''' cmd = "systemctl status ntpd | grep 'Active: active' --color=never"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         log.info('The result of "%s" is %s', cmd, ret[1])
         if "Active: active" not in ret[1]:
@@ -689,22 +691,22 @@ class CheckPoints(object):
                 ret_01 = True
         else:
             log.info('ntpd is active.')
-            ret_01 = True
+            ret_01 = True 
+        cmd = "rpm -qa | egrep 'ntp-|chrony-' --color=never" 
+        '''
 
-        cmd = "rpm -qa | egrep 'ntp-|chrony-' --color=never"
+        cmd = "rpm -qa | egrep 'chrony-' --color=never"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0]:
-            log.error(
-                'Check rpm ntp and chrony failed. The result of "%s" is %s',
-                cmd, ret[1])
+            log.error('Check rpm chrony failed. The result of "%s" is %s', cmd, ret[1])
             return False
         log.info('The result of "%s" is %s', cmd, ret[1])
-        if "ntp-" in ret[1] and "chrony-" in ret[1]:
+        if "chrony-" in ret[1]:
             ret_02 = True
         else:
             ret_02 = False
 
-        return ret_01 and ret_02
+        return ret_02
 
     def _check_sysstat(self):
         log.info("Start to check sysstat collect data.")
@@ -728,30 +730,32 @@ class CheckPoints(object):
     def _check_ovirt_imageio_daemon_status(self):
         log.info("Start to check ovirt-imageio-daemon status.")
 
-        cmd = "systemctl status ovirt-imageio-daemon.service | grep 'Active: active' --color=never"
+        #cmd = "systemctl status ovirt-imageio-daemon.service | grep 'Active: active' --color=never"
+        cmd = "systemctl status ovirt-imageio.service | grep 'Active: active' --color=never"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0]:
             log.error(
-                'Check ovirt-imageio-daemon status failed. The result of "%s" is %s',
+                'Check ovirt-imageio daemon status failed. The result of "%s" is %s',
                 cmd, ret[1])
             return False
         log.info('The result of "%s" is %s', cmd, ret[1])
         if "Active: active" in ret[1]:
-            log.info('ovirt-imageio-daemon is active.')
+            log.info('ovirt-imageio daemon is active.')
             ret01 = True
         else:
-            log.info('ovirt-imageio-daemon is not active.')
+            log.info('ovirt-imageio daemon is not active.')
             ret01 = False
 
-        cmd = "ls -ld /var/log/ovirt-imageio-daemon/"
+        cmd = "ls -ld /var/log/ovirt-imageio/"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0]:
             log.error(
-                'Check ovirt-imageio-daemon owership failed. The result of "%s" is %s',
+                'Check ovirt-imageio daemon owership failed. The result of "%s" is %s',
                 cmd, ret[1])
             return False
         log.info('The result of "%s" is %s', cmd, ret[1])
-        if "vdsm" in ret[1] and "kvm" in ret[1]:
+        #if "vdsm" in ret[1] and "kvm" in ret[1]:
+        if "ovirtimg" in ret[1] and "root" in ret[1]:
             ret02 = True
         else:
             ret02 = False
@@ -975,8 +979,9 @@ class CheckPoints(object):
 
     def cannot_update_check(self):
         cmd = "yum update"
-        return self._remotecmd.check_strs_in_cmd_output(
-            cmd, ["No packages marked for update"], timeout=CONST.FABRIC_TIMEOUT)
+        #return self._remotecmd.check_strs_in_cmd_output(cmd, ["No packages marked for update"], timeout=CONST.FABRIC_TIMEOUT)
+        return self._remotecmd.check_strs_in_cmd_output(cmd, ["Nothing to do"], timeout=CONST.FABRIC_TIMEOUT)
+        
 
     def cannot_install_check(self):
         update_rpm_name = self._get_update_rpm_name_from_http()
@@ -984,9 +989,11 @@ class CheckPoints(object):
 
         cmd = "yum install {}".format(self._update_rpm_path)
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
-        if not ret[0] and "Nothing to do" in ret[1]:
+        #if not ret[0] and "Nothing to do" in ret[1]:#20200529
+        if ret[0] and "Nothing to do" in ret[1]:
             return True
         else:
+            log.error("The result of %s is %s", cmd, ret[1])
             return False
 
     def cmds_check(self):
@@ -1108,8 +1115,10 @@ class CheckPoints(object):
             key = "4.1_rhvm_fqdn"
         elif '-4.2-' in self._source_build:
             key = "4.2_rhvm_fqdn"
+        elif '-4.4.' in self._source_build:
+            key = "4.4_rhvm_fqdn"
         else:
-            log.error("The version of host src build is not 4.0 or 4.1 or 4.2")
+            log.error("The version of host src build is not 4.0 or 4.1 or 4.2 or 4.4.x")
             return
         self._rhvm_fqdn = CONST.RHVM_DATA_MAP.get(key)
         self._rhvm = RhevmAction(self._rhvm_fqdn)
@@ -1118,7 +1127,7 @@ class CheckPoints(object):
             log.info("Can not update rhvh again after upgrade.")
             return True
         else:
-            log.info("Can update again, should be not!")
+            log.info("Can update again, this should be not!")
             return False
 
     def no_space_update_check(self):
@@ -1130,9 +1139,12 @@ class CheckPoints(object):
         cmd = "yum update -y"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
 
-        if "Disk Requirements" in ret[1] or "No space left on device" in ret[1] or "FAILED" in ret[1]:
-            return True
-        elif "Complete" not in ret[1]:
+        #2020-05-28
+        #if "Disk Requirements" in ret[1] or "No space left on device" in ret[1] or "FAILED" in ret[1]:
+        #    return True
+        #elif "Complete" not in ret[1]:
+        #    return True
+        if "Disk Requirements" in ret[1] or "database or disk is full" in ret[1]:
             return True
         else:
             log.info('The output is %s', ret[1])
@@ -1218,14 +1230,37 @@ class CheckPoints(object):
         if not self._collect_service_status('new'):
             return False
 
-        cmd = "diff /var/old_build /var/new_build"
+        # cmd = "diff /var/old_build /var/new_build"
+        # ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        # log.info('The result of "%s" is %s', cmd, ret[1])
+        # if not ret[0]:
+        #     log.error('Active services after upgrade are different.')
+        #     return False
+        # return True
+
+        #Only focus on services that is in old_build but missed in new_build
+        cmd = "diff /var/old_build /var/new_build | grep '<'"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         log.info('The result of "%s" is %s', cmd, ret[1])
-        if not ret[0]:
-            log.error('Active services after upgrade are different.')
-            return False
-
-        return True
+        if ret[1] == "":
+            log.error('All the active services in old build are still active in new build.')
+            return True
+        else:
+            lost_srvs = ret[1].splitlines()
+            for line in lost_srvs:
+                if "@" in line:
+                    srv_name_with_symbol = line.split("@")[0]
+                    srv_name = srv_name_with_symbol.split(" ")[1]
+                    cmd_find = "find /var/new_build |xargs grep {}".format(srv_name)
+                    log.info('The command is "%s"', cmd_find)
+                    ret_find = self._remotecmd.run_cmd(cmd_find, timeout=CONST.FABRIC_TIMEOUT)
+                    if not ret_find[0] or ret_find[1] == "":
+                        log.error('Active services "%s" is not active after upgrade.', line)
+                        return False
+                else:
+                    log.error('Active services "%s" is not active after upgrade.', line)
+                    return False
+            return True
 
     def libguestfs_tool_check(self):
         log.info("Start to check libguestfs-test-tool.")
