@@ -12,7 +12,7 @@ keyboard --vckeymap=us --xlayouts='us'
 ### Security ###
 %addon org_fedora_oscap
 content-type=scap-security-guide
-profile=xccdf_org.ssgproject.content_profile_rhvh-vpp
+profile=xccdf_org.ssgproject.content_profile_rhvh-stig
 %end
 
 ### User ###
