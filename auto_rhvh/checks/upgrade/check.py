@@ -98,6 +98,8 @@ class CheckUpgrade(CheckComm):
                 ret = self._upgrade_process.yum_install_process()
             elif "rhvm_upgrade" in self.ksfile:
                 ret = self._upgrade_process.rhvm_upgrade_process()
+            elif "rhvm_vms_upgrade" in self.ksfile:
+                ret = self._upgrade_process.rhvm_upgrade_create_vms_process()
             elif "lack_space" in self.ksfile:
                 ret = self._upgrade_process.yum_update_lack_space_process()
             elif "rhvm_iscsi" in self.ksfile:

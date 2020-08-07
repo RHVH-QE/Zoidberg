@@ -702,10 +702,10 @@ class RhevmAction:
                                "%s as\n%s" % (vm_name, r.text))
 
     def operate_vm(self, vm_name, operation):
-        normal_operations = ['reboot', 'shutdown', 'stop', 'suspend']
+        normal_operations = ['start', 'reboot', 'shutdown', 'stop', 'suspend']
         if operation not in normal_operations:
             raise RuntimeError(
-                "Only support operations ['reboot', 'shutdown', 'stop', 'suspend']"
+                "Only support operations ['start', 'reboot', 'shutdown', 'stop', 'suspend']"
             )
 
         api_url_base = self.api_url.format(

@@ -40,6 +40,12 @@ class CheckPoints(object):
         self._remotecmd = None
         self._beaker_name = None
         self._host_pass = None
+        self._nfs_ip = None
+        self._nfs_pass = None
+        self._nfs_data_path = None
+        self._sd_name = None
+        self._vm_name = None
+        self._disk_size = None
 
     @property
     def remotecmd(self):
@@ -608,13 +614,13 @@ class CheckPoints(object):
         log.info("Start to check userspace service status...")
 
         #check the node_exporter service status 
-        cmd = "systemctl status node_exporter"
+        cmd = "systemctl status node_exporter | grep active"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0] or "inactive (dead)" in ret[1] or "active (running)" not in ret[1]:
-            log.error('Check node_exporter status failed. The result of "%s" is %s', cmd, ret[1])
+            log.error('Check node_exporter status failed. The result of "%s" is "%s"', cmd, ret[1])
             return False
 
-        log.info('The result of "%s" is %s', cmd, ret[1])
+        log.info('The result of "%s" is "%s"', cmd, ret[1])
         return True
 
     # added by huzhao, tier2 cases
@@ -1025,6 +1031,19 @@ class CheckPoints(object):
         if "-4.0-" in self._source_build:
             raise RuntimeError("The source build is 4.0, no need to check userspace service status.")
         return self._check_userspace_service_status()
+
+    def vms_boot_check(self):
+        # Check imgbase w, imgbase layout, cockpit connection
+        ck01 = self._check_imgbase_w()
+        ck02 = self._check_imgbase_layout()
+        ck03 = self._check_cockpit_connection()
+        ck04 = self._check_host_status_on_rhvm()
+        ck05 = self._check_iqn()
+
+        # Check existing files after upgrade
+        ck06 = self.etc_var_file_update_check()
+
+        return ck01 and ck02 and ck03 and ck04 and ck05 and ck06
 
     # added by huzhao, tier2 check points
     def avc_denied_check(self):

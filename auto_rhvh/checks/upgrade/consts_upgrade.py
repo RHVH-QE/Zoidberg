@@ -37,3 +37,16 @@ RHVH43_SERVICES = {"imgbase-clean-grub.service", "imgbase-config-vdsm.service", 
                     "imgbase-fix-new-kernel.service", "imgbase-generate-iqn.service", "imgbase-relabel-dev.service",
                     "selinux-policy-migrate-local-changes@targeted.service", "sshd-keygen.service",
                     "systemd-hwdb-update.service", "systemd-journal-catalog-update.service", "systemd-update-done.service"}
+
+#Info for NFS to be used in Storage
+NFS_INFO = {
+    "ip": "10.66.8.185",
+    "password": "kvmautotest",
+    "data_path": "/home/nfs-rhel-data",
+    "iso_path": "/home/nfs-rhel-iso",
+}
+
+#Info for disk to be used in VMs
+DISK_INFO = {
+    "size": "21474836480",
+}

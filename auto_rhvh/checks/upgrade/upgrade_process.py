@@ -3,6 +3,7 @@ import requests
 import os
 import time
 import re
+from fabric.api import settings, run
 import consts_upgrade as CONST
 from ..helpers import CheckComm
 from ..helpers.rhvm_api import RhevmAction
@@ -153,16 +154,16 @@ class UpgradeProcess(CheckPoints):
         ret_start = self._remotecmd.run_cmd(cmd_start, timeout=CONST.FABRIC_TIMEOUT)
         if not ret_start[0]:
             log.error(
-                'Start userspace service node_exporter failed. The result of "%s" is %s',
+                'Start userspace service node_exporter failed. The result of "%s" is "%s"',
                 cmd_start, ret_start[1])
             return False
         log.info('The result of "%s" is %s', cmd_start, ret_start[1])
 
         #check the node_exporter service status 
-        cmd_status = "systemctl status node_exporter"
+        cmd_status = "systemctl status node_exporter | grep active"
         ret_status = self._remotecmd.run_cmd(cmd_status, timeout=CONST.FABRIC_TIMEOUT)
         if not ret_status[0] or "active (running)" not in ret_status[1]:
-            log.error('Check node_exporter status failed. The result of "%s" is %s', cmd_status, ret_status[1])
+            log.error('Check node_exporter status failed. The result of "%s" is "%s"', cmd_status, ret_status[1])
             return False
         log.info('The result of "%s" is %s', cmd_status, ret_status[1])
 
@@ -228,7 +229,7 @@ class UpgradeProcess(CheckPoints):
         log.info("Get rhvm fqdn finished.")
 
     def _gen_name(self):
-        log.info("Generate dc name, cluster name, host name...")
+        log.info("Generate dc name, cluster name, host name, storage domain name, VMs name...")
         mc_name = self._beaker_name.split('.')[0]
         # t = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         # gen_name = mc_name + '-' + t
@@ -237,9 +238,24 @@ class UpgradeProcess(CheckPoints):
         self._dc_name = gen_name
         self._cluster_name = gen_name
         self._host_name = gen_name
+        self._sd_name = gen_name
+        self._vm_name = gen_name
 
         log.info("Generate names finished.")
 
+    def _get_nfs_info(self):
+        log.info("Getting NFS storage informations...")
+
+        self._nfs_ip = CONST.NFS_INFO.get("ip")
+        self._nfs_pass = CONST.NFS_INFO.get("password")
+        self._nfs_data_path = CONST.NFS_INFO.get("data_path")
+        log.info("Getting NFS finished.")
+    
+    def _get_disk_size(self):
+        log.info("Getting disk size...")
+        self._disk_size = CONST.DISK_INFO.get("size")
+        log.info("Getting disk size finished.")
+    
     def _get_host_ip(self, is_vlan):
         log.info("Get host ip...")
 
@@ -396,6 +412,11 @@ class UpgradeProcess(CheckPoints):
                     self._rhvm.remove_host(self._host_name)
                     self._rhvm.del_host_events(self._host_name)
 
+                existing_sd = self._rhvm.list_storage_domain(self._sd_name)
+                if self._sd_name and existing_sd:
+                    log.info("Try to remove storage domain %s", self._sd_name)
+                    self._destory_sd_after_test(self._sd_name, self._host_name)
+                
                 if self._cluster_name:
                     log.info("Try to remove cluster %s", self._cluster_name)
                     self._rhvm.remove_cluster(self._cluster_name)
@@ -475,6 +496,246 @@ class UpgradeProcess(CheckPoints):
         except ValueError:
             pass
 
+    #Create VM related functions
+    #peyu 2020-07-31
+    #Add nfs storage
+    def _clean_nfs_path(self, nfs_ip, nfs_pass, nfs_data_path):
+        log.info("Cleaning the nfs path")
+        cmd = "rm -rf %s/*" % nfs_data_path
+        with settings(
+            warn_only=True,
+            host_string='root@' + nfs_ip,
+            password=nfs_pass):
+            ret = run(cmd)
+        if ret.failed:
+            raise RuntimeError("Failed to cleanup the nfs path %s" % nfs_data_path)
+
+    def _create_nfs_sd(self, sd_name, sd_type, nfs_ip, nfs_data_path, host_name):
+        log.info("Creating the nfs storage domain %s" % sd_name)
+        self._rhvm.add_plain_storage_domain(
+            domain_name=sd_name,
+            domain_type=sd_type,
+            storage_type='nfs',
+            storage_addr=nfs_ip,
+            storage_path=nfs_data_path,
+            host=host_name)
+        time.sleep(60)
+
+    def _attach_sd_to_dc(self, sd_name, dc_name):
+        log.info("Attaching the storage domain %s to Data Centers %s" % (sd_name, dc_name))
+        self._rhvm.attach_sd_to_datacenter(sd_name=sd_name, dc_name=dc_name)
+        time.sleep(30)
+        return True
+    
+    def _destory_sd_after_test(self, sd_name, host_name):
+        log.info("Destorying the storage domain %s to host %s" % (sd_name, host_name))
+        try:
+            self._rhvm.remove_storage_domain(sd_name, host_name, destroy=True)
+            time.sleep(30)
+        except Exception as e:
+            log.exception(e)
+            return False            
+        return True
+    
+    def _create_nfs_storage_domain(self):
+        log.info("Creating nfs storage domain and attach it to Data Centers...")
+        
+        try:
+            host_name = self._host_name
+            sd_name = self._sd_name
+            sd_type = 'data'
+            dc_name = self._dc_name
+
+            # Get nfs infomations
+            self._get_nfs_info()
+
+            # Clean the nfs path
+            nfs_ip = self._nfs_ip
+            nfs_passwd = self._nfs_pass
+            nfs_data_path = self._nfs_data_path
+            self._clean_nfs_path(nfs_ip, nfs_passwd, nfs_data_path)
+
+            # Create the nfs storage domain
+            self._create_nfs_sd(sd_name, sd_type, nfs_ip, nfs_data_path, host_name)
+
+            # Attach the sd to datacenter
+            self._attach_sd_to_dc(sd_name, dc_name)
+        except Exception as e:
+            log.exception(e)
+            return False
+        return True
+
+    #peyu 2020-07-31
+    #Create VMs, attach disk to VMs
+    def _create_vm(self, vm_name, cluster_name):
+        log.info("Creating VM %s", vm_name)
+        self._rhvm.create_vm(vm_name=vm_name, cluster_name=cluster_name)
+        time.sleep(30)
+
+    #Create a float disk for vm using
+    def _create_float_disk(self, disk_name):
+        log.info("Creating a float disk for VM")
+        
+        disk_type = "nfs"
+        sd_name = self._sd_name
+
+        if disk_type == "localfs" or disk_type == "nfs":
+            disk_size = self._disk_size
+            self._rhvm.create_float_image_disk(sd_name, disk_name, disk_size)
+        
+        time.sleep(60)
+
+    def _attach_disk_to_vm(self, vm_name, disk_name):
+        log.info("Attaching the float disk to VM %s", vm_name)
+        bootable = True
+        self._rhvm.attach_disk_to_vm(disk_name, vm_name, bootable=bootable)
+        time.sleep(30)
+
+    def _create_vms_with_disk(self,vm_quantity=1):
+        log.info("Creating VMs with disk...")
+        try:
+            cluster_name = self._cluster_name
+
+            value = 1
+            while value <= vm_quantity:
+                vm_name = self._vm_name + '_vm' + str(value)
+                disk_name = vm_name + '_Disk1'
+                
+                # Create the vm
+                self._create_vm(vm_name, cluster_name)
+                
+                # Get disk info
+                self._get_disk_size()
+
+                # Create the float disk
+                self._create_float_disk(disk_name)
+
+                # Attach the disk to vm
+                self._attach_disk_to_vm(vm_name, disk_name)
+
+                value += 1
+
+        except Exception as e:
+            log.exception(e)
+            return False
+        return True
+
+    #peyu 2020-07-31
+    #Operations on VM
+    def _wait_vm_status(self, vm_name, expect_status):
+        log.info("Waitting the VM to status %s" % expect_status)
+        i = 0
+        vm_status = "unknown"
+        while True:
+            if i > 30:
+                log.error("VM status is %s, not %s" % (vm_status, expect_status))
+                return False
+            vm_status = self._rhvm.list_vm(vm_name)['status']
+            log.info("The VM status is: %s" % vm_status)
+            if vm_status == expect_status:
+                return True
+            time.sleep(10)
+            i += 1
+
+    def _start_vm(self, vm_name):
+        log.info("Start up the VM %s" % vm_name)
+
+        try:
+            self._rhvm.operate_vm(vm_name, 'start')
+            time.sleep(60)
+
+            # Wait the vm is up
+            self._wait_vm_status(vm_name, 'up')
+
+        except Exception as e:
+            log.exception(e)
+            return False
+
+        log.info("Start VM %s finished.", vm_name)
+        return True
+
+    def _reboot_vm(self, vm_name):
+        log.info("Reboot the VM %s" % vm_name)
+
+        try:
+            self._rhvm.operate_vm(vm_name, 'reboot')
+            time.sleep(60)
+
+            # Wait the vm is up
+            self._wait_vm_status(vm_name, 'up')
+
+        except Exception as e:
+            log.exception(e)
+            return False
+
+        log.info("Reboot VM %s finished.", vm_name)
+        return True
+
+    def _poweroff_vm(self, vm_name):
+        log.info("Poweroff the VM %s" % vm_name)
+
+        try:
+            self._rhvm.operate_vm(vm_name, 'stop')
+            time.sleep(60)
+
+            # Wait the vm is down
+            self._wait_vm_status(vm_name, 'down')
+
+        except Exception as e:
+            log.exception(e)
+            return False
+
+        log.info("Poweroff VM %s finished.", vm_name)
+        return True
+
+    def _delete_vm(self, vm_name):
+        log.info("Removing the VM %s" % vm_name)
+        self._rhvm.remove_vm(vm_name)
+        time.sleep(60)
+
+    def _start_then_poweroff_vms(self, vm_quantity=1):
+        log.info("Starting the VMs, then poweroff them...")
+        
+        try:
+            value = 1
+            while value <= vm_quantity:
+                vm_name = self._vm_name + '_vm' + str(value)
+                                
+                if not self._start_vm(vm_name):
+                    return False
+                value += 1
+
+            num = 1
+            while num <= vm_quantity:
+                vm_name = self._vm_name + '_vm' + str(num)
+                                
+                if not self._poweroff_vm(vm_name):
+                    return False
+                num += 1
+
+        except Exception as e:
+            log.exception(e)
+            return False
+        return True
+
+    def _delete_vms_after_test(self, vm_quantity=1):
+        log.info("Deleting VMs after test...")
+        try:
+            value = 1
+            while value <= vm_quantity:
+                vm_name = self._vm_name + '_vm' + str(value)
+                if not vm_name or not self._rhvm.list_vm(vm_name):
+                    raise RuntimeError("VM not exists")
+
+                self._delete_vm(vm_name)
+                value += 1
+        except Exception as e:
+            log.exception(e)
+            return False
+        return True
+
+    
+    #The following are functions related to test process control
     def yum_update_process(self):
         log.info("Start to upgrade rhvh via yum update cmd...")
 
@@ -550,6 +811,42 @@ class UpgradeProcess(CheckPoints):
         log.info("Upgrade rhvh via rhvm finished.")
         return True
 
+    def rhvm_upgrade_create_vms_process(self):
+        log.info("Start to add VMs and upgrade rhvh via rhvm...")
+
+        if not self._add_10_route():
+            return False
+        if not self._add_update_files():
+            return False
+        if not self._put_repo_to_host():
+            return False
+        if not self._add_host_to_rhvm():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._create_nfs_storage_domain():
+            return False
+        if not self._create_vms_with_disk(vm_quantity=3):
+            return False
+        if not self._start_then_poweroff_vms(vm_quantity=3):
+            return False
+        if not self._check_cockpit_connection():
+            return False
+        if not self._rhvm_upgrade():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        time.sleep(120) # Waiting sd status become up
+        if not self._start_then_poweroff_vms(vm_quantity=3):
+            return False
+        if not self._delete_vms_after_test(vm_quantity=3):
+            return False
+        if not self._enter_system(flag="auto")[0]:
+            return False
+
+        log.info("Add VMs and upgrade rhvh via rhvm finished.")
+        return True
+    
     def yum_update_lack_space_process(self):
         if "-4.0-" in self._source_build:
             raise RuntimeError(
