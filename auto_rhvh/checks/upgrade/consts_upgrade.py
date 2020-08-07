@@ -27,3 +27,16 @@ RHVM_DATA_MAP = {
     "4.3_rhvm_fqdn": "bootp-73-199-39.lab.eng.pek2.redhat.com",
     "4.4_rhvm_fqdn": "vm-197-64.lab.eng.pek2.redhat.com",
 }
+
+#Info for NFS to be used in Storage
+NFS_INFO = {
+    "ip": "10.66.8.185",
+    "password": "kvmautotest",
+    "data_path": "/home/nfs-rhel-data",
+    "iso_path": "/home/nfs-rhel-iso",
+}
+
+#Info for disk to be used in VMs
+DISK_INFO = {
+    "size": "21474836480",
+}

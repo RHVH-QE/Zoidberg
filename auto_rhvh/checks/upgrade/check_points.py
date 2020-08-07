@@ -40,6 +40,12 @@ class CheckPoints(object):
         self._remotecmd = None
         self._beaker_name = None
         self._host_pass = None
+        self._nfs_ip = None
+        self._nfs_pass = None
+        self._nfs_data_path = None
+        self._sd_name = None
+        self._vm_name = None
+        self._disk_size = None
 
     @property
     def remotecmd(self):
@@ -1034,6 +1040,19 @@ class CheckPoints(object):
             raise RuntimeError("The source build is 4.0, no need to check userspace service status.")
         return self._check_userspace_service_status()
         
+    def vms_boot_check(self):
+        # Check imgbase w, imgbase layout, cockpit connection
+        ck01 = self._check_imgbase_w()
+        ck02 = self._check_imgbase_layout()
+        ck03 = self._check_cockpit_connection()
+        ck04 = self._check_host_status_on_rhvm()
+        ck05 = self._check_iqn()
+
+        # Check existing files after upgrade
+        ck06 = self.etc_var_file_update_check()
+
+        return ck01 and ck02 and ck03 and ck04 and ck05 and ck06
+
     def avc_denied_check(self):
         log.info("Start to check avc denied errors.")
 

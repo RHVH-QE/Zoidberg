@@ -8,7 +8,7 @@ UPGRADE_TIER1_TESTCASE_MAP = {
     "RHEVM-23992": ('atu_yum_update.ks', DELL_PER7425_03, 'basic_upgrade_check'),
     "RHEVM-24003": ('atu_yum_update.ks', DELL_PER7425_03, 'cmds_check'),
     "RHEVM-24014": ('atu_yum_update.ks', DELL_PER7425_03, 'signed_check'),
-    ##"RHEVM-24022": ('atu_yum_update.ks', DELL_PER7425_03, 'knl_space_rpm_check'),
+    ## "RHEVM-24022": ('atu_yum_update.ks', DELL_PER7425_03, 'knl_space_rpm_check'),
     "RHEVM-24023": ('atu_yum_update.ks', DELL_PER7425_03, 'usr_space_rpm_check'),
     "RHEVM-24029": ('atu_yum_update.ks', DELL_PER7425_03, 'cmds_check'),
     "RHEVM-24012": ('atu_yum_update.ks', DELL_PER7425_03, 'separate_volumes_check'),
@@ -18,6 +18,7 @@ UPGRADE_TIER1_TESTCASE_MAP = {
     "RHEVM-23999": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
     "RHEVM-24030": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
     "RHEVM-24995": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
+    "RHEVM-24000": ('atu_rhvm_vms_upgrade.ks', DELL_PER7425_03, 'vms_boot_check'),
 }
 
 UPGRADE_TIER2_TESTCASE_MAP = {
@@ -28,7 +29,7 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-24034": ('atu_yum_update.ks', DELL_PER7425_03, 'sysstat_check'),
     "RHEVM-24038": ('atu_yum_update.ks', DELL_PER7425_03, 'ovirt_imageio_daemon_check'),
     "RHEVM-24035": ('atu_yum_update.ks', DELL_PER7425_03, 'kdump_check'),
-    #"RHEVM-24402": ('atu_yum_update.ks', DELL_PER7425_03, 'katello_check'),#This case does not apply to RHVH4.4 according to Bug 1425032
+    ## "RHEVM-24402": ('atu_yum_update.ks', DELL_PER7425_03, 'katello_check'),#This case does not apply to RHVH4.4 according to Bug 1425032
     "RHEVM-24391": ('atu_yum_update.ks', DELL_PER7425_03, 'imgbased_log_check'),
     ## "RHEVM-24039": ('atu_yum_update.ks', DELL_PER7425_03, 'port_16514_check'),
     "RHEVM-24040": ('atu_yum_update.ks', DELL_PER7425_03, 'systemd_tmpfiles_clean_check'),
