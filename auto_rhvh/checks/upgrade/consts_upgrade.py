@@ -40,8 +40,8 @@ RHVH43_SERVICES = {"imgbase-clean-grub.service", "imgbase-config-vdsm.service", 
 
 #Info for NFS to be used in Storage
 NFS_INFO = {
-    "ip": "10.66.8.185",
-    "password": "kvmautotest",
+    "ip": "0.73.131.220",
+    "password": "redhat",
     "data_path": "/home/nfs-rhel-data",
     "iso_path": "/home/nfs-rhel-iso",
 }
