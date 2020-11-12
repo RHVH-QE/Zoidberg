@@ -17,17 +17,17 @@
         "/std_data": {
             "fstype": "xfs",
             "maxsize": "10000",
-            "device_wwid": "/dev/mapper/360a9800050334c33424b41762d726954p2",
+            "device_wwid": "/dev/mapper/360a98000383034384c5d4f4352343763p2",
             "lvm": false,
-            "device_alias": "/dev/mapper/360a9800050334c33424b41762d726954p2",
+            "device_alias": "/dev/mapper/360a98000383034384c5d4f4352343763p2",
             "grow": true,
             "size": "5000"
         },
         "swap": {
             "lvm": false,
             "recommended": true,
-            "device_wwid": "/dev/mapper/360a9800050334c33424b41762d745551p1",
-            "device_alias": "/dev/mapper/360a9800050334c33424b41762d745551p1"
+            "device_wwid": "/dev/mapper/360a98000383034384c5d4f4352343761p1",
+            "device_alias": "/dev/mapper/360a98000383034384c5d4f4352343761p1"
         },
         "/home": {
             "lvm": true,
@@ -45,10 +45,10 @@
         },
         "/boot": {
             "lvm": false,
-            "device_wwid": "/dev/mapper/360a9800050334c33424b41762d726954p1",
+            "device_wwid": "/dev/mapper/360a98000383034384c5d4f4352343763p1",
             "size": "1024",
             "fstype": "ext4",
-            "device_alias": "/dev/mapper/360a9800050334c33424b41762d726954p1"
+            "device_alias": "/dev/mapper/360a98000383034384c5d4f4352343763p1"
         },
         "/thin_data": {
             "name": "thin_data",
@@ -59,7 +59,7 @@
             "grow": true,
             "size": "5000"
         },
-        "bootdevice": "/dev/mapper/360a9800050334c33424b41762d726954"
+        "bootdevice": "/dev/mapper/360a98000383034384c5d4f4352343763"
     },
     "network": {
         "vlan": {
