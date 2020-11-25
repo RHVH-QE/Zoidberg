@@ -761,7 +761,7 @@ class CheckPoints(object):
             return False
         log.info('The result of "%s" is %s', cmd, ret[1])
         #if "vdsm" in ret[1] and "kvm" in ret[1]:
-        if "ovirtimg" in ret[1] and "root" in ret[1]:
+        if "ovirtimg" in ret[1] and "root" not in ret[1]:
             ret02 = True
         else:
             ret02 = False

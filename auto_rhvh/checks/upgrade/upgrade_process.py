@@ -3,6 +3,7 @@ import requests
 import os
 import time
 import re
+import paramiko
 from fabric.api import settings, run
 import consts_upgrade as CONST
 from ..helpers import CheckComm
@@ -260,23 +261,42 @@ class UpgradeProcess(CheckPoints):
         self._disk_size = CONST.DISK_INFO.get("size")
         log.info("Getting disk size finished.")
 
-    def _get_host_ip(self, is_vlan):
+    def _get_host_ip(self, is_vlan, is_bond):
         log.info("Get host ip...")
 
-        if not is_vlan:
+        if is_bond:
+            # print network info
+            cmd_ip = "ip a s"
+            ret_ip = self._remotecmd.run_cmd(cmd_ip, timeout=CONST.FABRIC_TIMEOUT)
+            log.info('The bond ip info of "%s" is %s', cmd_ip, ret_ip[1])
+
+            # get bond ip
+            cmd = "ip a s | grep -A 5 bond0: | grep 'inet 10.' | awk '{print $2}' | awk -F '/' '{print $1}'"
+            ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+            if not ret[0]:
+                return
+            self._host_ip = ret[1]
+
+        ''' if not is_vlan:
             self._host_ip = self._host_string
-        else:
+        else: '''
+
+        if is_vlan:
             # ifup p1p1.50, bond0.50 and slaves, due to one bug 1475728 in rhvh 4.1 #
             cmd1 = "nmcli connection up id enp6s0f0" #"ifup p1p1"
             cmd2 = "nmcli connection up id enp6s0f0.50" #"ifup p1p1.50"
             cmd3 = "nmcli connection up id enp6s0f1" #"ifup p1p2"
-            cmd4 = "nmcli connection up id 'VLAN connection bond0.50'" #"ifup bond0.50"
-
+            
+            vlan_name="bond0.50"
+            if '-4.4.0' in self._source_build or '-4.4.1' in self._source_build:
+                vlan_name = "VLAN connection bond0.50"
+            cmd4 = "nmcli connection up id '{vlan_name}'".format(vlan_name=vlan_name) #"ifup bond0.50"
+            
             ret1 = self._remotecmd.run_cmd(cmd1, timeout=CONST.FABRIC_TIMEOUT)
             ret2 = self._remotecmd.run_cmd(cmd2, timeout=CONST.FABRIC_TIMEOUT)
             ret3 = self._remotecmd.run_cmd(cmd3, timeout=CONST.FABRIC_TIMEOUT)
             ret4 = self._remotecmd.run_cmd(cmd4, timeout=CONST.FABRIC_TIMEOUT)
-            time.sleep(30)
+            time.sleep(60)
 
             cmd5 = "ip a s"
             ret5 = self._remotecmd.run_cmd(cmd5, timeout=CONST.FABRIC_TIMEOUT)
@@ -295,6 +315,9 @@ class UpgradeProcess(CheckPoints):
             if not ret[0]:
                 return
             self._host_vlanid = ret[1]
+
+        if not is_vlan and not is_bond:
+            self._host_ip = self._host_string
 
         log.info("Get host ip finished.")
 
@@ -392,7 +415,87 @@ class UpgradeProcess(CheckPoints):
         log.info("Delete the default vlan route finished.")
         return True
 
-    def _add_host_to_rhvm(self, is_vlan=False):
+    def _add_host_route_for_rhvm(self):
+        log.info("Start to add host route from rhvm to host...")
+        
+        # get rhvh fqdn
+        self._get_rhvm_fqdn()
+        if not self._rhvm_fqdn:
+            return False
+        fqdn = self._rhvm_fqdn
+
+        # get rhvm's ip
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(fqdn, username="root", port=22, password="redhat")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "ip -f inet addr show | grep 'inet 10.' | awk '{print $2}'| awk -F '/' '{print $1}'")
+
+        rhvm_ip = ssh_stdout.read()
+        rhvm_ip = rhvm_ip.strip().replace('\n', '').replace('\r', '').strip()
+        log.info("The IP of rhvm is %s", rhvm_ip)
+        ssh.close()
+
+        # get the default pubilc route and the gaetway of host
+        cmd = "ip route | grep --color=never default | head -1"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Get default pub route failed.")
+            return False
+        log.info('The default pub route is "%s"', ret[1])
+        host_gateway = ret[1].split()[2]
+
+        # add host route for rhvm
+        cmd = "ip route add {rhvm_ip} via {host_gateway} dev bond0".format(rhvm_ip=rhvm_ip, host_gateway=host_gateway)
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Add %s to route table failed.", rhvm_ip)
+            return False
+        time.sleep(10)
+
+        cmd = "ip route"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Add %s to route table failed.", rhvm_ip)
+            return False
+        log.info("The result of %s is %s", cmd, ret)
+        time.sleep(10)
+
+        log.info("Add rhvm %s host route finished.", rhvm_ip)
+
+        return True
+    
+    def _add_host_route_for_repo(self):
+        log.info("Start to add host route for the repo...")
+
+        # get the gateway in public route
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(self._host_ip, username="root", port=22, password="redhat")
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("ip route | grep --color=never default | head -1")
+
+        gateway = ssh_stdout.read()
+        host_gateway = gateway.split()[2]
+        log.info("The gateway of host is %s", host_gateway)
+        time.sleep(10)
+
+        # add host route for the repo
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "ip route add 10.66.10.22 via {host_gateway} dev ovirtmgmt".format(host_gateway=host_gateway))
+        time.sleep(10)
+        
+        # check ip route after adding the host route
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("ip route")
+        route = ssh_stdout.read()
+        log.info("After adding host route, the route is: %s", route)
+
+        # close the ssh connection
+        ssh.close()
+
+        log.info("Add host route for repo %s finished.", "10.66.10.22")
+        return True
+    
+    def _add_host_to_rhvm(self, is_vlan=False, is_bond=False):
         log.info("Add host to rhvm...")
         # get rhvm fqdn
         self._get_rhvm_fqdn()
@@ -401,7 +504,7 @@ class UpgradeProcess(CheckPoints):
         # generate data center name, cluster name, host name
         self._gen_name()
         # get host ip, vlanid
-        self._get_host_ip(is_vlan)
+        self._get_host_ip(is_vlan, is_bond)
         if not self._host_ip:
             return False
         if is_vlan and not self._host_vlanid:
@@ -781,6 +884,23 @@ class UpgradeProcess(CheckPoints):
             return False
         return True
 
+
+    def _bug_1837864_workaround_441_to_442_only(self):
+        time.sleep(20)
+        cmd = "sed -i '/^filter = /s/^filter = /#filter = /' /etc/lvm/lvm.conf"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Delete lvm filter failed.")
+            return False
+        log.info("Successfully deleted lvm filter.")
+        time.sleep(20)
+
+        cmd = "sed -n '/^#filter = /p' /etc/lvm/lvm.conf"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        log.info("The commented lvm filter is: %s", ret[1])
+        
+        return True
+    
     #The following are functions related to test process control
     def yum_update_process(self):
         log.info("Start to upgrade rhvh via yum update cmd...")
@@ -820,6 +940,8 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._check_host_status_on_rhvm():
             return False
+        # if not self._bug_1837864_workaround_441_to_442_only():#this workaround only for 4.4.1 upgrade to 4.4.2
+        #     return False
         if not self._check_cockpit_connection():
             return False
         if not self._install_rpms():
@@ -847,6 +969,8 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._check_host_status_on_rhvm():
             return False
+        # if not self._bug_1837864_workaround_441_to_442_only():#this workaround only for 4.4.1 upgrade to 4.4.2
+        #     return False
         if not self._check_cockpit_connection():
             return False
         if not self._rhvm_upgrade():
@@ -929,6 +1053,27 @@ class UpgradeProcess(CheckPoints):
             return False
 
         log.info("Upgrade iscsi rhvh via rhvm finished.")
+        return True
+
+    def rhvm_update_bond_process(self):
+        log.info("Start to upgrade rhvh with bond via rhvm...")
+
+        if not self._put_repo_to_host():
+            return False
+        if not self._add_host_route_for_rhvm():
+            return False
+        if not self._add_host_to_rhvm(is_bond=True):
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._add_host_route_for_repo():
+            return False
+        if not self._rhvm_upgrade():
+            return False
+        if not self._enter_system(flag="auto")[0]:
+            return False
+
+        log.info("Upgrade rhvh with bond via rhvm finished.")
         return True
 
     def yum_update_vlan_process(self):

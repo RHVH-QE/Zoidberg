@@ -104,6 +104,8 @@ class CheckUpgrade(CheckComm):
                 ret = self._upgrade_process.yum_update_lack_space_process()
             elif "rhvm_iscsi" in self.ksfile:
                 ret = self._upgrade_process.rhvm_update_iscsi_process()
+            elif "rhvm_bond_iscsi" in self.ksfile:
+                ret = self._upgrade_process.rhvm_update_bond_process()
             elif "yum_vlan" in self.ksfile:
                 ret = self._upgrade_process.yum_update_vlan_process()
 
