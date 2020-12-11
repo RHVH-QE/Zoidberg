@@ -39,9 +39,9 @@ zerombr
 clearpart --all
 bootloader --location=mbr
 reqpart --add-boot
-part pv.01 --ondisk=/dev/disk/by-id/scsi-360a9800050334c33424b41762d726954 --size=1 --grow
-part pv.02 --ondisk=/dev/disk/by-id/scsi-360a9800050334c33424b41762d745551 --size=1 --grow
-part pv.03 --ondisk=/dev/disk/by-id/scsi-360a9800050334c33424b41762d736d45 --size=1 --grow
+part pv.01 --ondisk=/dev/disk/by-id/scsi-360a98000383034384c5d4f4352343763 --size=1 --grow
+part pv.02 --ondisk=/dev/disk/by-id/scsi-360a98000383034384c5d4f4352343761 --size=1 --grow
+part pv.03 --ondisk=/dev/disk/by-id/scsi-360a98000383034384c5d4f4352343765 --size=1 --grow
 volgroup rhvh pv.01 pv.02 pv.03 --reserved-percent=2
 logvol swap --fstype=swap --name=swap --vgname=rhvh --recommended
 logvol none --name=pool --vgname=rhvh --thinpool --size=300000 --grow

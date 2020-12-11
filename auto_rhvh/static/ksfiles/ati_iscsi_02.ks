@@ -40,11 +40,11 @@ ignoredisk --drives=/dev/disk/by-id/scsi-36b8ca3a0e7899a001dfd500516473f47
 zerombr
 clearpart --all
 bootloader --location=mbr
-part /boot --fstype=ext4 --ondisk=/dev/disk/by-id/scsi-360a9800050334c33424b41762d726954 --size=1024
-part swap --fstype=swap --ondisk=/dev/disk/by-id/scsi-360a9800050334c33424b41762d745551 --recommended
-part /std_data --fstype=xfs --ondisk=/dev/disk/by-id/scsi-360a9800050334c33424b41762d726954 --size=5000 --grow --maxsize=10000
-part pv.01 --ondisk=/dev/disk/by-id/scsi-360a9800050334c33424b41762d726954 --size=1 --grow
-part pv.02 --ondisk=/dev/disk/by-id/scsi-360a9800050334c33424b41762d736d45 --size=1 --grow
+part /boot --fstype=ext4 --ondisk=/dev/disk/by-id/scsi-360a98000383034384c5d4f4352343763 --size=1024
+part swap --fstype=swap --ondisk=/dev/disk/by-id/scsi-360a98000383034384c5d4f4352343761 --recommended
+part /std_data --fstype=xfs --ondisk=/dev/disk/by-id/scsi-360a98000383034384c5d4f4352343763 --size=5000 --grow --maxsize=10000
+part pv.01 --ondisk=/dev/disk/by-id/scsi-360a98000383034384c5d4f4352343763 --size=1 --grow
+part pv.02 --ondisk=/dev/disk/by-id/scsi-360a98000383034384c5d4f4352343765 --size=1 --grow
 volgroup rhvh pv.01 pv.02 --reserved-percent=2
 logvol /lv_data --fstype=xfs --name=lv_data --vgname=rhvh --size=5000 --grow --maxsize=10000
 logvol none --name=pool --vgname=rhvh --thinpool --size=200000 --grow
