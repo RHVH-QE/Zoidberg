@@ -101,7 +101,7 @@ SED_COVERGE = """sed -i '/^imgbase/c\\
 
 NOPXE_URL = "http://lab-01.rhts.eng.pek2.redhat.com:8000/nopxe/{0}"
 
-CB_API = "http://10.73.60.74/cobbler_api"
+CB_API = "http://10.73.62.31/cobbler_api"
 CB_CREDENTIAL = ('cobbler', 'cobbler')
 CB_PROFILE = CFGS['cb_profile']
 ARGS_TPL = ('inst.ks=http://{srv_ip}:{srv_port}/static/auto/{ks_file} '
