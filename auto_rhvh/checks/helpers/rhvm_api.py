@@ -395,7 +395,7 @@ class RhevmAction:
             raise RuntimeError(
                 "Host %s events doesn't exist, no need to delete." % host_name)
 
-    def upgrade_host(self, host_name):
+    def upgrade_host(self, host_name, engine_version):
         api_url_base = self.api_url.format(
             rhevm_fqdn=self.rhevm_fqdn, item="hosts")
         host = self.list_host(key="name", value=host_name)
@@ -427,8 +427,11 @@ class RhevmAction:
             # check upgrade status
             description = 'Host {} upgrade was completed successfully'.format(
                 host_name)
+            if engine_version == "4.3":
+                description = 'Upgrade was successful and host {} will be rebooted'.format(host_name)
+
             count = 0
-            while (count < 4):
+            while (count < 8):
                 sleep(300)
                 if self.get_host_event_by_des(host_name, description):
                     log.info(description)

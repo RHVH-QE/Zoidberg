@@ -25,6 +25,7 @@ RHVM_DATA_MAP = {
     "4.1_rhvm_fqdn": "vm-198-141.lab.eng.pek2.redhat.com",
     #"4.2_rhvm_fqdn": "bootp-73-199-145.lab.eng.pek2.redhat.com",
     "4.2_rhvm_fqdn": "bootp-73-199-109.lab.eng.pek2.redhat.com",
+    "4.3_rhvm_fqdn": "vm-198-184.lab.eng.pek2.redhat.com",
 }
 
 #upgrade from rhvh4.2 to latest rhvh4.2.x, services only on the old layer but not on the new layer

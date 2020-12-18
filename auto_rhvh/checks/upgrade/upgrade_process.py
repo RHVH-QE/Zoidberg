@@ -203,10 +203,15 @@ class UpgradeProcess(CheckPoints):
         cmd = 'lscpu | grep "Model name"'
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if ret[0]:
-            if "AMD" in ret[1]:
-                cpu_type = "AMD Opteron G1"
+            if "AMD EPYC" in ret[1]:
+                cpu_type = "AMD EPYC"
+            elif "AMD" in ret[1]:
+                cpu_type = "AMD Opteron G5"
             elif "Intel" in ret[1]:
-                cpu_type = "Intel Conroe Family"
+                if '-4.3.' in self._source_build:
+                    cpu_type = "Intel Nehalem Family"
+                else:
+                    cpu_type = "Intel Conroe Family" 
             else:
                 cpu_type = None
         else:
@@ -222,8 +227,10 @@ class UpgradeProcess(CheckPoints):
             key = "4.1_rhvm_fqdn"
         elif '-4.2-' in self._source_build:
             key = "4.2_rhvm_fqdn"
+        elif '-4.3.' in self._source_build:
+            key = "4.3_rhvm_fqdn"
         else:
-            log.error("The version of host src build is not 4.0 or 4.1 or 4.2")
+            log.error("The version of host src build is not 4.0 or 4.1 or 4.2 or 4.3.x")
             return
         self._rhvm_fqdn = CONST.RHVM_DATA_MAP.get(key)
         log.info("Get rhvm fqdn finished.")
@@ -468,8 +475,12 @@ class UpgradeProcess(CheckPoints):
     def _rhvm_upgrade(self):
         log.info("Run rhvm upgrade, please wait...")
 
+        engine_version = "4.2"
+        if '-4.3.' in self._source_build:
+            engine_version = "4.3"
+
         try:
-            self._rhvm.upgrade_host(self._host_name)
+            self._rhvm.upgrade_host(self._host_name, engine_version)
         except Exception as e:
             log.error(e)
             return False
