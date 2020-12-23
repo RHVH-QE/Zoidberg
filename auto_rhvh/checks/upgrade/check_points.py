@@ -46,6 +46,7 @@ class CheckPoints(object):
         self._sd_name = None
         self._vm_name = None
         self._disk_size = None
+        self._lvm_filter = {}
 
     @property
     def remotecmd(self):
@@ -624,6 +625,28 @@ class CheckPoints(object):
         log.info('The result of "%s" is "%s"', cmd, ret[1])
         return True
 
+    def _get_lvm_filter(self, flag):
+        cmd_filter = "lvm dumpconfig devices/filter"
+        ret_filter = self._remotecmd.run_cmd(cmd_filter, timeout=CONST.FABRIC_TIMEOUT)
+
+        if ret_filter[0]:
+            self._lvm_filter[flag] = ret_filter[1]
+            log.info("The LVM filter is: %s ", self._lvm_filter)
+            return True
+        else:
+            log.info("Get LVM filter failed.")
+            return False
+    
+    def _check_lvm_filter(self):
+        old_lvm = self._lvm_filter.get("old")
+        new_lvm = self._lvm_filter.get("new")
+        if old_lvm == new_lvm:
+            log.info('LVM filter is persisted.')
+            return True
+        else:
+            log.error('LVM filter is not persisted. The LVM filter is "%s", but after upgrade, it is "%s"', old_lvm, new_lvm)
+            return False
+        
     def _check_iptables_status(self):
         log.info("Start to check iptables status.")
 
@@ -701,6 +724,16 @@ class CheckPoints(object):
         cmd = "rpm -qa | egrep 'ntp-|chrony-' --color=never" 
         '''
 
+        cmd = "systemctl status chronyd | grep 'active (running)' --color=never"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        log.info('The result of "%s" is %s', cmd, ret[1])
+        if "active (running)" in ret[1]:
+            log.info('chronyd is active.')
+            ret_01 = True
+        else:
+            log.info('chronyd is not active.')
+            ret_01 = False
+
         cmd = "rpm -qa | egrep 'chrony-' --color=never"
         ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0]:
@@ -712,7 +745,7 @@ class CheckPoints(object):
         else:
             ret_02 = False
 
-        return ret_02
+        return ret_01 and ret_02
 
     def _check_sysstat(self):
         log.info("Start to check sysstat collect data.")
@@ -1039,7 +1072,10 @@ class CheckPoints(object):
         if "-4.0-" in self._source_build:
             raise RuntimeError("The source build is 4.0, no need to check userspace service status.")
         return self._check_userspace_service_status()
-        
+
+    def lvm_configuration_check(self):
+        return True
+
     def vms_boot_check(self):
         # Check imgbase w, imgbase layout, cockpit connection
         ck01 = self._check_imgbase_w()

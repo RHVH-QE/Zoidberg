@@ -1,10 +1,10 @@
-### KS for upgrade lack space test on dell-pet105-01
+### KS for upgrade yum update test on DELL_PER7425_03
 
 ### Language ###
 lang en_US.UTF-8
 
 ### Timezone ###
-timezone Asia/Shanghai
+timezone Asia/Shanghai --utc --ntpservers=clock02.util.phx2.redhat.com
 
 ### Keyboard ###
 keyboard --vckeymap=us --xlayouts='us'
@@ -35,13 +35,7 @@ network --device=eno1 --bootproto=dhcp
 zerombr
 clearpart --all
 bootloader --location=mbr
-part /boot --fstype=ext4 --size=1024
-part pv.01 --size=60000
-volgroup rhvh pv.01
-logvol swap --fstype=swap --name=swap --vgname=rhvh --size=8000
-logvol none --name=pool --vgname=rhvh --thinpool --size=40000
-logvol / --fstype=ext4 --name=root --vgname=rhvh --thin --poolname=pool --size=7000
-logvol /var --fstype=ext4 --name=var --vgname=rhvh --thin --poolname=pool --size=15360
+autopart --type=thinp
 
 ### Pre deal ###
 

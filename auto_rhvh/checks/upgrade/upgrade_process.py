@@ -174,6 +174,32 @@ class UpgradeProcess(CheckPoints):
 
         return True
 
+    def _config_lvm_filter(self):
+        log.info("Start to config lvm filter...")
+        
+        #setup the LVM filter
+        cmd_conf_filter = "vdsm-tool config-lvm-filter"
+        ret_conf_filter = self._remotecmd.run_cmd(cmd_conf_filter, timeout=CONST.FABRIC_TIMEOUT)
+        
+        if ret_conf_filter[0]:
+            if "Configure LVM filter? [yes,NO]" in ret_conf_filter[1]:
+                cmd_confirm = "yes"
+                ret_confirm = self._remotecmd.run_cmd(cmd_confirm, timeout=CONST.FABRIC_TIMEOUT)
+
+                if ret_confirm[0] and "Please reboot to verify the LVM configuration" in ret_confirm[1]:
+                    log.info("Setup lvm filter successful. Will reboot the system.")
+                    return True
+                else:
+                    log.error("The result of command: %s is: %s", cmd_confirm, ret_confirm[1])
+                    return False
+                
+            if "LVM filter is already configured for Vdsm" in ret_conf_filter[1]:
+                log.info("LVM filter is configed. Will reboot the system.")
+                return True
+        else:
+            log.error("Setup lvm filter failed. The result of command: %s is: %s", cmd_conf_filter, ret_conf_filter[1])
+            return False
+    
     def _set_locale_on_host(self):
         log.info("Set host to a locale that uses commas for decimals...")
 
@@ -631,7 +657,7 @@ class UpgradeProcess(CheckPoints):
         log.info("Start to fill up space...")
 
         cmd = "dd if=/dev/urandom of=/test.img bs=1M count=4200"
-        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.ENTER_SYSTEM_TIMEOUT)
+        ret = self._remotecmd.run_cmd(cmd, timeout=5*CONST.ENTER_SYSTEM_TIMEOUT)
 
         log.info("Already fill up space, %s...", ret[1])
         return True
@@ -1019,6 +1045,39 @@ class UpgradeProcess(CheckPoints):
         log.info("Add VMs and upgrade rhvh via rhvm finished.")
         return True
 
+    def rhvm_upgrade_config_and_reboot_process(self):
+        log.info("Start to upgrade rhvh via rhvm...")
+
+        if not self._add_10_route():
+            return False
+        if not self._put_repo_to_host():
+            return False
+        if not self._config_lvm_filter():
+            return False
+        if not self._enter_system()[0]:
+            return False
+        if not self._get_lvm_filter('old'):
+            return False
+        if not self._add_host_to_rhvm():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._check_cockpit_connection():
+            return False
+        if not self._rhvm_upgrade():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._enter_system(flag="auto")[0]:
+            return False
+        if not self._get_lvm_filter('new'):
+            return False
+        if not self._check_lvm_filter():
+            return False
+
+        log.info("Upgrade rhvh via rhvm finished.")
+        return True
+    
     def yum_update_lack_space_process(self):
         if "-4.0-" in self._source_build:
             raise RuntimeError(
