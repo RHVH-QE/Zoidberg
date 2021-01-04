@@ -428,12 +428,18 @@ class RhevmAction:
             # description = 'Host {} upgrade was completed successfully'.format(
             #     host_name)
             description = 'Upgrade was successful and host {} will be rebooted'.format(host_name)
+            description_err = 'Failed to upgrade Host {}'.format(host_name)
             count = 0
             while (count < 8):
                 sleep(300)
                 if self.get_host_event_by_des(host_name, description):
                     log.info(description)
                     break
+
+                if self.get_host_event_by_des(host_name, description_err):
+                    log.info(description_err)
+                    raise RuntimeError("Upgrade host %s failed." % host_name)
+                
                 count = count + 1
             else:
                 raise RuntimeError("Upgrade host %s failed." % host_name)

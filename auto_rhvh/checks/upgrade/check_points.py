@@ -118,6 +118,25 @@ class CheckPoints(object):
         log.info("Host is up on rhvm.")
         return True
 
+    def _check_failed_status_on_rhvm(self):
+        if not self._host_name:
+            return True
+
+        log.info("Check host status on rhvm.")
+
+        count = 0
+        while (count < CONST.CHK_HOST_ON_RHVM_STAT_MAXCOUNT):
+            host = self._rhvm.list_host(key="name", value=self._host_name)
+            if host and host.get('status') == 'install_failed':
+                break
+            count = count + 1
+            time.sleep(CONST.CHK_HOST_ON_RHVM_STAT_INTERVAL)
+        else:
+            log.error("Host status is not 'InstallFailed' on rhvm.")
+            return False
+        log.info("Host status is 'InstallFailed' on rhvm.")
+        return True
+
     def _enter_system(self, flag="manual"):
         log.info("Reboot and log into system...")
 
@@ -265,6 +284,34 @@ class CheckPoints(object):
             log.info("%s is wrong", flag)
 
         log.info('Collect %s build services status on host finished', flag)
+        return True
+
+    def _add_lvm_to_host(self):
+        log.info("Add logic volume to host...")
+
+        lv_name = CONST.LVM_INFO.get("lv_name_of_destination_build")
+        
+        cmd_lvs = "lvs | grep home"
+        ret_lvs = self._remotecmd.run_cmd(cmd_lvs, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_lvs[0]:
+            log.error("Failed to get logic volume.")
+            return False
+        vg_name = ret_lvs[1].split()[1]
+        pool_name = ret_lvs[1].split()[4]
+        
+        cmd = "lvcreate -V 2G --thin -n {lv_name} {vg_name}/{pool_name}".format(
+            lv_name=lv_name, vg_name=vg_name, pool_name=pool_name)
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to create logic volume %s", lv_name)
+            return False
+
+        cmd_lvs = "lvs"
+        ret_lvs = self._remotecmd.run_cmd(cmd_lvs, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_lvs[0]:
+            return False
+
+        log.info("Create logic volume finished, the result is: %s.", ret_lvs[1])
         return True
 
     ##########################################
@@ -1365,3 +1412,42 @@ class CheckPoints(object):
         else:
             log.error("Port 16514 status is %s.", ret[1])
             return False
+
+    def upgrade_failed_check(self):
+        # It has been completed in rhvm_failed_upgrade_process, 
+        # whether an upgrade failed event occurs in RHVM.
+        return True
+
+    def placeholder_check(self):
+        lv_name = CONST.LVM_INFO.get("lv_name_of_destination_build")     
+
+        old_placeholder_ver = self._check_infos.get("old").get("update_ver")
+        new_placeholder_ver = self._check_infos.get("new").get("update_ver")
+
+        log.info("Check placeholder ver:\n  old_ver=%s\n  new_ver=%s",
+                 old_placeholder_ver, new_placeholder_ver)
+
+        # if the new ver equals to the old ver, the case should pass
+        if old_placeholder_ver == new_placeholder_ver:
+            log.info("The new image-update-placeholder rpm was not installed. %s", new_placeholder_ver)
+            return True
+
+        # if the new ver is installed, the case should failed
+        old_ver_str = old_placeholder_ver.split('placeholder-')[1].split('.el')[0]
+        if "-" in old_ver_str:
+            old_ver_str = old_ver_str.replace("-",".")
+        # new_ver_str = new_placeholder_ver.split('update-')[1].split('.el')[0]
+        # if "-" in new_ver_str:
+        #     new_ver_nums = new_ver_str.replace("-",".")
+        
+        old_ver_nums = old_ver_str.split('.')
+        #new_ver_nums = new_ver_str.split('.')
+        new_ver_nums = new_placeholder_ver.split('update-')[1].split('-')[0].split('.')
+        
+        for i in range(len(new_ver_nums)):
+            if int(new_ver_nums[i]) > int(old_ver_nums[i]):
+                log.error("The new image-update-placeholder rpm '%' was installed.", new_placeholder_ver)
+                return False
+       
+        log.error("The image-update-placeholder rpm was changed.")
+        return False

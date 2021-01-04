@@ -49,4 +49,6 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-24036": ('atu_rhvm_iscsi.ks', DELL_PER515_01, 'update_again_unavailable_check'),
     ## "RHEVM-24036": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'update_again_unavailable_check'),
     "RHEVM-23986": ('atu_rhvm_bond_iscsi.ks', DELL_PER515_01, 'basic_upgrade_check'),
+    "RHEVM-27050": ('atu_rhvm_failed_upgrade.ks', DELL_PER7425_03, 'upgrade_failed_check'),
+    "RHEVM-27534": ('atu_rhvm_failed_upgrade.ks', DELL_PER7425_03, 'placeholder_check'),
 }
