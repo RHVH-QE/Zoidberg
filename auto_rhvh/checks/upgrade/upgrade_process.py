@@ -38,6 +38,14 @@ class UpgradeProcess(CheckPoints):
                                      self._update_var_log_file_name),
             timeout=CONST.FABRIC_TIMEOUT)
 
+        # RHEVM-27458
+        ret5 = self._remotecmd.run_cmd(
+            "mkdir /etc/upgrade_test_dir", timeout=CONST.FABRIC_TIMEOUT)
+        time.sleep(3)
+        ret6 = self._remotecmd.run_cmd(
+            "echo '{}' > {}".format(self._add_dir_file_content,
+             self._add_dir_file_name), timeout=CONST.FABRIC_TIMEOUT)
+
         log.info("Add and update files on host finished.")
         return ret1[0] and ret2[0] and ret3[0] and ret4[0]
 
@@ -302,7 +310,8 @@ class UpgradeProcess(CheckPoints):
             if not ret[0]:
                 return
             self._host_ip = ret[1]
-
+            log.info("The host ip is: %s", self._host_ip)
+            
         ''' if not is_vlan:
             self._host_ip = self._host_string
         else: '''
@@ -322,7 +331,7 @@ class UpgradeProcess(CheckPoints):
             ret2 = self._remotecmd.run_cmd(cmd2, timeout=CONST.FABRIC_TIMEOUT)
             ret3 = self._remotecmd.run_cmd(cmd3, timeout=CONST.FABRIC_TIMEOUT)
             ret4 = self._remotecmd.run_cmd(cmd4, timeout=CONST.FABRIC_TIMEOUT)
-            time.sleep(60)
+            time.sleep(3)
 
             cmd5 = "ip a s"
             ret5 = self._remotecmd.run_cmd(cmd5, timeout=CONST.FABRIC_TIMEOUT)
@@ -334,16 +343,20 @@ class UpgradeProcess(CheckPoints):
             if not ret[0]:
                 return
             self._host_ip = ret[1]
+            log.info("The host ip is: %s", self._host_ip)
 
             # get vlan id:
-            cmd = """grep VLAN_ID /etc/sysconfig/network-scripts/* | awk -F '=' '{print $2}' | awk -F '"' '{print $2}'"""
+            #cmd = """grep VLAN_ID /etc/sysconfig/network-scripts/* | awk -F '=' '{print $2}' | awk -F '"' '{print $2}'"""
+            cmd = "grep VLAN_ID /etc/sysconfig/network-scripts/* | awk -F '=' '{print $2}'"
             ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
             if not ret[0]:
                 return
             self._host_vlanid = ret[1]
-
+            log.info("The vlan id is: %s", self._host_vlanid)
+            
         if not is_vlan and not is_bond:
             self._host_ip = self._host_string
+            log.info("The host ip is: %s", self._host_ip)
 
         log.info("Get host ip finished.")
 
@@ -1102,6 +1115,37 @@ class UpgradeProcess(CheckPoints):
         log.info("Upgrade rhvh via rhvm finished.")
         return True
     
+    def rhvm_bond_vlan_upgrade_process(self):
+        log.info("Start to upgrade rhvh via rhvm...")
+
+        if not self._add_10_route():
+            return False
+        if not self._put_repo_to_host():
+            return False
+        if not self._edit_grubenv_file():
+            return False
+        if not self._get_openvswitch_permissions('old'):
+            return False
+        if not self._add_host_to_rhvm(is_vlan=True):
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._check_cockpit_connection():
+            return False
+        if not self._rhvm_upgrade():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._enter_system(flag="auto")[0]:
+            return False
+        if not self._get_openvswitch_permissions('new'):
+            return False
+        if not self._openvswitch_check():
+            return False
+
+        log.info("Upgade rhvh via rhvm finished.")
+        return True
+   
     def yum_update_lack_space_process(self):
         if "-4.0-" in self._source_build:
             raise RuntimeError(

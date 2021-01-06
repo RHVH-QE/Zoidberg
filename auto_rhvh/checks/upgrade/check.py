@@ -104,6 +104,8 @@ class CheckUpgrade(CheckComm):
                 ret = self._upgrade_process.rhvm_upgrade_config_and_reboot_process()
             elif "rhvm_failed_upgrade" in self.ksfile:
                 ret = self._upgrade_process.rhvm_failed_upgrade_process()
+            elif "rhvm_bond_vlan_upgrade" in self.ksfile:
+                ret = self._upgrade_process.rhvm_bond_vlan_upgrade_process()
             elif "lack_space" in self.ksfile:
                 ret = self._upgrade_process.yum_update_lack_space_process()
             elif "rhvm_iscsi" in self.ksfile:

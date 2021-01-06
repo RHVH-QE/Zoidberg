@@ -22,6 +22,8 @@ class CheckPoints(object):
         self._update_file_content = "# test"
         self._add_var_file_name = "/var/upgrade_test_var"
         self._update_var_log_file_name = "/var/log/maillog"
+        self._add_dir_file_name = "/etc/upgrade_test_dir/upgrade_test"
+        self._add_dir_file_content = "RHVH upgrade test"
         self._kernel_space_rpm = None
         self._user_space_rpms_set = None
         self._rhvm = None
@@ -47,6 +49,7 @@ class CheckPoints(object):
         self._vm_name = None
         self._disk_size = None
         self._lvm_filter = {}
+        self._openvswitch_permission = {}
 
     @property
     def remotecmd(self):
@@ -694,6 +697,31 @@ class CheckPoints(object):
             log.error('LVM filter is not persisted. The LVM filter is "%s", but after upgrade, it is "%s"', old_lvm, new_lvm)
             return False
         
+    def _edit_grubenv_file(self):
+        log.info("Start to edit grubenv...")
+
+        # Delete the padding character in the last line of grubenv
+        cmd = "sed -i '$d' /boot/grub2/grubenv"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error('Delete the padding character of grubenv failed. The result of "%s" is "%s"',cmd, ret[1])
+            return False
+
+        time.sleep(3)        
+        cmd_check = "ls -al /boot/grub2/grubenv"
+        ret_check = self._remotecmd.run_cmd(cmd_check, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_check[0]:
+            log.error('Check grubenv failed. The result of "%s" is "%s"',cmd_check, ret_check[1])
+            return False
+        
+        size = int(ret_check[1].split()[4])
+        if size >= 1024:
+            log.error('Edit grubenv failed. The size of grubenv is "%s"',size)
+            return False
+            
+        log.info('Edit grubenv successful. The result of "%s" is "%s"',cmd_check, ret_check[1])
+        return True
+                
     def _check_iptables_status(self):
         log.info("Start to check iptables status.")
 
@@ -1121,6 +1149,8 @@ class CheckPoints(object):
         return self._check_userspace_service_status()
 
     def lvm_configuration_check(self):
+        # The check has been completed in rhvm_upgrade_config_and_reboot_process
+        # Only when the check point is correct can enter this check process.
         return True
 
     def vms_boot_check(self):
@@ -1195,7 +1225,12 @@ class CheckPoints(object):
             self._update_var_log_file_name, [self._update_file_content],
             timeout=CONST.FABRIC_TIMEOUT)
 
-        return ck01 and ck02 and ck03 and ck04
+        # RHEVM-27458
+        ck05 = self._remotecmd.check_strs_in_file(
+            self._add_dir_file_name, [self._add_dir_file_content],
+            timeout=CONST.FABRIC_TIMEOUT)
+
+        return ck01 and ck02 and ck03 and ck04 and ck05
 
     def reinstall_rpm_check(self):
         if "-4.0-" in self._source_build:
@@ -1416,6 +1451,7 @@ class CheckPoints(object):
     def upgrade_failed_check(self):
         # It has been completed in rhvm_failed_upgrade_process, 
         # whether an upgrade failed event occurs in RHVM.
+        # Only when the check point is correct can enter this check process.
         return True
 
     def placeholder_check(self):
@@ -1451,3 +1487,65 @@ class CheckPoints(object):
        
         log.error("The image-update-placeholder rpm was changed.")
         return False
+
+    def grubenv_check(self):
+        ck01 = self._check_imgbase_w()
+        ck02 = self._check_imgbase_layout()
+
+        if ck01 and ck02:
+            cmd_check = "ls -al /boot/grub2/grubenv"
+            ret_check = self._remotecmd.run_cmd(cmd_check, timeout=CONST.FABRIC_TIMEOUT)
+            if not ret_check[0]:
+                log.error('Check grubenv failed. The result of "%s" is "%s"', cmd_check, ret_check[1])
+                return False
+        
+            size = int(ret_check[1].split()[4])
+            if size <= 1024:
+                log.info('After upgrade, the result of "%s" is "%s"', cmd_check, ret_check[1])
+                return True
+            return False
+        
+        log.error('Upgrade failed, check "imgbase w", "imgbase layout" failed')
+        return False
+
+    def _get_openvswitch_permissions(self, flag):
+        self._openvswitch_permission[flag] = {}
+        openvswitch_permission = self._openvswitch_permission[flag]
+
+        cmd = "ls -al /etc | grep openvswitch"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error('Check /etc failed. The result of "%s" is "%s"', cmd, ret[1])
+            return False
+        
+        user = ret[1].split()[2]
+        group = ret[1].split()[3]
+
+        openvswitch_permission['user'] = user
+        openvswitch_permission['group'] = group
+        
+        log.info("The openvswitch permissions are: %s, %s", user, group)
+        return True
+        
+    def _openvswitch_check(self):
+        old_user_permission = self._openvswitch_permission.get("old").get("user")
+        new_user_permission = self._openvswitch_permission.get("new").get("user")
+
+        old_group_permission = self._openvswitch_permission.get("old").get("group")
+        new_group_permission = self._openvswitch_permission.get("new").get("group")
+
+        if old_user_permission != new_user_permission:
+            log.error('The user permissions before and after upgrade are: %s, %s', old_user_permission, new_user_permission)
+            return False
+        
+        if old_group_permission != new_group_permission:
+            log.error('The user permissions before and after upgrade are:: %s, %s', old_group_permission, new_group_permission)
+            return False
+
+        log.info('After upgrade, openvswitch permissions are not changed.')
+        return True
+
+    def openvswitch_permission_check(self):
+        # The check has been completed in rhvm_bond_vlan_upgrade_process
+        # Only when the check point is correct can enter this check process.
+        return True
