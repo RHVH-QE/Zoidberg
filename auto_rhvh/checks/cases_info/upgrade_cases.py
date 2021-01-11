@@ -14,6 +14,7 @@ UPGRADE_TIER1_TESTCASE_MAP = {
     "RHEVM-24012": ('atu_yum_update.ks', DELL_PER7425_03, 'separate_volumes_check'),
     "RHEVM-24013": ('atu_yum_update.ks', DELL_PER7425_03, 'etc_var_file_update_check'),
     "RHEVM-27458": ('atu_yum_update.ks', DELL_PER7425_03, 'etc_var_file_update_check'),
+    "RHEVM-27295": ('atu_yum_ls_update.ks', DELL_PER7425_03, 'ls_update_failed_check'),
     "RHEVM-23980": ('atu_yum_install.ks', DELL_PER510_01, 'basic_upgrade_check'),
     "RHEVM-23991": ('atu_yum_install.ks', DELL_PER510_01, 'basic_upgrade_check'),
     "RHEVM-23999": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),

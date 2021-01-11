@@ -1549,3 +1549,15 @@ class CheckPoints(object):
         # The check has been completed in rhvm_bond_vlan_upgrade_process
         # Only when the check point is correct can enter this check process.
         return True
+
+    def ls_update_failed_check(self):
+        ret = self._remotecmd.run_cmd("cat /root/yum_upgrade.log", timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            return False
+        else:
+            if re.search('failed', ret[1], re.IGNORECASE) and re.search('Local storage domains were found on the same filesystem as /', ret[1], re.IGNORECASE):
+                log.info("Upgrade is blocked.")
+                return True
+            else:
+                log.error("Upgrade is not blocked.")
+                return False

@@ -25,7 +25,7 @@ RHVM_DATA_MAP = {
     "4.1_rhvm_fqdn": "vm-198-141.lab.eng.pek2.redhat.com",
     "4.2_rhvm_fqdn": "bootp-73-199-145.lab.eng.pek2.redhat.com",
     "4.3_rhvm_fqdn": "bootp-73-199-39.lab.eng.pek2.redhat.com",
-    "4.4_rhvm_fqdn": "bootp-73-199-230.lab.eng.pek2.redhat.com", 
+    "4.4_rhvm_fqdn": "vm-198-19.lab.eng.pek2.redhat.com", 
 }
 
 #Info for NFS to be used in Storage
@@ -36,6 +36,11 @@ NFS_INFO = {
     "iso_path": "/home/nfs-rhel-iso",
 }
 
+# Info for local storage
+LOCAL_STORAGE_INFO = {
+    "local_data_path": "/local-storage-test",
+}
+
 #Info for disk to be used in VMs
 DISK_INFO = {
     "size": "21474836480",
@@ -44,6 +49,6 @@ DISK_INFO = {
 # Info for LVM to be used in RHEVM-27050(tier2)
 # Modify this value according to the destination build, before running tier2 test case.
 LVM_INFO = {
-    "lv_name_of_destination_build": "rhvh-4.4.4.1-0.20201217.0+1",
+    "lv_name_of_destination_build": "rhvh-4.4.4.1-0.20210106.0+1",
 }
 

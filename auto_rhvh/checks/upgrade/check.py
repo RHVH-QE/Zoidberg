@@ -98,6 +98,8 @@ class CheckUpgrade(CheckComm):
                 ret = self._upgrade_process.yum_install_process()
             elif "rhvm_upgrade" in self.ksfile:
                 ret = self._upgrade_process.rhvm_upgrade_process()
+            elif "yum_ls_update" in self.ksfile:
+                ret = self._upgrade_process.yum_local_storage_update_process()
             elif "rhvm_vms_upgrade" in self.ksfile:
                 ret = self._upgrade_process.rhvm_upgrade_create_vms_process()
             elif "rhvm_config_upgrade" in self.ksfile:
@@ -115,14 +117,15 @@ class CheckUpgrade(CheckComm):
             elif "yum_vlan" in self.ksfile:
                 ret = self._upgrade_process.yum_update_vlan_process()
 
-            if "lack_space" not in self.ksfile and "rhvm_failed_upgrade" not in self.ksfile:
+            if "lack_space" not in self.ksfile and "rhvm_failed_upgrade" not in self.ksfile and "yum_ls_update" not in self.ksfile:
                 self._upgrade_process.upload_upgrade_log(self.log_path)
             
             if not ret:
                 raise RuntimeError("Failed to run upgrade.")
-
-            if not self._check_points._collect_infos('new'):
-                raise RuntimeError("Failed to collect new infos.")
+            
+            if "yum_ls_update" not in self.ksfile:
+                if not self._check_points._collect_infos('new'):
+                    raise RuntimeError("Failed to collect new infos.")
 
             cks = self.run_cases()
             

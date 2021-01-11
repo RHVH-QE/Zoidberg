@@ -534,7 +534,7 @@ class UpgradeProcess(CheckPoints):
         log.info("Add host route for repo %s finished.", "10.66.10.22")
         return True
     
-    def _add_host_to_rhvm(self, is_vlan=False, is_bond=False):
+    def _add_host_to_rhvm(self, is_vlan=False, is_bond=False, is_local=False):
         log.info("Add host to rhvm...")
         # get rhvm fqdn
         self._get_rhvm_fqdn()
@@ -565,7 +565,10 @@ class UpgradeProcess(CheckPoints):
             self._del_host_on_rhvm()
 
             log.info("Add datacenter %s", self._dc_name)
-            self._rhvm.add_datacenter(self._dc_name)
+            if is_local:
+                self._rhvm.add_datacenter(self._dc_name, is_local=True)
+            else:
+                self._rhvm.add_datacenter(self._dc_name)
 
             if is_vlan:
                 log.info("Update network with vlan %s", self._host_vlanid)
@@ -594,15 +597,22 @@ class UpgradeProcess(CheckPoints):
         while (count < 3):
             try:
                 if self._host_name:
-                    log.info("Try to remove host %s", self._host_name)
-                    self._rhvm.remove_host(self._host_name)
-                    self._rhvm.del_host_events(self._host_name)
+                    host = self._rhvm.list_host(key="name", value=self._host_name)
+                    if host and (host.get('status') == 'up' or host.get('status') == 'non_operational'):
+                        log.info("Try to maintenance host %s", self._host_name)
+                        self._rhvm.deactive_host(self._host_name)
+                        time.sleep(10)
 
                 existing_sd = self._rhvm.list_storage_domain(self._sd_name)
                 if self._sd_name and existing_sd:
                     log.info("Try to remove storage domain %s", self._sd_name)
                     self._destory_sd_after_test(self._sd_name, self._host_name)
 
+                if self._host_name:
+                    log.info("Try to remove host %s", self._host_name)
+                    self._rhvm.remove_host(self._host_name)
+                    self._rhvm.del_host_events(self._host_name)
+                
                 if self._cluster_name:
                     log.info("Try to remove cluster %s", self._cluster_name)
                     self._rhvm.remove_cluster(self._cluster_name)
@@ -749,6 +759,54 @@ class UpgradeProcess(CheckPoints):
 
             # Attach the sd to datacenter
             self._attach_sd_to_dc(sd_name, dc_name)
+        except Exception as e:
+            log.exception(e)
+            return False
+        return True
+
+    def _create_local_data_path(self, data_path):
+        log.info("Creating the local data path")
+        cmd = "test -r %s" % data_path
+        ret = self._remotecmd.run_cmd(cmd)
+        if not ret[0]:
+            cmd = "mkdir -p %s" % data_path
+            self._remotecmd.run_cmd(cmd)
+        else:
+            cmd = "rm -rf %s/*" % data_path
+            self._remotecmd.run_cmd(cmd)
+        cmd = "chmod 0755 %s" % data_path
+        ret = self._remotecmd.run_cmd(cmd)
+        if not ret[0]:
+            raise RuntimeError("Faile to chmod %s" % data_path)
+        cmd = "chown 36:36 %s" % data_path
+        ret = self._remotecmd.run_cmd(cmd)
+        if not ret[0]:
+            raise RuntimeError("Faile to chown %s" % data_path)
+
+    def _add_local_storage_domain(self, sd_name, data_path, host_name):
+        log.info("Creating the local storage domain")
+        self._rhvm.add_plain_storage_domain(
+            domain_name=sd_name,
+            domain_type='data',
+            storage_type='localfs',
+            storage_addr='',
+            storage_path=data_path,
+            host=host_name)
+        time.sleep(60)
+
+    def _create_local_storage_domain(self):
+        log.info("Create local storage domain and attach it...")
+        try:
+            host_name = self._host_name
+            sd_name = self._sd_name
+            dc_name = self._dc_name
+            
+            # Create local data directory
+            data_path = CONST.LOCAL_STORAGE_INFO.get("local_data_path")
+            self._create_local_data_path(data_path)
+
+            # Create local storage domain
+            self._add_local_storage_domain(sd_name, data_path, host_name)
         except Exception as e:
             log.exception(e)
             return False
@@ -1058,6 +1116,32 @@ class UpgradeProcess(CheckPoints):
         log.info("Add VMs and upgrade rhvh via rhvm finished.")
         return True
 
+    def yum_local_storage_update_process(self):
+        log.info("Start to add VMs on local storage, then upgrade rhvh via yum update cmd...")
+
+        if not self._add_10_route():
+            return False
+        if not self._put_repo_to_host():
+            return False
+        if not self._add_host_to_rhvm(is_local=True):
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._create_local_storage_domain():
+            return False
+        if not self._create_vms_with_disk():
+            return False
+        if not self._start_then_poweroff_vms():
+            return False
+        if not self._check_cockpit_connection():
+            return False
+        if self._yum_upgrade('update'):
+            log.error("Upgrade is not blocked.")
+            return False
+
+        log.info("Add VMs on local storage, then upgrade rhvh via yum update cmd finished.")
+        return True
+    
     def rhvm_upgrade_config_and_reboot_process(self):
         log.info("Start to upgrade rhvh via rhvm...")
 
