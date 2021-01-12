@@ -1561,3 +1561,27 @@ class CheckPoints(object):
             else:
                 log.error("Upgrade is not blocked.")
                 return False
+
+    def _check_imgbase_w_after_rollback(self):
+        old_imgbase_w = self._check_infos.get("old").get("imgbase_w")
+        new_imgbase_w = self._check_infos.get("new").get("imgbase_w")
+        old_ver = old_imgbase_w[-12:-4]
+        new_ver = new_imgbase_w[-12:-4]
+
+        log.info("Check imgbase w:\n  old_imgbase_w=%s\n  new_imgbase_w=%s",
+                 old_ver, new_ver)
+        
+        if new_ver != old_ver:
+            log.error("Rollback to the old layer, imgbase w changed.")
+            return False
+
+        log.info("Rollback to the old layer, imgbase w remains unchanged.")
+        return True
+    
+    def rollback_and_basic_check(self):
+        ck01 = self._check_imgbase_w_after_rollback()
+        ck02 = self._check_imgbase_layout()
+        ck03 = self._check_imgbased_ver()
+        ck04 = self._check_update_ver()
+
+        return ck01 and ck02 and ck03 and ck04

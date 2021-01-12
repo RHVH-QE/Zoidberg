@@ -664,6 +664,39 @@ class UpgradeProcess(CheckPoints):
         #But there is no activate API in rhvm_api
         return result
 
+    def _active_host(self):
+        log.info("Active host, please wait...")
+        try:
+            self._rhvm.active_host(self._host_name)
+        except Exception as e:
+            log.error(e)
+            return False
+
+        log.info("Active host finished.")
+        return True
+    
+    def _deactive_rollback_active(self):
+        # deactive the host
+        log.info("Maintain the host, then rollback.")
+        self._rhvm.deactive_host(self._host_name)
+
+        # rollback and reboot the host
+        cmd = "imgbase rollback"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            return False
+
+        ret = self._enter_system()
+        if not ret[0]:
+            return False
+
+        # active the host
+        log.info("Active the host after rollback.")
+        if not self._active_host():
+            return False
+
+        return True
+    
     def _rhvm_upgrade(self):
         log.info("Run rhvm upgrade, please wait...")
 
@@ -1310,4 +1343,36 @@ class UpgradeProcess(CheckPoints):
             return False
 
         log.info("Upgrading rhvh with vlan via yum update finished.")
+        return True
+
+    def yum_upgrade_and_rollback_process(self, yum_cmd=False):
+        log.info("Start to upgrade rhvh and then rollback...")
+
+        if not self._add_update_files():
+            return False
+        if not self._put_repo_to_host():
+            return False
+        if not self._add_host_to_rhvm():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        # upgrade from RHVM side or run `yum update`
+        if yum_cmd:    
+            if not self._yum_upgrade('update'):
+                return False
+            if not self._enter_system()[0]:
+                return False
+            if not self._active_host():
+                return False
+        else:
+            if not self._rhvm_upgrade():
+                return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._deactive_rollback_active():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        
+        log.info("Upgrading rhvh and rollback finished.")
         return True

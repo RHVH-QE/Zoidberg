@@ -116,6 +116,10 @@ class CheckUpgrade(CheckComm):
                 ret = self._upgrade_process.rhvm_update_bond_process()
             elif "yum_vlan" in self.ksfile:
                 ret = self._upgrade_process.yum_update_vlan_process()
+            elif "upgrade_and_rollback_01" in self.ksfile:
+                ret = self._upgrade_process.yum_upgrade_and_rollback_process(yum_cmd=True)
+            elif "upgrade_and_rollback_02" in self.ksfile:
+                ret = self._upgrade_process.yum_upgrade_and_rollback_process()
 
             if "lack_space" not in self.ksfile and "rhvm_failed_upgrade" not in self.ksfile and "yum_ls_update" not in self.ksfile:
                 self._upgrade_process.upload_upgrade_log(self.log_path)

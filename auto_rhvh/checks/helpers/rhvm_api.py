@@ -236,6 +236,23 @@ class RhevmAction:
             raise RuntimeError(ret['fault']['detail'])
         sleep(10)
 
+    def active_host(self, host_name):
+        api_url_base = self.api_url.format(
+            rhevm_fqdn=self.rhevm_fqdn, item='hosts')
+        host_id = self.list_host("name", host_name)['id']
+        api_url = api_url_base + "/%s/activate" % host_id
+
+        r = self.req.post(
+            api_url,
+            headers=self.headers,
+            verify=self.rhevm_cert,
+            data="<action/>")
+        ret = r.json()
+        print ret
+        if ret['status'] != 'complete':
+            raise RuntimeError(ret['fault']['detail'])
+        sleep(20)
+    
     def add_host(self, ip, host_name, password, cluster_name='Default'):
         api_url = self.api_url.format(rhevm_fqdn=self.rhevm_fqdn, item="hosts")
 
