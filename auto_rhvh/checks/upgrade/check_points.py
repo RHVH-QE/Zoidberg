@@ -240,6 +240,19 @@ class CheckPoints(object):
         log.info("Put repo file %s to host finished.", repo_file)
         return True
 
+    def _remove_repo_on_host(self):
+        log.info("Remove local repos for checking RHSM.")
+
+        cmd = "test -e {name} && mv {name} {name}.bak".format(
+            name="/etc/yum.repos.d/rhvh.repo")
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to remove rhvh.repo.")
+            return False
+
+        log.info("Remove rhvh.repo finished.")
+        return True
+    
     def _install_user_space_rpm(self):
         log.info("Start to install user space rpm...")
 
@@ -1585,3 +1598,155 @@ class CheckPoints(object):
         ck04 = self._check_update_ver()
 
         return ck01 and ck02 and ck03 and ck04
+
+    def _hostname_baseurl_check(self):
+        resstr = (
+            "hostname = subscription.rhsm.redhat.com\r\n"
+            "baseurl = https://cdn.redhat.com")
+
+        cmd = "grep -e '^hostname' -e '^baseurl' /etc/rhsm/rhsm.conf"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0] :
+            log.error('Get hostname and baseurl failed. The result of "%s" is "%s"', cmd, ret[1])
+            return False
+
+        if resstr in ret[1]:
+            log.info("Get hostname and baseurl successfully.")
+            return True
+        
+        log.error('Get hostname and baseurl failed.')
+        return False
+    
+    def _register_and_subscrib(self):
+        rhsm_username = CONST.RHSM_INFO.get("username")
+        rhsm_password = CONST.RHSM_INFO.get("password")
+        resstr1 = (
+            "Product Name: Red Hat Virtualization Host\r\n"
+            "Status:       Subscribed\r\n")
+        resstr2 = "This system is already registered. Use --force to override"
+
+        # register to RHSM
+        cmd = "subscription-manager register --username={} --password={} --auto-attach".format(rhsm_username, rhsm_password)
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0] or "error" in ret[1]:
+            log.error('Register to RHSM failed. The result of "%s" is "%s"', cmd, ret[1])
+            return False
+
+        if resstr1 in ret[1] or resstr2 in ret[1]:
+            log.info("Successfully subscribed to RHSM.")
+            return True
+        
+        log.error("RHSM subscription failed.")
+        return False
+        
+    def _repos_status_check(self):
+        cmd = "subscription-manager repos --disable=*"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error('Disable the repos failed. The result of "%s" is "%s"', cmd, ret[1])
+            return False
+                
+        cmd = "yum repolist all"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0] or "enabled" in ret[1]:
+            log.error('Not all repos are disabled. The result of "%s" is "%s"', cmd, ret[1])
+            return False
+        
+        log.info("All repos are disabled.")
+        return True
+
+    def _enable_repos(self):
+        cmd = "subscription-manager repos --enable=rhvh-4-for-rhel-8-x86_64-rpms"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error('Enable repos failed. The result of "%s" is "%s"', cmd, ret[1])
+            return False
+        
+        if ret[1] == "Repository 'rhvh-4-for-rhel-8-x86_64-rpms' is enabled for this system.":
+            log.info("Enable repos successfully.")
+            return True
+
+        log.error("Enable repos failed.")
+        return False
+    
+    def _gpgcheck_check(self):
+        cmd = "grep 'gpgcheck*' /etc/yum.repos.d/redhat.repo"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error('Grep gpgcheck from redhat.repo failed. The result of "%s" is "%s"', cmd, ret[1])
+            return False
+        
+        if "gpgcheck = 0" in ret[1]:
+            log.error('gpgcheck=1 not in all necessary repos. The result of "%s" is "%s"', cmd, ret[1])
+            return False
+
+        log.info("gpgcheck=1 in all necessary repos.")
+        return True
+
+    def _yum_info_check(self):
+        cmd ="yum info"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error('Run "yum info" failed. The result of "%s" is "%s"', cmd, ret[1])
+            return False
+        
+        if ret[1] != "":
+            log.info("yum info display successful.")
+            return True
+            
+        log.error('gpgcheck=1 not in all necessary repos. The result of "%s" is "%s"', cmd, ret[1])
+        return False
+
+    def _yum_list_updates(self):
+        cmd = "yum list updates"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error('Run "yum list updates" failed. The result of "%s" is "%s"', cmd, ret[1])
+            return False
+        
+        if "error" not in ret[1]:
+            log.info("yum list updates display successful.")
+            return True
+            
+        log.error('Run "yum list updates" failed. The result of "%s" is "%s"', cmd, ret[1])
+        return False
+
+    def _yum_clean_all(self):
+        cmd = "yum clean all"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error('Run "yum clean all" failed. The result of "%s" is "%s"', cmd, ret[1])
+            return False
+        
+        if "files removed" in ret[1]:
+            log.info("Run yum clean all successfully.")
+            return True
+            
+        log.error('Run "yum clean all" failed. The result of "%s" is "%s"', cmd, ret[1])
+        return False
+
+    def enable_repos_check(self):
+        ret01 = self._hostname_baseurl_check()
+        # ret02 = self._register_and_subscrib()
+        # time.sleep(3)
+        ret03 = self._repos_status_check()
+        time.sleep(3)
+        ret04 = self._enable_repos()
+
+        return ret01 and ret03 and ret04
+
+    def gpgcheck_check(self):
+        ret01 = self._register_and_subscrib()
+        ret02 = self._gpgcheck_check()
+        return ret01 and ret02
+
+    def repos_info_check(self):
+        ret01 = self._yum_info_check()
+        ret02 = self._yum_list_updates()
+        ret03 = self._yum_clean_all()
+
+        return ret01 and ret02 and ret03
+
+    def cannot_upgrade_check_in_latest_build(self):
+        cmd = "yum update"
+        return self._remotecmd.check_strs_in_cmd_output(cmd, ["Nothing to do"], timeout=CONST.FABRIC_TIMEOUT)
