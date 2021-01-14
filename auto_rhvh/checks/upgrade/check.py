@@ -122,6 +122,12 @@ class CheckUpgrade(CheckComm):
                 ret = self._upgrade_process.yum_upgrade_and_rollback_process()
             elif "rhvm_normal_upgrade" in self.ksfile:
                 ret = self._upgrade_process.rhvm_normal_upgrade_process()
+            elif "rhvm_rhsm_upgrade" in self.ksfile:
+                ret = self._upgrade_process.rhvm_rhsm_upgrade_process()
+            elif "rhvm_fips_upgrade" in self.ksfile:
+                ret = self._upgrade_process.rhvm_fips_upgrade_process()
+            elif "rhvm_security_upgrade" in self.ksfile:
+                ret = self._upgrade_process.rhvm_security_upgrade_process()
 
             if "lack_space" not in self.ksfile and "rhvm_failed_upgrade" not in self.ksfile and "yum_ls_update" not in self.ksfile:
                 self._upgrade_process.upload_upgrade_log(self.log_path)

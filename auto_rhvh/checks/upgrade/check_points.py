@@ -329,7 +329,16 @@ class CheckPoints(object):
 
         log.info("Create logic volume finished, the result is: %s.", ret_lvs[1])
         return True
+    
+    def _register_rhsm_insights(self):
+        ret01 = self._check_insights_client()
+        ret02 = self._check_insights_client_conf()
+        ret03 = self._register_and_subscrib()
+        ret04 = self._register_to_insights_server()
+        ret05 = self._change_date_of_machine_id_file()
 
+        return ret01 and ret02 and ret03 and ret04 and ret05
+        
     ##########################################
     # check methods of check points
     ##########################################
@@ -1034,6 +1043,54 @@ class CheckPoints(object):
 
         return True
 
+    def _enable_fips_mode(self):
+        cmd = "fips-mode-setup --enable"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to enable fips mode.")
+            return False
+        if "FIPS mode will be enabled" in ret[1] and "Please reboot the system for the setting to take effect" in ret[1]:
+            log.info("Enable fips mode successfully.")
+            return True
+        log.error("Failed to enable fips mode. The result of '%s' is '%s'", cmd, ret[1])
+        return False
+
+    def _check_fips_mode(self):
+        cmd = "fips-mode-setup --check"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to get fips mode.")
+            return False
+        if ret[1] == "FIPS mode is enabled.":
+            log.info("Fips mode is enabled.")
+            return True
+        log.error("Fips mode is not enabled. The result of '%s' is '%s'", cmd, ret[1])
+        return False
+    
+    def _check_openscap_config(self):
+        cmd = "test -e {name} && grep 'configured = 1' {name}".format(name="/var/imgbased/openscap/config")
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to get /var/imgbased/openscap/config.")
+            return False
+        if "configured = 1" in ret[1]:
+            log.info("Get /var/imgbased/openscap/config successfully.")
+            return True
+        log.error("Failed to get /var/imgbased/openscap/config. The result of '%s' is '%s'", cmd, ret[1])
+        return False
+
+    def _check_openscap_reports(self):
+        cmd = "ls -al /var/imgbased/openscap/reports/"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to get /var/imgbased/openscap/reports/")
+            return False
+        if "scap-report" in ret[1]:
+            log.info("Openscap reports generated.")
+            return True
+        log.error("Openscap reports is not generated. The result of '%s' is '%s'", cmd, ret[1])
+        return False
+
     ##########################################
     # check points
     ##########################################
@@ -1164,7 +1221,9 @@ class CheckPoints(object):
     def lvm_configuration_check(self):
         # The check has been completed in rhvm_upgrade_config_and_reboot_process
         # Only when the check point is correct can enter this check process.
-        return True
+        ck01 = self._check_imgbase_w()
+        ck02 = self._check_imgbase_layout()
+        return ck01 and ck02
 
     def vms_boot_check(self):
         # Check imgbase w, imgbase layout, cockpit connection
@@ -1561,7 +1620,9 @@ class CheckPoints(object):
     def openvswitch_permission_check(self):
         # The check has been completed in rhvm_bond_vlan_upgrade_process
         # Only when the check point is correct can enter this check process.
-        return True
+        ck01 = self._check_imgbase_w()
+        ck02 = self._check_imgbase_layout()
+        return ck01 and ck02
 
     def ls_update_failed_check(self):
         ret = self._remotecmd.run_cmd("cat /root/yum_upgrade.log", timeout=CONST.FABRIC_TIMEOUT)
@@ -1725,6 +1786,71 @@ class CheckPoints(object):
         log.error('Run "yum clean all" failed. The result of "%s" is "%s"', cmd, ret[1])
         return False
 
+    def _check_insights_client(self):
+        # Check if insights-client rpm installed on RHVH
+        cmd = "rpm -qa | grep insights-client"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to get insights-client rpm.")
+            return False
+        if "insights-client" in ret[1]:
+            log.info("insights-client rpm installed on RHVH. The result of '%s' is '%s'", cmd, ret[1])
+            return True
+        log.error("Failed to get insights-client rpm.")
+        return False
+
+    def _check_insights_client_conf(self):
+        cmd = "test -e {name}".format(name="/etc/insights-client/insights-client.conf")
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("insights-client.conf does not exist.")
+            return False
+
+        log.info("insights-client.conf exist.")
+        return True
+
+    def _register_to_insights_server(self):
+        cmd = "insights-client --register"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Register rhvh to insights server failed.")
+            return False
+
+        if "You successfully registered" and "Successfully uploaded report" in ret[1]:
+            log.info("Register rhvh to insights server successfully.")
+            return True
+        
+        log.error("Register rhvh to insights server failed. The result of '%s' is '%s'", cmd, ret[1])
+        return False
+        
+    def _change_date_of_machine_id_file(self):
+        cmd = "touch -d 20171207 /etc/insights-client/machine-id"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Change the date of machine-id file failed.")
+            return False
+        
+        if self._check_date_of_machine_id_file():
+            log.info("Change the date of machine-id file successfully.")
+            return True
+        
+        log.error("Date change of machine-id file failed.")
+        return False
+        
+    def _check_date_of_machine_id_file(self):
+        cmd = "ls -al /etc/insights-client/machine-id"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Get the date of machine-id file failed.")
+            return False
+        
+        if "Dec  7  2017" in ret[1]:
+            log.info("The date of machine-id file is correct. %s", ret[1])
+            return True
+
+        log.error("The date of machine-id file does not match expectations. The date of machine-id file is '%s'", ret[1])
+        return False
+    
     def enable_repos_check(self):
         ret01 = self._hostname_baseurl_check()
         # ret02 = self._register_and_subscrib()
@@ -1750,3 +1876,12 @@ class CheckPoints(object):
     def cannot_upgrade_check_in_latest_build(self):
         cmd = "yum update"
         return self._remotecmd.check_strs_in_cmd_output(cmd, ["Nothing to do"], timeout=CONST.FABRIC_TIMEOUT)
+
+    def insights_check(self):
+        return self._check_date_of_machine_id_file()
+
+    def fips_mode_check(self):
+        return self._check_fips_mode()
+
+    def scap_stig_check(self):
+        return self._check_openscap_reports()

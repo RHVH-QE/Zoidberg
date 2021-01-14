@@ -1180,6 +1180,8 @@ class UpgradeProcess(CheckPoints):
 
         if not self._add_10_route():
             return False
+        if not self._register_rhsm_insights():
+            return False
         if not self._put_repo_to_host():
             return False
         if not self._config_lvm_filter():
@@ -1398,4 +1400,77 @@ class UpgradeProcess(CheckPoints):
             return False
 
         log.info("Upgrade rhvh via rhvm finished, start to check subscription-manager...")
+        return True
+
+    def rhvm_rhsm_upgrade_process(self):
+        log.info("Start to register to RHSM, then upgrade rhvh via rhvm...")
+
+        if not self._add_10_route():
+            return False
+        if not self._register_and_subscrib():
+            return False
+        if not self._enable_repos():
+            return False
+        if not self._add_host_to_rhvm():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._rhvm_upgrade():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._enter_system(flag="auto")[0]:
+            return False
+        
+        log.info("Register to RHSM and upgrade rhvh via rhvm finished.")
+        return True
+
+    def rhvm_fips_upgrade_process(self):
+        log.info("Start to enable fips mode, then upgrade rhvh via rhvm...")
+
+        if not self._add_10_route():
+            return False
+        if not self._put_repo_to_host():
+            return False
+        if not self._enable_fips_mode():
+            return False
+        if not self._enter_system()[0]:
+            return False
+        if not self._check_fips_mode():
+            return False
+        if not self._add_host_to_rhvm():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._rhvm_upgrade():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._enter_system(flag="auto")[0]:
+            return False
+        
+        log.info("In fips mode, upgrade rhvh via rhvm finished.")
+        return True
+
+    def rhvm_security_upgrade_process(self):
+        log.info("In security mode, upgrade rhvh via rhvm...")
+
+        if not self._check_openscap_config():
+            return False
+        if not self._add_10_route():
+            return False
+        if not self._put_repo_to_host():
+            return False
+        if not self._add_host_to_rhvm():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._rhvm_upgrade():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._enter_system(flag="auto")[0]:
+            return False
+        
+        log.info("Register to RHSM and upgrade rhvh via rhvm finished.")
         return True

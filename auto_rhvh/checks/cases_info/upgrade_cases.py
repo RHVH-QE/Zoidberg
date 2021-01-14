@@ -43,6 +43,7 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-24018": ('atu_upgrade_and_rollback_01.ks', DELL_PER7425_03, 'rollback_and_basic_check'),
     "RHEVM-24019": ('atu_upgrade_and_rollback_02.ks', DELL_PER7425_03, 'rollback_and_basic_check'),
     "RHEVM-27028": ('atu_rhvm_config_upgrade.ks', DELL_PER7425_03, 'lvm_configuration_check'),
+    "RHEVM-26033": ('atu_rhvm_config_upgrade.ks', DELL_PER7425_03, 'insights_check'),#RHSM
     "RHEVM-24016": ('atu_lack_space.ks', DELL_PER7425_03, 'no_space_update_check'),
     "RHEVM-24004": ('atu_yum_install.ks', DELL_PER510_01, 'boot_dmesg_log_check'),
     "RHEVM-24028": ('atu_yum_install.ks', DELL_PER510_01, 'reinstall_rpm_check'),
@@ -58,8 +59,10 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-23986": ('atu_rhvm_bond_iscsi.ks', DELL_PER515_01, 'basic_upgrade_check'),
     "RHEVM-27050": ('atu_rhvm_failed_upgrade.ks', DELL_PER7425_03, 'upgrade_failed_check'),
     "RHEVM-27534": ('atu_rhvm_failed_upgrade.ks', DELL_PER7425_03, 'placeholder_check'),
-    "RHEVM-24009": ('atu_rhvm_normal_upgrade.ks', DELL_PER7425_03, 'enable_repos_check'),
-    "RHEVM-24011": ('atu_rhvm_normal_upgrade.ks', DELL_PER7425_03, 'gpgcheck_check'),
-    "RHEVM-24010": ('atu_rhvm_normal_upgrade.ks', DELL_PER7425_03, 'repos_info_check'),
-    
+    "RHEVM-24009": ('atu_rhvm_normal_upgrade.ks', DELL_PER7425_03, 'enable_repos_check'),#RHSM
+    "RHEVM-24011": ('atu_rhvm_normal_upgrade.ks', DELL_PER7425_03, 'gpgcheck_check'),#RHSM
+    "RHEVM-24010": ('atu_rhvm_normal_upgrade.ks', DELL_PER7425_03, 'repos_info_check'),#RHSM
+    "RHEVM-26253": ('atu_rhvm_rhsm_upgrade.ks', DELL_PER7425_03, 'basic_upgrade_check'),#RHSM,just run after GA
+    "RHEVM-24017": ('atu_rhvm_fips_upgrade.ks', DELL_PER7425_03, 'fips_mode_check'),
+    "RHEVM-26255": ('atu_rhvm_security_upgrade.ks', DELL_PER7425_03, 'scap_stig_check'),
 }
