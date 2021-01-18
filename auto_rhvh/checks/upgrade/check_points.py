@@ -50,6 +50,7 @@ class CheckPoints(object):
         self._disk_size = None
         self._lvm_filter = {}
         self._openvswitch_permission = {}
+        self._sssd_permission = {}
 
     @property
     def remotecmd(self):
@@ -1624,6 +1625,48 @@ class CheckPoints(object):
         ck02 = self._check_imgbase_layout()
         return ck01 and ck02
 
+    def _get_sssd_permissions(self, flag):
+        self._sssd_permission[flag] = {}
+        sssd_permission = self._sssd_permission[flag]
+
+        cmd = "ls -al /etc | grep sssd"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error('Check /etc failed. The result of "%s" is "%s"', cmd, ret[1])
+            return False
+        
+        user = ret[1].split()[2]
+        group = ret[1].split()[3]
+
+        sssd_permission['user'] = user
+        sssd_permission['group'] = group
+        
+        log.info("The sssd permissions are: %s, %s", user, group)
+        return True
+        
+    def _sssd_check(self):
+        old_user_permission = self._sssd_permission.get("old").get("user")
+        new_user_permission = self._sssd_permission.get("new").get("user")
+
+        old_group_permission = self._sssd_permission.get("old").get("group")
+        new_group_permission = self._sssd_permission.get("new").get("group")
+
+        if old_user_permission != new_user_permission:
+            log.error('The user permissions before and after upgrade are: %s, %s', old_user_permission, new_user_permission)
+            return False
+        
+        if old_group_permission != new_group_permission:
+            log.error('The user permissions before and after upgrade are:: %s, %s', old_group_permission, new_group_permission)
+            return False
+
+        log.info('After upgrade, sssd permissions are not changed.')
+        return True
+    
+    def sssd_permission_check(self):
+        # The check has been completed in yum_update_process
+        # Only when the check point is correct can enter this check process.
+        return True
+    
     def ls_update_failed_check(self):
         ret = self._remotecmd.run_cmd("cat /root/yum_upgrade.log", timeout=CONST.FABRIC_TIMEOUT)
         if not ret[0]:

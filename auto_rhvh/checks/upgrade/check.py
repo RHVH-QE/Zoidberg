@@ -100,6 +100,8 @@ class CheckUpgrade(CheckComm):
                 ret = self._upgrade_process.rhvm_upgrade_process()
             elif "yum_ls_update" in self.ksfile:
                 ret = self._upgrade_process.yum_local_storage_update_process()
+            elif "yum_normal_ls_update" in self.ksfile:
+                ret = self._upgrade_process.yum_local_storage_update_process_normal()
             elif "rhvm_vms_upgrade" in self.ksfile:
                 ret = self._upgrade_process.rhvm_upgrade_create_vms_process()
             elif "rhvm_config_upgrade" in self.ksfile:

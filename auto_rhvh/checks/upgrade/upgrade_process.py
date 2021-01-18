@@ -797,7 +797,7 @@ class UpgradeProcess(CheckPoints):
             return False
         return True
 
-    def _create_local_data_path(self, data_path):
+    def _create_local_data_path(self, data_path, mount):
         log.info("Creating the local data path")
         cmd = "test -r %s" % data_path
         ret = self._remotecmd.run_cmd(cmd)
@@ -816,6 +816,55 @@ class UpgradeProcess(CheckPoints):
         if not ret[0]:
             raise RuntimeError("Faile to chown %s" % data_path)
 
+        if mount:
+            # get Volume group name
+            cmd_lvs = "lvs | grep home"
+            ret_lvs = self._remotecmd.run_cmd(cmd_lvs, timeout=CONST.FABRIC_TIMEOUT)
+            if not ret_lvs[0]:
+                log.error("Failed to get logic volume.")
+                return False
+            vg_name = ret_lvs[1].split()[1]
+            pool_name = ret_lvs[1].split()[4]
+            mount_name = vg_name + "-data"
+            if "-" in vg_name:
+                mount_name = vg_name.replace("-","--") + "-data"
+
+            # create lv
+            # the parameter -y should be add
+            cmd = "lvcreate -y -L 25G {vg_name} -n data".format(vg_name=vg_name)
+            ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+            if not ret[0]:
+                raise RuntimeError("Faile to create lv. The result is '%s'" % ret[1])
+            
+            cmd = "mkfs.ext4 /dev/mapper/{mount_name}".format(mount_name=mount_name)
+            ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+            if not ret[0]:
+                raise RuntimeError("Faile to make file system. The result is '%s'" % ret[1])
+            
+            cmd = "echo '/dev/mapper/{mount_name} {data_path} ext4 defaults,discard 1 2' >> /etc/fstab".format(mount_name=mount_name, data_path=data_path)
+            ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+            if not ret[0]:
+                raise RuntimeError("Faile to modify fstab. The result is '%s'" % ret[1])
+            
+            cmd = "mount {data_path}".format(data_path=data_path)
+            ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+            if not ret[0]:
+                raise RuntimeError("Faile to mount. The result is '%s'" % ret[1])
+            
+            cmd = "mount -a"
+            ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+            if not ret[0]:
+                raise RuntimeError("Faile to run mount -a. The result is '%s'" % ret[1])
+            
+            cmd = "chown 36:36 %s" % data_path
+            ret = self._remotecmd.run_cmd(cmd)
+            if not ret[0]:
+                raise RuntimeError("Faile to chown %s" % data_path)
+            cmd = "chmod 0755 %s" % data_path
+            ret = self._remotecmd.run_cmd(cmd)
+            if not ret[0]:
+                raise RuntimeError("Faile to chmod %s" % data_path)
+
     def _add_local_storage_domain(self, sd_name, data_path, host_name):
         log.info("Creating the local storage domain")
         self._rhvm.add_plain_storage_domain(
@@ -827,7 +876,7 @@ class UpgradeProcess(CheckPoints):
             host=host_name)
         time.sleep(60)
 
-    def _create_local_storage_domain(self):
+    def _create_local_storage_domain(self, mount=False):
         log.info("Create local storage domain and attach it...")
         try:
             host_name = self._host_name
@@ -836,7 +885,7 @@ class UpgradeProcess(CheckPoints):
             
             # Create local data directory
             data_path = CONST.LOCAL_STORAGE_INFO.get("local_data_path")
-            self._create_local_data_path(data_path)
+            self._create_local_data_path(data_path, mount)
 
             # Create local storage domain
             self._add_local_storage_domain(sd_name, data_path, host_name)
@@ -1041,6 +1090,8 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._add_host_to_rhvm():
             return False
+        if not self._get_sssd_permissions('old'):
+            return False
         if not self._check_host_status_on_rhvm():
             return False
         if not self._check_cockpit_connection():
@@ -1056,6 +1107,10 @@ class UpgradeProcess(CheckPoints):
         #if not self._check_host_status_on_rhvm():#If adding this process, should modify _yum_upgrade() firstly
             #return False
         if not self._enter_system()[0]:
+            return False
+        if not self._get_sssd_permissions('new'):
+            return False
+        if not self._sssd_check():
             return False
 
         log.info("Upgrading rhvh via yum update cmd finished.")
@@ -1160,7 +1215,7 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._check_host_status_on_rhvm():
             return False
-        if not self._create_local_storage_domain():
+        if not self._create_local_storage_domain(mount=False):
             return False
         if not self._create_vms_with_disk():
             return False
@@ -1175,6 +1230,39 @@ class UpgradeProcess(CheckPoints):
         log.info("Add VMs on local storage, then upgrade rhvh via yum update cmd finished.")
         return True
     
+    def yum_local_storage_update_process_normal(self):
+        log.info("Start to add VMs on local storage, then upgrade rhvh via RHVM...")
+
+        if not self._add_10_route():
+            return False
+        if not self._put_repo_to_host():
+            return False
+        if not self._add_host_to_rhvm(is_local=True):
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._create_local_storage_domain(mount=True):
+            return False
+        if not self._create_vms_with_disk():
+            return False
+        if not self._start_then_poweroff_vms():
+            return False
+        if not self._check_cockpit_connection():
+            return False
+        if not self._rhvm_upgrade():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        time.sleep(120) # Waiting sd status become up
+        if not self._start_then_poweroff_vms():
+            return False
+        if not self._delete_vms_after_test():
+            return False
+        if not self._enter_system(flag="auto")[0]:
+            return False
+
+        log.info("Add VMs on local storage, then upgrade rhvh via RHVM finished.")
+        return True
     def rhvm_upgrade_config_and_reboot_process(self):
         log.info("Start to upgrade rhvh via rhvm...")
 
