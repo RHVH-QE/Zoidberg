@@ -26,8 +26,8 @@
         "swap": {
             "lvm": false,
             "recommended": true,
-            "device_wwid": "/dev/mapper/360a98000383034384c5d4f4352343761p1",
-            "device_alias": "/dev/mapper/360a98000383034384c5d4f4352343761p1"
+            "device_wwid": "/dev/mapper/360a98000383034384c5d4f4352343765p1",
+            "device_alias": "/dev/mapper/360a98000383034384c5d4f4352343765p1"
         },
         "/home": {
             "lvm": true,
