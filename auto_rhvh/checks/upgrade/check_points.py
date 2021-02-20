@@ -1724,9 +1724,7 @@ class CheckPoints(object):
     def _register_and_subscrib(self):
         rhsm_username = CONST.RHSM_INFO.get("username")
         rhsm_password = CONST.RHSM_INFO.get("password")
-        resstr1 = (
-            "Product Name: Red Hat Virtualization Host\r\n"
-            "Status:       Subscribed\r\n")
+        resstr1 = "Status:       Subscribed"
         resstr2 = "This system is already registered. Use --force to override"
 
         # register to RHSM
