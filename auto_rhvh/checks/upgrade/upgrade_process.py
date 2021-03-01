@@ -598,7 +598,7 @@ class UpgradeProcess(CheckPoints):
             try:
                 if self._host_name:
                     host = self._rhvm.list_host(key="name", value=self._host_name)
-                    if host and (host.get('status') == 'up' or host.get('status') == 'non_operational'):
+                    if host and (host.get('status') == 'up'): #or host.get('status') == 'non_operational'
                         log.info("Try to maintenance host %s", self._host_name)
                         self._rhvm.deactive_host(self._host_name)
                         time.sleep(10)
@@ -1088,6 +1088,8 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._put_repo_to_host():
             return False
+        if not self._install_rpms():
+            return False
         if not self._add_host_to_rhvm():
             return False
         if not self._get_sssd_permissions('old'):
@@ -1095,8 +1097,6 @@ class UpgradeProcess(CheckPoints):
         if not self._check_host_status_on_rhvm():
             return False
         if not self._check_cockpit_connection():
-            return False
-        if not self._install_rpms():
             return False
         if not self._install_userspace_svc_node_exporter():
             return False
