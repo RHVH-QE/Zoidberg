@@ -15,7 +15,7 @@ INSTALL_TIER1_TESTCASE_MAP = {
     'RHEVM-23948': ('ati_iscsi_01.ks', DELL_PER515_01, 'NetworkCheck.bond_check'),
     'RHEVM-26394': ('ati_local_02.ks', DELL_PER740_28, 'GeneralCheck.node_check'),
     'RHEVM-23939': ('ati_local_02.ks', DELL_PER740_28, 'PartitionCheck.custom_nists_check'),
-#   'RHEVM-27167': ('ati_iscsi_security_engine.ks', DELL_PER515_01, 'Security.engine_check'),
+    'RHEVM-27167': ('ati_ibm_security_engine.ks', IBM_X365M5_05, 'Security.engine_check'),
 }
 
 INSTALL_TIER2_TESTCASE_MAP = {
