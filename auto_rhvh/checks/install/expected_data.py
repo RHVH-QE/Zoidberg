@@ -140,3 +140,7 @@ class ExpectedData(object):
     @property
     def expected_rhsm(self):
         return None
+
+    @property
+    def expected_securityengine(self):
+        return None
