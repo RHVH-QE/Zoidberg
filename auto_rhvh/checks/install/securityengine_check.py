@@ -21,7 +21,7 @@ class SecurityEngineCheck(object):
 
     remotecmd = attr.ib()
     expected_securityengine = attr.ib()
-    
+
     def _add_host_to_rhvm(self):
         log.info("Add host to rhvm...")
         log.info(
@@ -35,24 +35,20 @@ class SecurityEngineCheck(object):
             self._del_host_on_rhvm()
 
             log.info("Add datacenter %s", DC_NAME)
-            self._rhvm.add_datacenter(RHVM_FQDN)
+            self._rhvm.add_datacenter(DC_NAME)
 
-            log.info("Add cluster %s", self._cluster_name)
-            self._rhvm.add_cluster(RHVM_FQDN, CLUSTER_NAME, "undefined")
+            log.info("Add cluster %s", CLUSTER_NAME)
+            self._rhvm.add_cluster(DC_NAME, CLUSTER_NAME)
 
-            log.info("Add host %s", self._host_name)
+            log.info("Add host %s", CLUSTER_NAME)
             self._rhvm.add_host(self.remotecmd.host_string, HOST_NAME, self.remotecmd.host_pass,
                                 CLUSTER_NAME)
-
-            log.info("Active host, please wait...")
-            self._rhvm.active_host(HOST_NAME)
         except Exception as e:
             log.error(e)
             return False
 
         log.info("Add host to rhvm finished.")
         return True
-
 
     def _del_host_on_rhvm(self):
         if not self._rhvm:
@@ -61,29 +57,33 @@ class SecurityEngineCheck(object):
         count = 0
         while (count < 3):
             try:
-
                 host = self._rhvm.list_host(key="name", value=HOST_NAME)
-                if host and (host.get('status') == 'up' or host.get('status') == 'non_operational'):
-                    log.info("Try to maintenance host %s", HOST_NAME)
-                    self._rhvm.deactive_host(HOST_NAME)
-                    time.sleep(10)
-
-                log.info("Try to remove host %s", HOST_NAME)
-                self._rhvm.remove_host(HOST_NAME)
-                self._rhvm.del_host_events(HOST_NAME)
-                
-                log.info("Try to remove cluster %s", CLUSTER_NAME)
-                self._rhvm.remove_cluster(CLUSTER_NAME)
-
-                log.info("Try to remove data_center %s", self._dc_name)
-                self._rhvm.remove_datacenter(DC_NAME)
+                if host:
+                    if host.get('status') == 'up' or host.get('status') == 'non_operational':
+                        log.info("Try to maintenance host %s", HOST_NAME)
+                        self._rhvm.deactive_host(HOST_NAME)
+                        time.sleep(10)
+                    log.info("Try to remove host %s", HOST_NAME)
+                    self._rhvm.remove_host(HOST_NAME)
+                    self._rhvm.del_host_events(HOST_NAME)
+                else:
+                    log.info("Host %s dosen't exist, no need to remove.", HOST_NAME)
+                if self._rhvm.list_cluster(CLUSTER_NAME):
+                    log.info("Try to remove cluster %s", CLUSTER_NAME)
+                    self._rhvm.remove_cluster(CLUSTER_NAME)
+                else:
+                    log.info("Cluster %s dosen't exist, no need to remove.", CLUSTER_NAME)
+                if self._rhvm.list_datacenter(DC_NAME):
+                    log.info("Try to remove data_center %s", DC_NAME)
+                    self._rhvm.remove_datacenter(DC_NAME)
+                else:
+                    log.info("Datacenter %s dosen't exist, no need to remove.", DC_NAME)
             except Exception as e:
                 log.error(e)
-                time.sleep(20)
+                time.sleep(10)
                 count = count + 1
             else:
                 break
-
 
     def _check_openscap_config(self):
         cmd = "test -e {name} && grep 'configured = 1' {name}".format(name="/var/imgbased/openscap/config")
@@ -97,10 +97,9 @@ class SecurityEngineCheck(object):
         log.error("Failed to get /var/imgbased/openscap/config. The result of '%s' is '%s'", cmd, ret[1])
         return False
 
-
     def _check_host_status_on_rhvm(self):
         log.info("Check host status on rhvm.")
-        
+
         count = 0
         while (count < 40):
             host = self._rhvm.list_host(key="name", value=HOST_NAME)
@@ -114,10 +113,9 @@ class SecurityEngineCheck(object):
         log.info("Host is up on rhvm.")
         return True
 
-
     def security_vdsm_check(self):
         log.info("In security mode, register rhvh via rhvm...")
-        if self._check_openscap_config():
+        if not self._check_openscap_config():
             return False
         if not self._add_host_to_rhvm():
             self._del_host_on_rhvm()
