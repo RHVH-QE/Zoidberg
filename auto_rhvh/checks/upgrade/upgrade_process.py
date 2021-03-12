@@ -392,6 +392,67 @@ class UpgradeProcess(CheckPoints):
         log.info("Add %s route on host finished.", target_ip)
         return True
 
+    def _setup_vlan_over_bond(self):
+        
+        cmd = "nmcli connection add type bond con-name bond0 ifname bond0 bond.options 'mode=active-backup'"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Create bond failed.")
+            return False
+        time.sleep(3)
+
+        cmd = "nmcli connection modify bond0 ipv4.method disabled"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Set IPv4 mode of bond failed.")
+            return False
+        time.sleep(1)
+
+        cmd = "nmcli connection modify bond0 ipv6.method ignore"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Set IPv6 of bond failed.")
+            return False
+        time.sleep(1)
+
+        cmd = "nmcli connection add type ethernet slave-type bond con-name bond0-port1 ifname enp2s0f0 master bond0"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Add enp2s0f0 to bond failed.")
+            return False
+        time.sleep(5)
+
+        cmd = "nmcli connection add type ethernet slave-type bond con-name bond0-port1 ifname enp2s0f1 master bond0"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Add enp2s0f1 to bond failed.")
+            return False
+        time.sleep(5)
+
+        cmd = "nmcli connection up bond0"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Up bond0 failed.")
+            return False
+        time.sleep(3)
+
+        cmd = "nmcli connection add type vlan con-name bond0.50 ifname bond0.50 vlan.parent bond0 vlan.id 50"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Add vlan over bond failed.")
+            return False
+        time.sleep(3)
+
+        cmd = "nmcli connection up bond0.50"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Up bond0.50 failed.")
+            return False
+        time.sleep(3)
+
+        log.info('Add vlan over bond successful.')
+        return True
+
     def _change_vlan_route_metric(self):
         
         log.info("Start to change default vlan route metric on host...")
@@ -1328,6 +1389,8 @@ class UpgradeProcess(CheckPoints):
         if not self._add_10_route():
             return False
         if not self._put_repo_to_host():
+            return False
+        if not self._setup_vlan_over_bond():
             return False
         if not self._edit_grubenv_file():
             return False
