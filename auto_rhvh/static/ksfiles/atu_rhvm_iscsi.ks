@@ -33,7 +33,7 @@ reboot
 network --device=em2 --bootproto=dhcp
 
 ### Partitioning ###
-ignoredisk --only-use=/dev/disk/by-id/scsi-360a9800050334c33424b41762d726954
+ignoredisk --only-use=/dev/disk/by-id/scsi-360a98000383034384c5d4f4352343763
 zerombr
 clearpart --all
 bootloader --location=mbr
