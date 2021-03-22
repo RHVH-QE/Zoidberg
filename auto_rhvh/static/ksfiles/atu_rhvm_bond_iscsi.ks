@@ -34,7 +34,7 @@ network --device=eno2 --bootproto=dhcp
 network --device=bond0 --bootproto=dhcp --bondslaves=enp1s0f0,enp1s0f1 --bondopts=mode=active-backup,primary=enp1s0f0,miimon=100
 
 ### Partitioning ###
-#ignoredisk --only-use=/dev/disk/by-id/scsi-360a9800050334c33424b41762d726954
+ignoredisk --only-use=/dev/disk/by-id/scsi-360a98000383034384c5d4f4352343763
 zerombr
 clearpart --all
 bootloader --location=mbr
