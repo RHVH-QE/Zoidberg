@@ -182,6 +182,57 @@ class UpgradeProcess(CheckPoints):
 
         return True
 
+    def _install_two_versions_of_svc(self):
+        log.info("Start to install userspace service vdsm-hook-nestedvt...")
+
+        install_svc_log = "/root/vdsm_hook_nestedvt.log"
+        url_35 = CONST.USER_RPMS.get("download_url_35")
+        url_39 = CONST.USER_RPMS.get("download_url_39")
+        rpm_name_35 = CONST.USER_RPMS.get("rpm_name_35")
+        rpm_name_39 = CONST.USER_RPMS.get("rpm_name_39")
+
+        cmd_download1 = "curl -o {rpm_name_35} {url_35}".format(rpm_name_35=rpm_name_35, url_35=url_35)
+        cmd_download2 = "curl -o {rpm_name_39} {url_39}".format(rpm_name_39=rpm_name_39, url_39=url_39)
+
+        ret_download = self._remotecmd.run_cmd(cmd_download1, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_download[0]:
+            log.error("Download rpm failed. Please check %s.", install_svc_log)
+            return False
+
+        ret_download = self._remotecmd.run_cmd(cmd_download2, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_download[0]:
+            log.error("Download rpm failed. Please check %s.", install_svc_log)
+            return False
+        
+        #install the rpms
+        cmd_install = "yum install -y {rpm_name_35} >> {install_svc_log}".format(rpm_name_35=rpm_name_35, install_svc_log=install_svc_log)
+        ret_install = self._remotecmd.run_cmd(cmd_install, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_install[0]:
+            log.error("Install vdsm-hook-nestedvt failed. Please check %s.", install_svc_log)
+            return False
+        log.info("Install vdsm-hook-nestedvt succeeded.")
+
+        cmd_install = "yum install -y {rpm_name_39} >> {install_svc_log}".format(rpm_name_39=rpm_name_39, install_svc_log=install_svc_log)
+        ret_install = self._remotecmd.run_cmd(cmd_install, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_install[0]:
+            log.error("Install vdsm-hook-nestedvt failed. Please check %s.", install_svc_log)
+            return False
+        log.info("Install vdsm-hook-nestedvt succeeded.")
+
+        #check 
+        cmd_check = "ls /var/imgbased/persisted-rpms/"
+        ret_check = self._remotecmd.run_cmd(cmd_check, timeout=CONST.FABRIC_TIMEOUT)
+        
+        if ret_check[0] and rpm_name_35 in ret_check[1] and rpm_name_39 in ret_check[1]:
+            log.info("The rpms are found in /var/imgbased/persisted-rpms/.")
+            return True
+        else:
+            log.error(
+                'Persiste userspace service failed. The result of "%s" is "%s"',
+                cmd_check, ret_check[1])
+            return False
+
+    
     def _config_lvm_filter(self):
         log.info("Start to config lvm filter...")
         
@@ -1165,7 +1216,7 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._yum_upgrade('update'):
             return False
-        #if not self._check_host_status_on_rhvm():#If adding this process, should modify _yum_upgrade() firstly
+        #if not self._check_host_status_on_rhvm():
             #return False
         if not self._enter_system()[0]:
             return False
@@ -1624,4 +1675,27 @@ class UpgradeProcess(CheckPoints):
             return False
         
         log.info("Register to RHSM and upgrade rhvh via rhvm finished.")
+        return True
+
+    def duplicate_service_yum_update_process(self):
+        log.info("Start to upgrade rhvh via yum update cmd...")
+
+        if not self._install_two_versions_of_svc():
+            return False
+        if not self._put_repo_to_host():
+            return False
+        if not self._add_host_to_rhvm():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._yum_upgrade('update'):
+            return False
+        if not self._enter_system()[0]:
+            return False
+        if not self._active_host():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+
+        log.info("Upgrading rhvh via yum update cmd finished.")
         return True
