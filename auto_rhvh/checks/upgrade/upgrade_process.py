@@ -1006,6 +1006,88 @@ class UpgradeProcess(CheckPoints):
             return False
         return True
 
+    def _clear_fc_scsi_lun(self, lun_id):
+        log.info("Clearing the fc or iscsi lun to ensure the it's clean")
+        pv = "/dev/mapper/%s" % lun_id
+        vg = None
+        lun_parts = []
+
+        # Get the vg name if there exists
+        cmd = "pvs|grep %s" % lun_id
+        ret = self._remotecmd.run_cmd(cmd)
+        if ret[0] and ret[1]:
+            vg = ret[1].split()[1]
+        else:
+            # If there is lvm on the lun, get the vg from lvm
+            cmd = "lsblk -l %s|grep lvm|awk '{print $1}'" % pv
+            ret = self._remotecmd.run_cmd(cmd)
+            if ret[0] and ret[1]:
+                alvm_blk = ret[1].split()[0]
+                new_alvm_blk = alvm_blk.replace("--", "##")
+                alvm_prefix = new_alvm_blk.split('-')[0]
+                vg = alvm_prefix.replace("##", "-")
+
+            # If there is partition on the lun, get all of them
+            cmd = "lsblk -l %s|grep 'part'|awk '{print $1}'" % pv
+            ret = self._remotecmd.run_cmd(cmd)
+            if ret[0]:
+                for blk_part in ret[1].split():
+                    lun_parts.append("/dev/mapper/" + blk_part)
+
+        # Delete the lun
+        cmd = "dd if=/dev/zero of=%s bs=50M count=10" % pv
+        self._remotecmd.run_cmd(cmd)
+
+        # Delete the partition if exists
+        if lun_parts:
+            for lun_part in lun_parts:
+                cmd = "dd if=/dev/zero of=%s bs=50M count=10" % lun_part
+                self._remotecmd.run_cmd(cmd)
+
+        # Delete the vg if exists
+        if vg:
+            cmd = "dmsetup remove /dev/%s/*" % vg
+            self._remotecmd.run_cmd(cmd)
+    
+    def _create_fc_scsi_storage_domain(self, sd_name, sd_type, storage_type, lun_id, host_name):
+        log.info("Creating the fc or iscsi direct lun storage domain")
+        self._rhvm.add_fc_scsi_storage_domain(
+            sd_name=sd_name,
+            sd_type=sd_type,
+            storage_type=storage_type,
+            lun_id=lun_id,
+            host=host_name)
+        time.sleep(60)
+    
+    def _create_scsi_sd(self):
+        log.info("Checking the scsi storage domain can be created...")
+        try:
+            host_name = self._host_name
+            sd_name = self._sd_name
+            dc_name = self._dc_name
+            storage_type = "iscsi"
+            if not storage_type == "iscsi":
+                raise RuntimeError("Storage type is %s, not iscsi" % storage_type)
+
+            # Clean the fc lun
+            lun_id = CONST.ISCSI_STORAGE_INFO.get("LUN_ID_1")
+            self._clear_fc_scsi_lun(lun_id)
+
+            # Create the fc storage domain
+            self._create_fc_scsi_storage_domain(
+                sd_name,
+                'data',
+                storage_type,
+                lun_id,
+                host_name)
+
+            # Attach the sd to datacenter
+            self._attach_sd_to_dc(sd_name, dc_name)
+        except Exception as e:
+            log.exception(e)
+            return False
+        return True
+    
     #peyu 2020-07-31
     #Create VMs, attach disk to VMs
     def _create_vm(self, vm_name, cluster_name):
@@ -1493,9 +1575,22 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._check_host_status_on_rhvm():
             return False
+        if not self._create_scsi_sd():
+            return False
+        if not self._create_vms_with_disk():
+            return False
+        if not self._start_then_poweroff_vms():
+            return False
         if not self._check_cockpit_connection():
             return False
         if not self._rhvm_upgrade():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        time.sleep(120) # Waiting sd status become up
+        if not self._start_then_poweroff_vms():
+            return False
+        if not self._delete_vms_after_test():
             return False
         if not self._enter_system(flag="auto")[0]:
             return False

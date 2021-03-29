@@ -47,6 +47,12 @@ LOCAL_STORAGE_INFO = {
     "local_data_path": "/local-storage-test",
 }
 
+# DELL_PER515_01 info for iscsi storage domain 
+ISCSI_STORAGE_INFO = {
+    "LUN_ID_1": "360a98000383034384c5d4f4352343761",
+    "LUN_ID_2": "360a98000383034384c5d4f4352343765",
+}
+
 #Info for disk to be used in VMs
 DISK_INFO = {
     "size": "21474836480",
