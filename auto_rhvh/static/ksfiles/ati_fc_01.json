@@ -46,10 +46,10 @@
         },
         "/boot": {
             "lvm": false,
-            "device_wwid": "/dev/mapper/36005076300810b3e00000000000002a6p1",
+            "device_wwid": "/dev/sda1",
             "size": "1024",
             "fstype": "ext4",
-            "device_alias": "/dev/mapper/mpatha1"
+            "device_alias": "/dev/sda1"
         },
         "/home": {
             "lvm": true,
@@ -90,7 +90,7 @@
     },
     "network": {
         "dhcp": {
-            "DEVICE": "eno2",
+            "DEVICE": "eno1",
             "BOOTPROTO": "dhcp",
             "ONBOOT": "yes"
         },
