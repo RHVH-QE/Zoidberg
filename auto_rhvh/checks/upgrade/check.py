@@ -130,6 +130,8 @@ class CheckUpgrade(CheckComm):
                 ret = self._upgrade_process.rhvm_fips_upgrade_process()
             elif "rhvm_security_upgrade" in self.ksfile:
                 ret = self._upgrade_process.rhvm_security_upgrade_process()
+            elif "duplicate_service_update" in self.ksfile:
+                ret = self._upgrade_process.duplicate_service_yum_update_process()
 
             if "lack_space" not in self.ksfile and "rhvm_failed_upgrade" not in self.ksfile and "yum_ls_update" not in self.ksfile:
                 self._upgrade_process.upload_upgrade_log(self.log_path)

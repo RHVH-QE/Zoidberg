@@ -143,7 +143,14 @@ class UpgradeProcess(CheckPoints):
         install_svc_log = "/root/node_exporter.log"
 
         #setup the node_exporter repo
-        cmd_setRepo = "curl -s https://packagecloud.io/install/repositories/prometheus-rpm/release/script.rpm.sh | sudo bash > {}".format(install_svc_log)
+        #cmd_setRepo = "curl -s https://packagecloud.io/install/repositories/prometheus-rpm/release/script.rpm.sh | sudo bash > {}".format(install_svc_log)
+        cmd_setRepo = "curl -O https://packagecloud.io/install/repositories/prometheus-rpm/release/script.rpm.sh"
+        ret_setRepo = self._remotecmd.run_cmd(cmd_setRepo, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_setRepo[0]:
+            log.error("Download node_exporter repo script failed. Please check %s.", install_svc_log)
+            return False
+
+        cmd_setRepo = "sudo bash script.rpm.sh > {}".format(install_svc_log)
         ret_setRepo = self._remotecmd.run_cmd(cmd_setRepo, timeout=CONST.FABRIC_TIMEOUT)
         if not ret_setRepo[0]:
             log.error("Setup node_exporter repo failed. Please check %s.", install_svc_log)
@@ -182,6 +189,57 @@ class UpgradeProcess(CheckPoints):
 
         return True
 
+    def _install_two_versions_of_svc(self):
+        log.info("Start to install userspace service vdsm-hook-nestedvt...")
+
+        install_svc_log = "/root/vdsm_hook_nestedvt.log"
+        url_35 = CONST.USER_RPMS.get("download_url_35")
+        url_39 = CONST.USER_RPMS.get("download_url_39")
+        rpm_name_35 = CONST.USER_RPMS.get("rpm_name_35")
+        rpm_name_39 = CONST.USER_RPMS.get("rpm_name_39")
+
+        cmd_download1 = "curl -o {rpm_name_35} {url_35}".format(rpm_name_35=rpm_name_35, url_35=url_35)
+        cmd_download2 = "curl -o {rpm_name_39} {url_39}".format(rpm_name_39=rpm_name_39, url_39=url_39)
+
+        ret_download = self._remotecmd.run_cmd(cmd_download1, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_download[0]:
+            log.error("Download rpm failed. Please check %s.", install_svc_log)
+            return False
+
+        ret_download = self._remotecmd.run_cmd(cmd_download2, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_download[0]:
+            log.error("Download rpm failed. Please check %s.", install_svc_log)
+            return False
+        
+        #install the rpms
+        cmd_install = "yum install -y {rpm_name_35} >> {install_svc_log}".format(rpm_name_35=rpm_name_35, install_svc_log=install_svc_log)
+        ret_install = self._remotecmd.run_cmd(cmd_install, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_install[0]:
+            log.error("Install vdsm-hook-nestedvt failed. Please check %s.", install_svc_log)
+            return False
+        log.info("Install vdsm-hook-nestedvt succeeded.")
+
+        cmd_install = "yum install -y {rpm_name_39} >> {install_svc_log}".format(rpm_name_39=rpm_name_39, install_svc_log=install_svc_log)
+        ret_install = self._remotecmd.run_cmd(cmd_install, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_install[0]:
+            log.error("Install vdsm-hook-nestedvt failed. Please check %s.", install_svc_log)
+            return False
+        log.info("Install vdsm-hook-nestedvt succeeded.")
+
+        #check 
+        cmd_check = "ls /var/imgbased/persisted-rpms/"
+        ret_check = self._remotecmd.run_cmd(cmd_check, timeout=CONST.FABRIC_TIMEOUT)
+        
+        if ret_check[0] and rpm_name_35 in ret_check[1] and rpm_name_39 in ret_check[1]:
+            log.info("The rpms are found in /var/imgbased/persisted-rpms/.")
+            return True
+        else:
+            log.error(
+                'Persiste userspace service failed. The result of "%s" is "%s"',
+                cmd_check, ret_check[1])
+            return False
+
+    
     def _config_lvm_filter(self):
         log.info("Start to config lvm filter...")
         
@@ -390,6 +448,67 @@ class UpgradeProcess(CheckPoints):
             return False
 
         log.info("Add %s route on host finished.", target_ip)
+        return True
+
+    def _setup_vlan_over_bond(self):
+        
+        cmd = "nmcli connection add type bond con-name bond0 ifname bond0 bond.options 'mode=active-backup'"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Create bond failed.")
+            return False
+        time.sleep(3)
+
+        cmd = "nmcli connection modify bond0 ipv4.method disabled"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Set IPv4 mode of bond failed.")
+            return False
+        time.sleep(1)
+
+        cmd = "nmcli connection modify bond0 ipv6.method ignore"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Set IPv6 of bond failed.")
+            return False
+        time.sleep(1)
+
+        cmd = "nmcli connection add type ethernet slave-type bond con-name bond0-port1 ifname enp2s0f0 master bond0"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Add enp2s0f0 to bond failed.")
+            return False
+        time.sleep(5)
+
+        cmd = "nmcli connection add type ethernet slave-type bond con-name bond0-port1 ifname enp2s0f1 master bond0"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Add enp2s0f1 to bond failed.")
+            return False
+        time.sleep(5)
+
+        cmd = "nmcli connection up bond0"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Up bond0 failed.")
+            return False
+        time.sleep(3)
+
+        cmd = "nmcli connection add type vlan con-name bond0.50 ifname bond0.50 vlan.parent bond0 vlan.id 50"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Add vlan over bond failed.")
+            return False
+        time.sleep(3)
+
+        cmd = "nmcli connection up bond0.50"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Up bond0.50 failed.")
+            return False
+        time.sleep(3)
+
+        log.info('Add vlan over bond successful.')
         return True
 
     def _change_vlan_route_metric(self):
@@ -894,6 +1013,88 @@ class UpgradeProcess(CheckPoints):
             return False
         return True
 
+    def _clear_fc_scsi_lun(self, lun_id):
+        log.info("Clearing the fc or iscsi lun to ensure the it's clean")
+        pv = "/dev/mapper/%s" % lun_id
+        vg = None
+        lun_parts = []
+
+        # Get the vg name if there exists
+        cmd = "pvs|grep %s" % lun_id
+        ret = self._remotecmd.run_cmd(cmd)
+        if ret[0] and ret[1]:
+            vg = ret[1].split()[1]
+        else:
+            # If there is lvm on the lun, get the vg from lvm
+            cmd = "lsblk -l %s|grep lvm|awk '{print $1}'" % pv
+            ret = self._remotecmd.run_cmd(cmd)
+            if ret[0] and ret[1]:
+                alvm_blk = ret[1].split()[0]
+                new_alvm_blk = alvm_blk.replace("--", "##")
+                alvm_prefix = new_alvm_blk.split('-')[0]
+                vg = alvm_prefix.replace("##", "-")
+
+            # If there is partition on the lun, get all of them
+            cmd = "lsblk -l %s|grep 'part'|awk '{print $1}'" % pv
+            ret = self._remotecmd.run_cmd(cmd)
+            if ret[0]:
+                for blk_part in ret[1].split():
+                    lun_parts.append("/dev/mapper/" + blk_part)
+
+        # Delete the lun
+        cmd = "dd if=/dev/zero of=%s bs=50M count=10" % pv
+        self._remotecmd.run_cmd(cmd)
+
+        # Delete the partition if exists
+        if lun_parts:
+            for lun_part in lun_parts:
+                cmd = "dd if=/dev/zero of=%s bs=50M count=10" % lun_part
+                self._remotecmd.run_cmd(cmd)
+
+        # Delete the vg if exists
+        if vg:
+            cmd = "dmsetup remove /dev/%s/*" % vg
+            self._remotecmd.run_cmd(cmd)
+    
+    def _create_fc_scsi_storage_domain(self, sd_name, sd_type, storage_type, lun_id, host_name):
+        log.info("Creating the fc or iscsi direct lun storage domain")
+        self._rhvm.add_fc_scsi_storage_domain(
+            sd_name=sd_name,
+            sd_type=sd_type,
+            storage_type=storage_type,
+            lun_id=lun_id,
+            host=host_name)
+        time.sleep(60)
+    
+    def _create_scsi_sd(self):
+        log.info("Checking the scsi storage domain can be created...")
+        try:
+            host_name = self._host_name
+            sd_name = self._sd_name
+            dc_name = self._dc_name
+            storage_type = "iscsi"
+            if not storage_type == "iscsi":
+                raise RuntimeError("Storage type is %s, not iscsi" % storage_type)
+
+            # Clean the fc lun
+            lun_id = CONST.ISCSI_STORAGE_INFO.get("LUN_ID_1")
+            self._clear_fc_scsi_lun(lun_id)
+
+            # Create the fc storage domain
+            self._create_fc_scsi_storage_domain(
+                sd_name,
+                'data',
+                storage_type,
+                lun_id,
+                host_name)
+
+            # Attach the sd to datacenter
+            self._attach_sd_to_dc(sd_name, dc_name)
+        except Exception as e:
+            log.exception(e)
+            return False
+        return True
+    
     #peyu 2020-07-31
     #Create VMs, attach disk to VMs
     def _create_vm(self, vm_name, cluster_name):
@@ -1104,7 +1305,7 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._yum_upgrade('update'):
             return False
-        #if not self._check_host_status_on_rhvm():#If adding this process, should modify _yum_upgrade() firstly
+        #if not self._check_host_status_on_rhvm():
             #return False
         if not self._enter_system()[0]:
             return False
@@ -1329,6 +1530,8 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._put_repo_to_host():
             return False
+        if not self._setup_vlan_over_bond():
+            return False
         if not self._edit_grubenv_file():
             return False
         if not self._get_openvswitch_permissions('old'):
@@ -1379,9 +1582,22 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._check_host_status_on_rhvm():
             return False
+        if not self._create_scsi_sd():
+            return False
+        if not self._create_vms_with_disk():
+            return False
+        if not self._start_then_poweroff_vms():
+            return False
         if not self._check_cockpit_connection():
             return False
         if not self._rhvm_upgrade():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        time.sleep(120) # Waiting sd status become up
+        if not self._start_then_poweroff_vms():
+            return False
+        if not self._delete_vms_after_test():
             return False
         if not self._enter_system(flag="auto")[0]:
             return False
@@ -1561,4 +1777,27 @@ class UpgradeProcess(CheckPoints):
             return False
         
         log.info("Register to RHSM and upgrade rhvh via rhvm finished.")
+        return True
+
+    def duplicate_service_yum_update_process(self):
+        log.info("Start to upgrade rhvh via yum update cmd...")
+
+        if not self._install_two_versions_of_svc():
+            return False
+        if not self._put_repo_to_host():
+            return False
+        if not self._add_host_to_rhvm():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._yum_upgrade('update'):
+            return False
+        if not self._enter_system()[0]:
+            return False
+        if not self._active_host():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+
+        log.info("Upgrading rhvh via yum update cmd finished.")
         return True

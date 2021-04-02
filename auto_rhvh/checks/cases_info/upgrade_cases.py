@@ -25,7 +25,7 @@ UPGRADE_TIER1_TESTCASE_MAP = {
     "RHEVM-27051": ('atu_rhvm_bond_vlan_upgrade.ks', DELL_PER515_01, 'grubenv_check'),
     "RHEVM-27552": ('atu_rhvm_bond_vlan_upgrade.ks', DELL_PER515_01, 'openvswitch_permission_check'),
     "RHEVM-24000": ('atu_rhvm_vms_upgrade.ks', DELL_PER7425_03, 'vms_boot_check'),
-    "RHEVM-23996": ('atu_rhvm_iscsi.ks', DELL_PER515_01, 'basic_upgrade_check'),
+    "RHEVM-23996": ('atu_rhvm_iscsi.ks', DELL_PER515_01, 'basic_upgrade_check'),#2021-03-29 added iscsi SD and VM
 }
 
 UPGRADE_TIER2_TESTCASE_MAP = {
@@ -55,7 +55,7 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-24020": ('atu_yum_vlan.ks', DELL_PER510_01, 'delete_imgbase_check'),
     "RHEVM-24041": ('atu_yum_vlan.ks', DELL_PER510_01, 'libguestfs_tool_check'),
     "RHEVM-24042": ('atu_yum_vlan.ks', DELL_PER510_01, 'diff_services_check'),
-    "RHEVM-23996": ('atu_rhvm_iscsi.ks', DELL_PER515_01, 'basic_upgrade_check'),#should add iscsi dm and VM accroding to the test case
+    "RHEVM-23996": ('atu_rhvm_iscsi.ks', DELL_PER515_01, 'basic_upgrade_check'),#2021-03-29 added iscsi SD and VM
     "RHEVM-24036": ('atu_rhvm_iscsi.ks', DELL_PER515_01, 'update_again_unavailable_check'),
     ## "RHEVM-24036": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'update_again_unavailable_check'),
     "RHEVM-23986": ('atu_rhvm_bond_iscsi.ks', DELL_PER515_01, 'basic_upgrade_check'),
@@ -67,4 +67,5 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-26253": ('atu_rhvm_rhsm_upgrade.ks', DELL_PER7425_03, 'basic_upgrade_check'),#RHSM,just run after GA
     "RHEVM-24017": ('atu_rhvm_fips_upgrade.ks', DELL_PER7425_03, 'fips_mode_check'),
     "RHEVM-26255": ('atu_rhvm_security_upgrade.ks', DELL_PER7425_03, 'scap_stig_check'),
+    "RHEVM-24034": ('atu_duplicate_service_update.ks', DELL_PER7425_03, 'basic_upgrade_check'),
 }

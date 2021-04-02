@@ -30,10 +30,10 @@ reboot
 
 ### Network ###
 network --device=eno2 --bootproto=dhcp
-network --device=bond0 --bootproto=dhcp --bondslaves=enp2s0f0,enp2s0f1 --bondopts=mode=active-backup,primary=enp2s0f0,miimon=100 --vlanid=50
+#network --device=bond0 --bootproto=dhcp --bondslaves=enp2s0f0,enp2s0f1 --bondopts=mode=active-backup,primary=enp2s0f0,miimon=100 --vlanid=50
 
 ### Partitioning ###
-#ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244
+ignoredisk --only-use=/dev/disk/by-id/scsi-360a98000383034384c5d4f4352343763
 zerombr
 clearpart --all
 bootloader --location=mbr
