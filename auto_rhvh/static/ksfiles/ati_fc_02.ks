@@ -23,13 +23,14 @@ liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-h
 text
 reboot
 
-# This ks is specific to dell-per510-01, which is a multipath FC machine, use the FC luns
+# This ks is specific to IBM_X365M5_05, which is a local machine(due to fc machine is broken)
 ### Network ###
-network --device=eno2 --bootproto=dhcp
+network --device=eno1 --bootproto=dhcp
 network --hostname=ati-fc-02.test.redhat.com
 
 ### Partitioning ###
 #ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244
+ignoredisk --only-use=sda
 zerombr
 clearpart --all
 bootloader --location=mbr
