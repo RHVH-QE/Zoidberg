@@ -143,7 +143,14 @@ class UpgradeProcess(CheckPoints):
         install_svc_log = "/root/node_exporter.log"
 
         #setup the node_exporter repo
-        cmd_setRepo = "curl -s https://packagecloud.io/install/repositories/prometheus-rpm/release/script.rpm.sh | sudo bash > {}".format(install_svc_log)
+        #cmd_setRepo = "curl -s https://packagecloud.io/install/repositories/prometheus-rpm/release/script.rpm.sh | sudo bash > {}".format(install_svc_log)
+        cmd_setRepo = "curl -O https://packagecloud.io/install/repositories/prometheus-rpm/release/script.rpm.sh"
+        ret_setRepo = self._remotecmd.run_cmd(cmd_setRepo, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret_setRepo[0]:
+            log.error("Download node_exporter repo script failed. Please check %s.", install_svc_log)
+            return False
+
+        cmd_setRepo = "sudo bash script.rpm.sh > {}".format(install_svc_log)
         ret_setRepo = self._remotecmd.run_cmd(cmd_setRepo, timeout=CONST.FABRIC_TIMEOUT)
         if not ret_setRepo[0]:
             log.error("Setup node_exporter repo failed. Please check %s.", install_svc_log)
