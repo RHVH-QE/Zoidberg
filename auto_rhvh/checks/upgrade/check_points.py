@@ -1926,3 +1926,21 @@ class CheckPoints(object):
 
     def scap_stig_check(self):
         return self._check_openscap_reports()
+
+    def installed_rpms_check(self):
+        if not self.basic_upgrade_check():
+            return False
+
+        rpm_name_39 = CONST.USER_RPMS.get("rpm_name_39")
+        cmd_check = "rpm -qa | grep vdsm-hook-nestedvt"
+        ret_check = self._remotecmd.run_cmd(cmd_check, timeout=CONST.FABRIC_TIMEOUT)
+        
+        if ret_check[0] and ret_check[1] in rpm_name_39:
+            log.info("The installed RPMs are found in new layer.")
+            return True
+        else:
+            log.error(
+                'The installed RPMs are not found in new layer. The result of "%s" is "%s"',
+                cmd_check, ret_check[1])
+            return False
+

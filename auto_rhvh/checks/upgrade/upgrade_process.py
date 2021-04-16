@@ -230,7 +230,8 @@ class UpgradeProcess(CheckPoints):
         cmd_check = "ls /var/imgbased/persisted-rpms/"
         ret_check = self._remotecmd.run_cmd(cmd_check, timeout=CONST.FABRIC_TIMEOUT)
         
-        if ret_check[0] and rpm_name_35 in ret_check[1] and rpm_name_39 in ret_check[1]:
+        #if ret_check[0] and rpm_name_35 in ret_check[1] and rpm_name_39 in ret_check[1]:#imgbased-1.2.16
+        if ret_check[0] and rpm_name_35 not in ret_check[1] and rpm_name_39 in ret_check[1]:#imgbased-1.2.18
             log.info("The rpms are found in /var/imgbased/persisted-rpms/.")
             return True
         else:

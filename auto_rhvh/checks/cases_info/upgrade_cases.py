@@ -67,5 +67,5 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-26253": ('atu_rhvm_rhsm_upgrade.ks', DELL_PER7425_03, 'basic_upgrade_check'),#RHSM,just run after GA
     "RHEVM-24017": ('atu_rhvm_fips_upgrade.ks', DELL_PER7425_03, 'fips_mode_check'),
     "RHEVM-26255": ('atu_rhvm_security_upgrade.ks', DELL_PER7425_03, 'scap_stig_check'),
-    "RHEVM-24034": ('atu_duplicate_service_update.ks', DELL_PER7425_03, 'basic_upgrade_check'),
+    "RHEVM-24034": ('atu_duplicate_service_update.ks', DELL_PER7425_03, 'installed_rpms_check'),
 }

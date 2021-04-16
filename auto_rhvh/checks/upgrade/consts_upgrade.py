@@ -25,13 +25,13 @@ RHVM_DATA_MAP = {
     "4.1_rhvm_fqdn": "vm-198-141.lab.eng.pek2.redhat.com",
     "4.2_rhvm_fqdn": "bootp-73-199-145.lab.eng.pek2.redhat.com",
     "4.3_rhvm_fqdn": "bootp-73-199-39.lab.eng.pek2.redhat.com",
-    "4.4_rhvm_fqdn": "vm-198-19.lab.eng.pek2.redhat.com",
+    "4.4_rhvm_fqdn": "vm-197-8.lab.eng.pek2.redhat.com",
 }
 
 # Info for LVM to be used in RHEVM-27050(tier2)
 # Modify this value according to the destination build, before running tier2 test case.
 LVM_INFO = {
-    "lv_name_of_destination_build": "rhvh-4.4.5.3-0.20210215.0+1",
+    "lv_name_of_destination_build": "rhvh-4.4.5.4-0.20210330.0+1",
 }
 
 #Info for NFS to be used in Storage
@@ -65,7 +65,7 @@ RHSM_INFO = {
 
 USER_RPMS = {
     "download_url_35": "http://download.eng.bos.redhat.com/brewroot/vol/rhel-8/packages/vdsm/4.40.35.1/1.el8ev/noarch/vdsm-hook-nestedvt-4.40.35.1-1.el8ev.noarch.rpm",
-    "download_url_39": "http://download.eng.bos.redhat.com/brewroot/vol/rhel-8/packages/vdsm/4.40.39/1.el8ev/noarch/vdsm-hook-nestedvt-4.40.39-1.el8ev.noarch.rpm",
+    "download_url_39": "http://download.eng.bos.redhat.com/brewroot/vol/rhel-8/packages/vdsm/4.40.40/1.el8ev/noarch/vdsm-hook-nestedvt-4.40.40-1.el8ev.noarch.rpm",
     "rpm_name_35": "vdsm-hook-nestedvt-4.40.35.1-1.el8ev.noarch.rpm",
-    "rpm_name_39": "vdsm-hook-nestedvt-4.40.39-1.el8ev.noarch.rpm",
+    "rpm_name_39": "vdsm-hook-nestedvt-4.40.40-1.el8ev.noarch.rpm",
 }
