@@ -23,7 +23,7 @@ liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-h
 text
 reboot
 
-# This ks is specific to IBM_X365M5_05, which is a local machine(due to fc machine is broken)
+# This ks is specific to DELL_PER740_28, which is a local machine(due to fc machine is broken)
 ### Network ###
 network --device=eno1 --bootproto=dhcp
 network --hostname=ati-fc-02.test.redhat.com
