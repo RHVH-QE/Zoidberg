@@ -26,7 +26,7 @@ liveimg --url=http://10.66.10.22:8090/rhvh_ngn/squashimg/redhat-virtualization-h
 text
 reboot
 
-# This ks is specific to IBM_X365M5_05, which is a local machine(due to fc machine is broken)
+# This ks is specific to DELL_PER740_28, which is a local machine(due to fc machine is broken)
 ### Network ###
 network --device=eno1 --bootproto=dhcp
 #network --device=bond0 --bootproto=dhcp --bondslaves=enp6s0f0,enp6s0f1 --bondopts=mode=active-backup,primary=enp6s0f0,miimon=100 --vlanid=50
