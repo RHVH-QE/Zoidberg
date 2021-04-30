@@ -1372,6 +1372,8 @@ class UpgradeProcess(CheckPoints):
             return False
         if not self._put_repo_to_host():
             return False
+        if not self._setup_vlan_over_bond():
+            return False
         if not self._add_host_to_rhvm(is_vlan=True):
             return False
         if not self._check_host_status_on_rhvm():

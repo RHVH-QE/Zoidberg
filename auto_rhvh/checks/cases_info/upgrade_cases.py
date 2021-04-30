@@ -17,11 +17,12 @@ UPGRADE_TIER1_TESTCASE_MAP = {
     "RHEVM-26037": ('atu_yum_update.ks', DELL_PER7425_03, 'sssd_permission_check'),
     "RHEVM-27295": ('atu_yum_ls_update.ks', DELL_PER7425_03, 'ls_update_failed_check'),
     "RHEVM-24005": ('atu_yum_normal_ls_update.ks', DELL_PER7425_03, 'basic_upgrade_check'),
-    "RHEVM-23980": ('atu_yum_install.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    "RHEVM-23991": ('atu_yum_install.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    "RHEVM-23999": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    "RHEVM-24030": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    "RHEVM-24995": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
+    ## 2021-04-30 move FC cases  from DELL_PER510_01 to DELL_PER515_01
+    "RHEVM-23980": ('atu_yum_install.ks', DELL_PER515_01, 'basic_upgrade_check'),#FC case
+    "RHEVM-23991": ('atu_yum_install.ks', DELL_PER515_01, 'basic_upgrade_check'),#FC case
+    "RHEVM-23999": ('atu_rhvm_upgrade.ks', DELL_PER515_01, 'basic_upgrade_check'),#FC case
+    "RHEVM-24030": ('atu_rhvm_upgrade.ks', DELL_PER515_01, 'basic_upgrade_check'),#FC case
+    "RHEVM-24995": ('atu_rhvm_upgrade.ks', DELL_PER515_01, 'basic_upgrade_check'),#FC case
     "RHEVM-27051": ('atu_rhvm_bond_vlan_upgrade.ks', DELL_PER515_01, 'grubenv_check'),
     "RHEVM-27552": ('atu_rhvm_bond_vlan_upgrade.ks', DELL_PER515_01, 'openvswitch_permission_check'),
     "RHEVM-24000": ('atu_rhvm_vms_upgrade.ks', DELL_PER7425_03, 'vms_boot_check'),
