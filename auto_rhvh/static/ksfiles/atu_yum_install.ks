@@ -1,4 +1,4 @@
-### KS for upgrade yum install test on dell-per510-01
+### KS for upgrade yum install test on dell-per515-01
 
 ### Language ###
 lang en_US.UTF-8
@@ -29,11 +29,10 @@ text
 reboot
 
 ### Network ###
-#network --device=em2 --bootproto=dhcp
 network --device=eno2 --bootproto=dhcp
 
 ### Partitioning ###
-#ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244
+ignoredisk --only-use=/dev/disk/by-id/scsi-360a98000383034384c5d4f4352343763
 zerombr
 clearpart --all
 bootloader --location=mbr

@@ -1894,8 +1894,8 @@ class CheckPoints(object):
     
     def enable_repos_check(self):
         ret01 = self._hostname_baseurl_check()
-        # ret02 = self._register_and_subscrib()
-        # time.sleep(3)
+        ret02 = self._register_and_subscrib()
+        time.sleep(3)
         ret03 = self._repos_status_check()
         time.sleep(3)
         ret04 = self._enable_repos()
@@ -1905,7 +1905,8 @@ class CheckPoints(object):
     def gpgcheck_check(self):
         ret01 = self._register_and_subscrib()
         ret02 = self._gpgcheck_check()
-        return ret01 and ret02
+        #return ret01 and ret02
+        return ret02
 
     def repos_info_check(self):
         ret01 = self._yum_info_check()

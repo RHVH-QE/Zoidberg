@@ -451,6 +451,7 @@ class UpgradeProcess(CheckPoints):
         log.info("Add %s route on host finished.", target_ip)
         return True
 
+    # DELL_PER515_01
     def _setup_vlan_over_bond(self):
         
         cmd = "nmcli connection add type bond con-name bond0 ifname bond0 bond.options 'mode=active-backup'"
@@ -512,6 +513,25 @@ class UpgradeProcess(CheckPoints):
         log.info('Add vlan over bond successful.')
         return True
 
+    # DELL_PER515_01
+    def _setup_vlan_over_one_nic(self):
+        cmd = "nmcli connection add type vlan con-name enp2s0f0.50 ifname enp2s0f0.50 vlan.parent enp2s0f0 vlan.id 50"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Add vlan over one NIC failed.")
+            return False
+        time.sleep(3)
+
+        cmd = "nmcli connection up enp2s0f0.50"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Up enp2s0f0.50 failed.")
+            return False
+        time.sleep(3)
+
+        log.info('Add vlan over one NIC successful.')
+        return True
+    
     def _change_vlan_route_metric(self):
         
         log.info("Start to change default vlan route metric on host...")
@@ -1323,6 +1343,10 @@ class UpgradeProcess(CheckPoints):
 
         if not self._fetch_update_rpm_to_host():
             return False
+        if not self._install_rpms():
+            return 
+        if not self._mv_rpm_packages_on_host():
+            return False
         if not self._add_host_to_rhvm():
             return False
         if not self._check_host_status_on_rhvm():
@@ -1330,10 +1354,6 @@ class UpgradeProcess(CheckPoints):
         # if not self._bug_1837864_workaround_441_to_442_only():#this workaround only for 4.4.1 upgrade to 4.4.2
         #     return False
         if not self._check_cockpit_connection():
-            return False
-        if not self._install_rpms():
-            return False
-        if not self._mv_rpm_packages_on_host():
             return False
         if not self._set_locale_on_host():
             return False
@@ -1633,6 +1653,8 @@ class UpgradeProcess(CheckPoints):
         if not self._add_10_route():
             return False
         if not self._put_repo_to_host():
+            return False
+        if not self._setup_vlan_over_one_nic():
             return False
         if not self._add_host_to_rhvm(is_vlan=True):
             return False

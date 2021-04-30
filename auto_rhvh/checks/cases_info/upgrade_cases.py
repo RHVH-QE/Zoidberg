@@ -47,14 +47,15 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-27028": ('atu_rhvm_config_upgrade.ks', DELL_PER7425_03, 'lvm_configuration_check'),
     "RHEVM-26033": ('atu_rhvm_config_upgrade.ks', DELL_PER7425_03, 'insights_check'),#RHSM
     "RHEVM-24016": ('atu_lack_space.ks', DELL_PER7425_03, 'no_space_update_check'),
-    "RHEVM-24004": ('atu_yum_install.ks', DELL_PER510_01, 'boot_dmesg_log_check'),
-    "RHEVM-24028": ('atu_yum_install.ks', DELL_PER510_01, 'reinstall_rpm_check'),
-    "RHEVM-24037": ('atu_yum_install.ks', DELL_PER510_01, 'packages_check'),
-    "RHEVM-23988": ('atu_yum_install.ks', DELL_PER510_01, 'cannot_install_check'),
-    "RHEVM-23989": ('atu_yum_vlan.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    "RHEVM-24020": ('atu_yum_vlan.ks', DELL_PER510_01, 'delete_imgbase_check'),
-    "RHEVM-24041": ('atu_yum_vlan.ks', DELL_PER510_01, 'libguestfs_tool_check'),
-    "RHEVM-24042": ('atu_yum_vlan.ks', DELL_PER510_01, 'diff_services_check'),
+    ## 2021-04-28 FC cases move from DELL_PER510_01 to DELL_PER515_01
+    "RHEVM-24004": ('atu_yum_install.ks', DELL_PER515_01, 'boot_dmesg_log_check'),#FC case
+    "RHEVM-24028": ('atu_yum_install.ks', DELL_PER515_01, 'reinstall_rpm_check'),#FC case
+    "RHEVM-24037": ('atu_yum_install.ks', DELL_PER515_01, 'packages_check'),#FC case
+    "RHEVM-23988": ('atu_yum_install.ks', DELL_PER515_01, 'cannot_install_check'),#FC case
+    "RHEVM-23989": ('atu_yum_vlan.ks', DELL_PER515_01, 'basic_upgrade_check'),#FC case
+    "RHEVM-24020": ('atu_yum_vlan.ks', DELL_PER515_01, 'delete_imgbase_check'),#FC case
+    "RHEVM-24041": ('atu_yum_vlan.ks', DELL_PER515_01, 'libguestfs_tool_check'),#FC case
+    "RHEVM-24042": ('atu_yum_vlan.ks', DELL_PER515_01, 'diff_services_check'),#FC case
     "RHEVM-23996": ('atu_rhvm_iscsi.ks', DELL_PER515_01, 'basic_upgrade_check'),#2021-03-29 added iscsi SD and VM
     "RHEVM-24036": ('atu_rhvm_iscsi.ks', DELL_PER515_01, 'update_again_unavailable_check'),
     ## "RHEVM-24036": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'update_again_unavailable_check'),
