@@ -89,6 +89,15 @@ class CheckUpgrade(CheckComm):
         cks = {}
 
         try:
+            if "rhvm_security_upgrade" in self.ksfile:
+                ret = self._upgrade_process.rhvm_security_upgrade_process()
+                self._upgrade_process.upload_upgrade_log(self.log_path)
+                if not ret:
+                    raise RuntimeError("Failed to run upgrade.")
+                cks = self.run_cases()
+                self._upgrade_process._del_host_on_rhvm()
+                return cks
+
             if not self._check_points._collect_infos('old'):
                 raise RuntimeError("Failed to collect old infos.")
 

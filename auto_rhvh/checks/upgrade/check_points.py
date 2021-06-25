@@ -909,6 +909,30 @@ class CheckPoints(object):
 
         return True
 
+    def _check_openscap_config(self):
+        cmd = "test -e {name} && grep 'configured = 1' {name} && grep 'xccdf_org.ssgproject.content_profile_rhelh-stig' {name}".format(name="/var/imgbased/openscap/config")
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to get /var/imgbased/openscap/config.")
+            return False
+        if "configured = 1" in ret[1]:
+            log.info("Get /var/imgbased/openscap/config successfully.")
+            return True
+        log.error("Failed to get /var/imgbased/openscap/config. The result of '%s' is '%s'", cmd, ret[1])
+        return False
+
+    def _check_openscap_reports(self):
+        cmd = "ls -al /var/imgbased/openscap/reports/"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to get /var/imgbased/openscap/reports/")
+            return False
+        if "scap-report" in ret[1]:
+            log.info("Openscap reports generated.")
+            return True
+        log.error("Openscap reports is not generated. The result of '%s' is '%s'", cmd, ret[1])
+        return False
+
     ##########################################
     # check points
     ##########################################
@@ -1321,3 +1345,6 @@ class CheckPoints(object):
         else:
             log.error("Port 16514 status is %s.", ret[1])
             return False
+
+    def scap_stig_check(self):
+        return self._check_openscap_reports()

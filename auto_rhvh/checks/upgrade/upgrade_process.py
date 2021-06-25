@@ -918,3 +918,26 @@ class UpgradeProcess(CheckPoints):
 
         log.info("Upgrading rhvh with vlan via yum update finished.")
         return True
+
+    def rhvm_security_upgrade_process(self):
+        log.info("In security mode, upgrade rhvh via rhvm...")
+
+        if not self._check_openscap_config():
+            return False
+        if not self._add_10_route():
+            return False
+        if not self._put_repo_to_host():
+            return False
+        if not self._add_host_to_rhvm():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._rhvm_upgrade():
+            return False
+        if not self._check_host_status_on_rhvm():
+            return False
+        if not self._enter_system(flag="auto")[0]:
+            return False
+        
+        log.info("Register to RHSM and upgrade rhvh via rhvm finished.")
+        return True
