@@ -158,7 +158,7 @@ class UpgradeProcess(CheckPoints):
 
         #install the node_exporter service
         cmd_install = "yum install -y node_exporter >> {}".format(install_svc_log)
-        ret_install = self._remotecmd.run_cmd(cmd_install, timeout=CONST.FABRIC_TIMEOUT)
+        ret_install = self._remotecmd.run_cmd(cmd_install, timeout=CONST.FABRIC_ADDED_TIMEOUT)
         if not ret_install[0]:
             log.error("Install userspace service node_exporter failed. Please check %s.", install_svc_log)
             return False
@@ -1321,7 +1321,7 @@ class UpgradeProcess(CheckPoints):
         if not self._check_cockpit_connection():
             return False
         if not self._install_userspace_svc_node_exporter():
-            return False
+            log.error('Install node_exporter failed.')
         if not self._remove_audit_log():
             return False
         if not self._yum_upgrade('update'):

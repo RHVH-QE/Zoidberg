@@ -12,6 +12,7 @@ KERNEL_SPACE_RPM_URL = ("http://download.eng.pek2.redhat.com/pub/rhel/rel-eng/RH
                         "kmod-oracleasm-2.0.8-17.el7.x86_64.rpm")
 
 FABRIC_TIMEOUT = 300
+FABRIC_ADDED_TIMEOUT = 600
 YUM_UPDATE_TIMEOUT = 1200
 YUM_INSTALL_TIMEOUT = 2400
 CHK_HOST_ON_RHVM_STAT_MAXCOUNT = 40
@@ -31,7 +32,7 @@ RHVM_DATA_MAP = {
 # Info for LVM to be used in RHEVM-27050(tier2)
 # Modify this value according to the destination build, before running tier2 test case.
 LVM_INFO = {
-    "lv_name_of_destination_build": "rhvh-4.4.5.4-0.20210330.0+1",
+    "lv_name_of_destination_build": "rhvh-4.4.6.1-0.20210426.0+1",
 }
 
 #Info for NFS to be used in Storage
