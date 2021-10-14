@@ -1,4 +1,4 @@
-### KS for rhvm side upgrade vlan+bond test on dell-per510-01
+### KS for rhvm side upgrade vlan+bond test on dell-per515-01 #dell-per510-01
 
 ### Language ###
 lang en_US.UTF-8
@@ -19,6 +19,7 @@ auth --enableshadow --passalgo=md5
 
 ### Misc ###
 services --enabled=sshd
+selinux --enforcing
 
 ### Installation mode ###
 install
@@ -29,10 +30,12 @@ reboot
 
 ### Network ###
 network --device=em2 --bootproto=dhcp
-network --device=bond0 --bootproto=dhcp --bondslaves=p1p1,p1p2 --bondopts=mode=active-backup,primary=p1p1,miimon=100 --vlanid=50
+#network --device=bond0 --bootproto=dhcp --bondslaves=p1p1,p1p2 --bondopts=mode=active-backup,primary=p1p1,miimon=100 --vlanid=50
+network --device=bond0 --bootproto=dhcp --bondslaves=p2p1,p2p2 --bondopts=mode=active-backup,primary=p2p1,miimon=100 --vlanid=50
 
 ### Partitioning ###
-ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244
+#ignoredisk --drives=/dev/disk/by-id/scsi-36782bcb03cdfa2001ebc7e930f1ca244
+ignoredisk --only-use=/dev/disk/by-id/scsi-360a98000383034384c5d4f4352343763
 zerombr
 clearpart --all
 bootloader --location=mbr

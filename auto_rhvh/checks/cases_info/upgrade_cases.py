@@ -13,11 +13,11 @@ UPGRADE_TIER1_TESTCASE_MAP = {
     "RHEVM-24029": ('atu_yum_update.ks', DELL_PER7425_03, 'cmds_check'),
     "RHEVM-24012": ('atu_yum_update.ks', DELL_PER7425_03, 'separate_volumes_check'),
     "RHEVM-24013": ('atu_yum_update.ks', DELL_PER7425_03, 'etc_var_file_update_check'),
-    "RHEVM-23980": ('atu_yum_install.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    "RHEVM-23991": ('atu_yum_install.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    "RHEVM-23999": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    "RHEVM-24030": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    "RHEVM-24995": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'basic_upgrade_check'),
+    "RHEVM-23980": ('atu_yum_install.ks', DELL_PER515_01, 'basic_upgrade_check'),#DELL_PER510_01 is broken, so move to DELL_PER515_01
+    "RHEVM-23991": ('atu_yum_install.ks', DELL_PER515_01, 'basic_upgrade_check'),#DELL_PER510_01 is broken, so move to DELL_PER515_01
+    "RHEVM-23999": ('atu_rhvm_upgrade.ks', DELL_PER515_01, 'basic_upgrade_check'),#DELL_PER510_01 is broken, so move to DELL_PER515_01
+    "RHEVM-24030": ('atu_rhvm_upgrade.ks', DELL_PER515_01, 'basic_upgrade_check'),#DELL_PER510_01 is broken, so move to DELL_PER515_01
+    "RHEVM-24995": ('atu_rhvm_upgrade.ks', DELL_PER515_01, 'basic_upgrade_check'),#DELL_PER510_01 is broken, so move to DELL_PER515_01
     "RHEVM-24000": ('atu_rhvm_vms_upgrade.ks', DELL_PER7425_03, 'vms_boot_check'),
 }
 
@@ -35,14 +35,14 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-24040": ('atu_yum_update.ks', DELL_PER7425_03, 'systemd_tmpfiles_clean_check'),
     "RHEVM-26979": ('atu_yum_update.ks', DELL_PER7425_03, 'usr_space_service_status_check'),
     "RHEVM-24016": ('atu_lack_space.ks', DELL_PER7425_03, 'no_space_update_check'),
-    "RHEVM-24004": ('atu_yum_install.ks', DELL_PER510_01, 'boot_dmesg_log_check'),
-    "RHEVM-24028": ('atu_yum_install.ks', DELL_PER510_01, 'reinstall_rpm_check'),
-    "RHEVM-24037": ('atu_yum_install.ks', DELL_PER510_01, 'packages_check'),
-    "RHEVM-23988": ('atu_yum_install.ks', DELL_PER510_01, 'cannot_install_check'),
-    "RHEVM-23989": ('atu_yum_vlan.ks', DELL_PER510_01, 'basic_upgrade_check'),
-    "RHEVM-24020": ('atu_yum_vlan.ks', DELL_PER510_01, 'delete_imgbase_check'),
-    "RHEVM-24041": ('atu_yum_vlan.ks', DELL_PER510_01, 'libguestfs_tool_check'),
-    "RHEVM-24042": ('atu_yum_vlan.ks', DELL_PER510_01, 'diff_services_check'),
+    "RHEVM-24004": ('atu_yum_install.ks', DELL_PER515_01, 'boot_dmesg_log_check'),#DELL_PER510_01 is broken, so move to DELL_PER515_01
+    "RHEVM-24028": ('atu_yum_install.ks', DELL_PER515_01, 'reinstall_rpm_check'),#DELL_PER510_01 is broken, so move to DELL_PER515_01
+    "RHEVM-24037": ('atu_yum_install.ks', DELL_PER515_01, 'packages_check'),#DELL_PER510_01 is broken, so move to DELL_PER515_01
+    "RHEVM-23988": ('atu_yum_install.ks', DELL_PER515_01, 'cannot_install_check'),#DELL_PER510_01 is broken, so move to DELL_PER515_01
+    "RHEVM-23989": ('atu_yum_vlan.ks', DELL_PER515_01, 'basic_upgrade_check'),#DELL_PER510_01 is broken, so move to DELL_PER515_01
+    "RHEVM-24020": ('atu_yum_vlan.ks', DELL_PER515_01, 'delete_imgbase_check'),#DELL_PER510_01 is broken, so move to DELL_PER515_01
+    "RHEVM-24041": ('atu_yum_vlan.ks', DELL_PER515_01, 'libguestfs_tool_check'),#DELL_PER510_01 is broken, so move to DELL_PER515_01
+    "RHEVM-24042": ('atu_yum_vlan.ks', DELL_PER515_01, 'diff_services_check'),#DELL_PER510_01 is broken, so move to DELL_PER515_01
     "RHEVM-23996": ('atu_rhvm_iscsi.ks', DELL_PER515_01, 'basic_upgrade_check'),
     "RHEVM-24036": ('atu_rhvm_iscsi.ks', DELL_PER515_01, 'update_again_unavailable_check'),
     # "RHEVM-24036": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'update_again_unavailable_check'),
