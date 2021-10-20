@@ -45,7 +45,7 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-23994": ('atu_yum_update.ks', DELL_PER7425_03, 'cannot_upgrade_check_in_latest_build'),
     "RHEVM-24018": ('atu_upgrade_and_rollback_01.ks', DELL_PER7425_03, 'rollback_and_basic_check'),
     "RHEVM-24019": ('atu_upgrade_and_rollback_02.ks', DELL_PER7425_03, 'rollback_and_basic_check'),
-    "RHEVM-27028": ('atu_rhvm_config_upgrade.ks', DELL_PER7425_03, 'lvm_configuration_check'),
+    "RHEVM-27554": ('atu_rhvm_config_upgrade.ks', DELL_PER7425_03, 'lvm_configuration_check'),
     "RHEVM-26033": ('atu_rhvm_config_upgrade.ks', DELL_PER7425_03, 'insights_check'),#RHSM
     "RHEVM-24016": ('atu_lack_space.ks', DELL_PER7425_03, 'no_space_update_check'),
     ## 2021-04-28 FC cases move from DELL_PER510_01 to DELL_PER515_01
@@ -60,7 +60,7 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-23996": ('atu_rhvm_iscsi.ks', DELL_PER515_01, 'basic_upgrade_check'),#2021-03-29 added iscsi SD and VM
     "RHEVM-24036": ('atu_rhvm_iscsi.ks', DELL_PER515_01, 'update_again_unavailable_check'),
     ## "RHEVM-24036": ('atu_rhvm_upgrade.ks', DELL_PER510_01, 'update_again_unavailable_check'),
-    "RHEVM-23986": ('atu_rhvm_bond_iscsi.ks', DELL_PER515_01, 'basic_upgrade_check'),
+    "RHEVM-23986": ('atu_rhvm_bond_iscsi.ks', DELL_PER515_01, 'basic_upgrade_check'),#bond upgrade
     "RHEVM-27050": ('atu_rhvm_failed_upgrade.ks', DELL_PER7425_03, 'upgrade_failed_check'),
     "RHEVM-27534": ('atu_rhvm_failed_upgrade.ks', DELL_PER7425_03, 'placeholder_check'),
     "RHEVM-24009": ('atu_rhvm_normal_upgrade.ks', DELL_PER7425_03, 'enable_repos_check'),#RHSM
@@ -69,5 +69,5 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-26253": ('atu_rhvm_rhsm_upgrade.ks', DELL_PER7425_03, 'basic_upgrade_check'),#RHSM,just run after GA
     "RHEVM-24017": ('atu_rhvm_fips_upgrade.ks', DELL_PER7425_03, 'fips_mode_check'),
     "RHEVM-26255": ('atu_rhvm_security_upgrade.ks', DELL_PER7425_03, 'scap_stig_check'),
-    "RHEVM-24034": ('atu_duplicate_service_update.ks', DELL_PER7425_03, 'installed_rpms_check'),
+    "RHEVM-27664": ('atu_duplicate_service_update.ks', DELL_PER7425_03, 'installed_rpms_check'),
 }
