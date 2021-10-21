@@ -67,6 +67,7 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-24011": ('atu_rhvm_normal_upgrade.ks', DELL_PER7425_03, 'gpgcheck_check'),#RHSM
     "RHEVM-24010": ('atu_rhvm_normal_upgrade.ks', DELL_PER7425_03, 'repos_info_check'),#RHSM
     "RHEVM-26253": ('atu_rhvm_rhsm_upgrade.ks', DELL_PER7425_03, 'basic_upgrade_check'),#RHSM,just run after GA
+    "RHEVM-27857": ('atu_rhvm_rhsm_upgrade.ks', DELL_PER7425_03, 'basic_upgrade_check'),#RHSM,first install vdsm-hook-ethtool-options
     "RHEVM-24017": ('atu_rhvm_fips_upgrade.ks', DELL_PER7425_03, 'fips_mode_check'),
     "RHEVM-26255": ('atu_rhvm_security_upgrade.ks', DELL_PER7425_03, 'scap_stig_check'),
     "RHEVM-27664": ('atu_duplicate_service_update.ks', DELL_PER7425_03, 'installed_rpms_check'),

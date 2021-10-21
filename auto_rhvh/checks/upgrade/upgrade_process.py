@@ -267,6 +267,24 @@ class UpgradeProcess(CheckPoints):
             log.error("Setup lvm filter failed. The result of command: %s is: %s", cmd_conf_filter, ret_conf_filter[1])
             return False
     
+    def _install_vdsm_hook_ethtool_options(self):
+        log.info("Install vdsm-hook-ethtool-options...")
+
+        cmd = "yum install -y vdsm-hook-ethtool-options"
+        ret = self._remotecmd.run_cmd(cmd, timeout=CONST.FABRIC_TIMEOUT)
+        if not ret[0]:
+            log.error("Failed to install vdsm-hook-ethtool-options")
+            return False
+        if ("Error" or "cannot install") in ret[1]:
+            log.info("Failed to install vdsm-hook-ethtool-options: %s", ret[1])
+            return False
+        elif ("Installed" or "Complete") in ret[1]:
+            log.info("Successfully to install vdsm-hook-ethtool-options: %s", ret[1])
+            return True
+        else:
+            log.error("Failed to install vdsm-hook-ethtool-options")
+            return False
+    
     def _set_locale_on_host(self):
         log.info("Set host to a locale that uses commas for decimals...")
 
@@ -1739,6 +1757,8 @@ class UpgradeProcess(CheckPoints):
         if not self._register_and_subscrib():
             return False
         if not self._enable_repos():
+            return False
+        if not self._install_vdsm_hook_ethtool_options():
             return False
         if not self._add_host_to_rhvm():
             return False
