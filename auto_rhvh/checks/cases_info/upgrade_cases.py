@@ -71,4 +71,5 @@ UPGRADE_TIER2_TESTCASE_MAP = {
     "RHEVM-24017": ('atu_rhvm_fips_upgrade.ks', DELL_PER7425_03, 'fips_mode_check'),
     "RHEVM-26255": ('atu_rhvm_security_upgrade.ks', DELL_PER7425_03, 'scap_stig_check'),
     "RHEVM-27664": ('atu_duplicate_service_update.ks', DELL_PER7425_03, 'installed_rpms_check'),
+    "RHEVM-27865": ('atu_rhvm_vms_upgrade.ks', DELL_PER7425_03, 'vms_boot_check'),#run upgrading from older build to latest version
 }
