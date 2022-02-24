@@ -12,7 +12,7 @@
 [rhel-7-server-rhvh-4-source-rpms]
 metadata_expire = 86400
 sslclientcert = /etc/pki/entitlement/5858345830546115877.pem
-baseurl = http://10.66.10.22:8090/rhvhupgrade/rhvh/4/source/SRPMS
+baseurl = http://10.66.148.42:8090/rhvhupgrade/rhvh/4/source/SRPMS
 ui_repoid_vars = basearch
 sslverify = 1
 name = Red Hat Virtualization Host 7 (Source RPMs)
@@ -25,7 +25,7 @@ gpgcheck = 0
 [rhel-7-server-rhvh-4-beta-debug-rpms]
 metadata_expire = 86400
 sslclientcert = /etc/pki/entitlement/5858345830546115877.pem
-baseurl = http://10.66.10.22:8090/rhvhupgrade/rhvh/4/debug
+baseurl = http://10.66.148.42:8090/rhvhupgrade/rhvh/4/debug
 ui_repoid_vars = basearch
 sslverify = 1
 name = Red Hat Virtualization Host 7 Beta (Debug RPMs)
@@ -38,7 +38,7 @@ gpgcheck = 0
 [rhel-7-server-rhvh-4-debug-rpms]
 metadata_expire = 86400
 sslclientcert = /etc/pki/entitlement/5858345830546115877.pem
-baseurl = http://10.66.10.22:8090/rhvhupgrade/rhvh/4/debug
+baseurl = http://10.66.148.42:8090/rhvhupgrade/rhvh/4/debug
 ui_repoid_vars = basearch
 sslverify = 1
 name = Red Hat Virtualization Host 7 (Debug RPMs)
@@ -51,7 +51,7 @@ gpgcheck = 0
 [rhel-7-server-rhvh-4-beta-source-rpms]
 metadata_expire = 86400
 sslclientcert = /etc/pki/entitlement/5858345830546115877.pem
-baseurl = http://10.66.10.22:8090/rhvhupgrade/rhvh/4/source/SRPMS
+baseurl = http://10.66.148.42:8090/rhvhupgrade/rhvh/4/source/SRPMS
 ui_repoid_vars = basearch
 sslverify = 1
 name = Red Hat Virtualization Host 7 Beta (Source RPMs)
@@ -64,7 +64,7 @@ gpgcheck = 0
 [rhel-7-server-rhvh-4-rpms]
 metadata_expire = 86400
 sslclientcert = /etc/pki/entitlement/5858345830546115877.pem
-baseurl = http://10.66.10.22:8090/rhvhupgrade/rhvh/4/os/Packages/
+baseurl = http://10.66.148.42:8090/rhvhupgrade/rhvh/4/os/Packages/
 ui_repoid_vars = basearch
 sslverify = 1
 name = Red Hat Virtualization Host 7 (RPMs)
@@ -77,7 +77,7 @@ gpgcheck = 0
 [rhel-7-server-rhvh-4-beta-rpms]
 metadata_expire = 86400
 sslclientcert = /etc/pki/entitlement/5858345830546115877.pem
-baseurl = http://10.66.10.22:8090/rhvhupgrade/rhvh/4/os/Packages/
+baseurl = http://10.66.148.42:8090/rhvhupgrade/rhvh/4/os/Packages/
 ui_repoid_vars = basearch
 sslverify = 1
 name = Red Hat Virtualization Host 7 Beta (RPMs)

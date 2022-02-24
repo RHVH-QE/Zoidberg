@@ -7,7 +7,7 @@ from urllib import quote_plus
 class MongoQuery(object):
     user = attr.ib(default='meteor')
     password = attr.ib(default='redhat')
-    host = attr.ib(default='10.66.10.22:27017/meteordb')
+    host = attr.ib(default='10.66.148.42:27017/meteordb')
     db_name = attr.ib(default='meteordb')
 
     @property

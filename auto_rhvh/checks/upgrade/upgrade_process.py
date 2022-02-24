@@ -678,7 +678,7 @@ class UpgradeProcess(CheckPoints):
 
         # add host route for the repo
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "ip route add 10.66.10.22 via {host_gateway} dev ovirtmgmt".format(host_gateway=host_gateway))
+            "ip route add 10.66.148.42 via {host_gateway} dev ovirtmgmt".format(host_gateway=host_gateway))
         time.sleep(10)
         
         # check ip route after adding the host route
@@ -689,7 +689,7 @@ class UpgradeProcess(CheckPoints):
         # close the ssh connection
         ssh.close()
 
-        log.info("Add host route for repo %s finished.", "10.66.10.22")
+        log.info("Add host route for repo %s finished.", "10.66.148.42")
         return True
     
     def _add_host_to_rhvm(self, is_vlan=False, is_bond=False, is_local=False):

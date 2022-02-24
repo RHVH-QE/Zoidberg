@@ -5,7 +5,7 @@ LOCAL_DIR = os.path.dirname(__file__)
 CHECK_NEW_LVS = True
 
 #RHVH_UPDATE_RPM_NAME = "redhat-virtualization-host-image-update-{}.el7_3.noarch.rpm"
-RHVH_UPDATE_RPM_URL = "http://10.66.10.22:8090/rhvhupgrade/updates/"
+RHVH_UPDATE_RPM_URL = "http://10.66.148.42:8090/rhvhupgrade/updates/"
 
 KERNEL_SPACE_RPM_URL = ("http://download.eng.pek2.redhat.com/pub/rhel/rel-eng/RHEL-7.3-20161019.0/"
                         "compose/Server/x86_64/os/Packages/"
