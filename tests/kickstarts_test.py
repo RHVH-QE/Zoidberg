@@ -46,7 +46,7 @@ def test_get_p1_ks():
 @with_setup(setup_func)
 def test_convert_auto_ks():
     ksf.ks_filter = 'must'
-    ksf.liveimg = "http://10.66.10.22:8090/rhevh/rhevh7-ng-36/rhev-hypervisor7-ng-4.0-20160527.0/rhev-hypervisor7-ng-4.0-20160527.0.x86_64.liveimg.squashfs"
+    ksf.liveimg = "http://10.66.148.42:8090/rhevh/rhevh7-ng-36/rhev-hypervisor7-ng-4.0-20160527.0/rhev-hypervisor7-ng-4.0-20160527.0.x86_64.liveimg.squashfs"
     ksf._convert_to_auto_ks()
 
 

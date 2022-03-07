@@ -47,7 +47,7 @@ class Beaker(object):
         # this cmd will provision the given host with rhevh ngn build
         provision=("bkr system-provision "
                    "--kernel-options "
-                   "inst.stage2=http://10.66.10.22:8090/"
+                   "inst.stage2=http://10.66.148.42:8090/"
                    "rhevh/ngn-dvd-iso/RHVH-7.2-20160718.1/stage2 "
                    "inst.ks=http://{srv_ip}:{srv_port}/ksfiles/auto/{ks_file} "
                    "ks= "

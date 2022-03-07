@@ -19,7 +19,7 @@ KS_FILES_DIR = os.path.join(PROJECT_ROOT, 'auto_rhvh', 'static', 'ksfiles')
 
 KS_FILES_AUTO_DIR = os.path.join(PROJECT_ROOT, 'auto_rhvh', 'static', 'auto')
 
-BUILDS_SERVER_URL = "http://10.66.10.22:8090"
+BUILDS_SERVER_URL = "http://10.66.148.42:8090"
 
 CURRENT_IP_PORT = ('10.73.73.23', '5000')
 
